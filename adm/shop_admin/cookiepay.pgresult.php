@@ -82,6 +82,24 @@ foreach (COOKIEPAY_PG as $key => $val) {
         $data = array_merge($data, $result);
     }
 }
+
+// s: 주문내역에 있는 건만 추려냄 - 연동아이디와 키가 정해진 후에는 이 코드블록은 필요없음
+$sql = " SELECT * FROM {$g5['g5_shop_order_table']} ORDER BY od_id ASC ";
+$res = sql_query($sql);
+
+$ordernoList = [];
+for($i=0; $row=sql_fetch_array($res); $i++) {
+    array_push($ordernoList, $row['od_id']);
+}
+
+if (count($ordernoList) > 0) {
+    foreach ($data as $key => $val) {
+        if (!in_array($val['ORDERNO'], $ordernoList)) {
+            unset($data[$key]);
+        }
+    }
+}
+// e: 주문내역에 있는 건만 추려냄
 ?>
 
 <link rel="stylesheet" href="<?php echo COOKIEPAY_URL; ?>/datatable/jquery.dataTables.min.css">
@@ -300,10 +318,13 @@ $(function(){
         }
     };
 
-    var table = $('#dataTable').DataTable({
-        language: dataTableKo,
-        order: [[2, 'desc']],
-    });
+    var dataCount = "<?php echo count($data); ?>";
+    if (dataCount > 0) {
+        var table = $('#dataTable').DataTable({
+            language: dataTableKo,
+            order: [[2, 'desc']],
+        });
+    }
 });
 
 $(document).on("click", ".btn-pg-cancel", function(event) {
