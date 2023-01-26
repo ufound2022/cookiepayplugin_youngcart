@@ -20,6 +20,6 @@ $menu['menu400'] = array (
     array('400410', '미완료주문', G5_ADMIN_URL.'/shop_admin/inorderlist.php', 'scf_inorder', 1),
 
     // s: cookiepay-plugin
-    array('400900', '쿠키페이결제내역', G5_ADMIN_URL.'/shop_admin/cookiepay.pgresult.php', 'scf_cookiepay_pgresult', 1),
+    array('400900', '결제내역', G5_ADMIN_URL.'/shop_admin/cookiepay.pgresult.php', 'scf_cookiepay_pgresult', 1),
     // e: cookiepay-plugin
 );
