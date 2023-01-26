@@ -69,30 +69,39 @@ function pay() {
         ETC5 : opener.document.getElementById("ETC5").value, //사용자 추가필드5 (선택)
     };
 
-    // console.log(params); return false;
+    var tryPayParams = params;
+    tryPayParams['mode'] = "try_pay";
 
     $.ajax({
         type: "POST",
-        url: url,
-        data : params,
+        url: "<?php echo COOKIEPAY_URL ?>/cookiepay.pay.php",
+        data : tryPayParams,
         cache: false,
         contentType : "application/x-www-form-urlencoded",
-        beforeSend : function(xhr) {
-            xhr.setRequestHeader("ApiKey", "<?php echo $cookiepayApi['api_key']; ?>");
-        },
-        success: function(result) {
-            try {
-                const obj = JSON.parse(result);
-                alert(obj.RTN_MSG);
-                // opener.document.forderform.submit();
-                // self.close();
-                // return false;
-            } catch(e) {
-                const newDiv = document.createElement('div');
-                newDiv.setAttribute("id","cookiepayform");
-                document.body.appendChild(newDiv);
-                $("#cookiepayform").html(result);
-            }
+        success: function(tryPayRes) {
+            
+            $.ajax({
+                type: "POST",
+                url: url,
+                data : params,
+                cache: false,
+                contentType : "application/x-www-form-urlencoded",
+                beforeSend : function(xhr) {
+                    xhr.setRequestHeader("ApiKey", "<?php echo $cookiepayApi['api_key']; ?>");
+                },
+                success: function(result) {
+                    try {
+                        const obj = JSON.parse(result);
+                        console.log(obj.RTN_MSG);
+                    } catch(e) {
+                        const newDiv = document.createElement('div');
+                        newDiv.setAttribute("id","cookiepayform");
+                        document.body.appendChild(newDiv);
+                        $("#cookiepayform").html(result);
+                    }
+                },
+            });
+
         },
     });
 }

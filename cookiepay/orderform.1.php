@@ -13,6 +13,11 @@ function pay(settle_method) {
     } else {
         var popupPos = "left=0, top=0, width=10, height=10";
     }
+    
     var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${settle_method}`, "pgWin1", popupPos);
+
+    if(!pgWin1 || pgWin1.closed || typeof pgWin1.closed=='undefined') { 
+        alert("팝업이 차단되어 있습니다.\n팝업 차단 해제 후 다시 시도해 주세요.");
+    }
 }
 </script>
