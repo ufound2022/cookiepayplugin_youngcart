@@ -6,8 +6,16 @@ include_once(G5_PATH."/cookiepay/cookiepay.lib.php");
 
 auth_check_menu($auth, $sub_menu, "r");
 
-$g5['title'] = '결제내역';
-include_once (G5_ADMIN_PATH.'/admin.head.php');
+$tab = $_GET['t'] ?? '';
+if ($tab == 's') {
+    $g5['title'] = '결제내역 - 결제성공';
+} else if ($tab == 'c') {
+    $g5['title'] = '결제내역 - 결제취소';
+} else {
+    $g5['title'] = '결제내역 - 전체내역';
+}
+
+include_once(G5_ADMIN_PATH.'/admin.head.php');
 include_once(G5_PLUGIN_PATH.'/jquery-ui/datepicker.php');
 
 $fr_date = (isset($_GET['fr_date']) && preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $_GET['fr_date'])) ? $_GET['fr_date'] : '2023-01-01';
@@ -100,16 +108,37 @@ if (count($ordernoList) > 0) {
     }
 }
 // e: 주문내역에 있는 건만 추려냄
+
+// 결제성공/결제취소 탭 별 데이터 처리
+foreach ($data as $key => $val) {
+    if ($tab == 's' && !empty($val['CANCELDATE'])) { // success
+        unset($data[$key]);
+    } else if ($tab == 'c' && empty($val['CANCELDATE'])) { // cancel
+        unset($data[$key]);
+    }
+}
 ?>
+
+<style>
+.dataTables_wrapper .dataTables_filter {float: left !important;text-align: left !important;margin-bottom: 6px;}
+.dataTables_wrapper .dataTables_length {float: right !important;}
+.dataTables_wrapper .dataTables_length select {height: 28px;}
+</style>
 
 <link rel="stylesheet" href="<?php echo COOKIEPAY_URL; ?>/datatable/jquery.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo COOKIEPAY_URL ?>/modal/jquery.modal.min.css" />
 
 <div class="btn_fixed_top">
     <a href=" <?php echo G5_SHOP_URL; ?>" class="btn btn_02">쇼핑몰</a>
-    <input type="submit" value="확인" class="btn_submit btn" accesskey="s">
+    <!-- <input type="submit" value="확인" class="btn_submit btn" accesskey="s"> -->
+</div>
+<div>
+    <a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>" class="btn btn_02">전체내역</a>
+    <a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>?t=s" class="btn btn_03">결제성공</a>
+    <a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>?t=c" class="btn btn_01">결제취소</a>
 </div>
 <form class="local_sch03 local_sch">
+    <input type="hidden" name="t" value="<?php echo $tab; ?>">
 <div class="sch_last">
     <strong>결제일</strong>
     <input type="text" id="fr_date"  name="fr_date" value="<?php echo $fr_date; ?>" class="frm_input" size="10" maxlength="10"> ~
