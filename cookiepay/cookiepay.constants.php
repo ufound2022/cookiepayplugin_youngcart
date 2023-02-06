@@ -34,6 +34,12 @@ define('COOKIEPAY_PAY_URL', "{$cookiepayProtocol}www.cookiepayments.com/pay/read
 // 쿠키페이 테스트결제 url
 define('COOKIEPAY_TESTPAY_URL', "{$cookiepayProtocol}cookiepay.iroholdings.co.kr/pay/ready");
 
+// 쿠키페이 수기결제 실결제 url
+define('COOKIEPAY_KEYIN_URL', "{$cookiepayProtocol}www.cookiepayments.com/keyin/payment");
+
+// 쿠키페이 수기결제 테스트결제 url
+define('COOKIEPAY_TESTKEYIN_URL', "{$cookiepayProtocol}cookiepay.iroholdings.co.kr/keyin/payment");
+
 // 쿠키페이 결제 응답 url
 $cookiepayReturnUrl = COOKIEPAY_USE_HTTPS === true ? str_replace("http://", "https://", G5_URL) : G5_URL;
 define('COOKIEPAY_RETURN_URL', $cookiepayReturnUrl."/cookiepay/pgresult.php");

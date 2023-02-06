@@ -637,6 +637,12 @@ if($is_kakaopay_use) {
         $isCookiepay = strpos($default['de_pg_service'], "COOKIEPAY");
         if($isCookiepay !== false) {
             $easypay_prints = [];
+            
+            // 관리자일 경우 수기결제 표시
+            if ($is_admin) {
+                echo '<li><input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제" '.$checked.'> <label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label></li>'.PHP_EOL;
+                $checked = '';
+            }
         }
         // e: cookiepay-plugin - PAYCO 간편 결제 숨김
 

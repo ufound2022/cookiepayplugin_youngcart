@@ -89,6 +89,72 @@ foreach (COOKIEPAY_PG as $key => $val) {
 
         $data = array_merge($data, $result);
     }
+
+    if (!empty($default["de_{$pg}_cookiepay_id_keyin"]) && $default["de_{$pg}_cookiepay_key_keyin"]) {
+        // api account
+        $cookiepayApi = [];
+        $cookiepayApi['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
+        $cookiepayApi['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
+
+        // s: 쿠키페이 결제내역 조회
+        $tokenheaders = array(); 
+        array_push($tokenheaders, "content-type: application/json; charset=utf-8");
+
+        $token_request_data = array(
+            'pay2_id' => $cookiepayApi['api_id'],
+            'pay2_key'=> $cookiepayApi['api_key'],
+        );
+
+        $req_json = json_encode($token_request_data, TRUE);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL, COOKIEPAY_TOKEN_URL);
+        curl_setopt($ch,CURLOPT_POST, false);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $req_json);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
+        curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $tokenheaders);
+        $resJson = curl_exec($ch);
+        curl_close($ch);
+        $resArr = json_decode($resJson,TRUE);
+
+        if($resArr['RTN_CD'] == '0000'){
+            $headers = array(); 
+            array_push($headers, "content-type: application/json; charset=utf-8");
+            array_push($headers, "TOKEN: ".$resArr['TOKEN']);
+
+            $request_data_array = array(
+                'API_ID' => $cookiepayApi['api_id'],
+                'STD_DT' => $fr_date,
+                'END_DT' => $to_date,
+            );
+
+            $cookiepayments_json = json_encode($request_data_array, TRUE);
+
+            $ch = curl_init();
+            curl_setopt($ch,CURLOPT_URL, COOKIEPAY_SEARCH_URL);
+            curl_setopt($ch,CURLOPT_POST, false);
+            curl_setopt($ch,CURLOPT_POSTFIELDS, $cookiepayments_json);
+            curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
+            curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $result = json_decode($response, true);
+
+            foreach($result as $index => $value) {
+                $result[$index]['pg'] = $pg; // pg사
+                $result[$index]['api_id'] = $cookiepayApi['api_id']; // 연동아이디
+                $result[$index]['api_key'] = $cookiepayApi['api_key']; // 연동키
+            }
+        }
+        // e: 쿠키페이 결제내역 조회
+
+        $data = array_merge($data, $result);
+    }
 }
 
 // s: 주문내역에 있는 건만 추려냄 - 연동아이디와 키가 정해진 후에는 이 코드블록은 필요없음

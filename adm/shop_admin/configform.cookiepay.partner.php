@@ -232,6 +232,24 @@ if(!isset($default['de_cookiepay_al_cookiepay_id'])) {
                 ADD `de_cookiepay_wp_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id` ";
     sql_query($sql, true);
 }
+
+if(!isset($default['de_cookiepay_al_cookiepay_id_keyin'])) {
+    // 쿠키페이 PG사 Keyin 결제 연동 정보 컬럼 추가
+    $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
+                ADD `de_cookiepay_al_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
+                ADD `de_cookiepay_al_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_ts_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_ts_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_kw_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_kw_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_dn_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_dn_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_ki_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_ki_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_wp_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_wp_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id_keyin` ";
+    sql_query($sql, true);
+}
 // e: cookiepay-plugin
 ?>
 
@@ -842,18 +860,22 @@ if(!isset($default['de_cookiepay_al_cookiepay_id'])) {
         ?>
         <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld" id="<?php echo $cookiepayPgCodeLower; ?>_info_anchor">
             <th scope="row">
-                <label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id"><?php echo $cookiepayPgName; ?> 연동 아이디</label>
+                <label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id"><?php echo $cookiepayPgName; ?> 인증<br>연동아이디 &amp; 시크릿키</label>
             </th>
             <td>
-                <?php echo help("쿠키페이에서 발급 받으신 연동 아이디를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" class="frm_input code_input" size="50" maxlength="50">
+                <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <br>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
         </tr>
         <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld">
-            <th scope="row"><label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key"><?php echo $cookiepayPgName; ?> 연동 시크릿키</label></th>
+            <th scope="row"><label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key"><?php echo $cookiepayPgName; ?> 비인증(수기결제)<br>연동아이디 &amp; 시크릿키</label></th>
             <td>
-                <?php echo help("쿠키페이에서 발급 받으신 연동 시크릿키를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" class="frm_input" size="67" maxlength="50">
+                <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_keyin" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id_keyin"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_keyin" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <br>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_keyin" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_keyin"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_keyin" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
         </tr>
         <?php
@@ -1833,9 +1855,11 @@ function fconfig_check(f)
         var cookiepayUsePg = cookiepayUsePgValue.toLowerCase();
         var cookiepayUsePgId = $(`#de_${cookiepayUsePg}_cookiepay_id`);
         var cookiepayUsePgKey = $(`#de_${cookiepayUsePg}_cookiepay_key`);
+        var cookiepayUsePgIdKeyin = $(`#de_${cookiepayUsePg}_cookiepay_id_keyin`);
+        var cookiepayUsePgKeyKeyin = $(`#de_${cookiepayUsePg}_cookiepay_key_keyin`);
 
-        if (cookiepayUsePgId.val().length < 1 || cookiepayUsePgKey.val().length < 1) {
-            alert("연동 아이디와 연동 시크릿키를 입력해 주세요.");
+        if ((cookiepayUsePgId.val().length < 1 || cookiepayUsePgKey.val().length < 1) && (cookiepayUsePgIdKeyin.val().length < 1 || cookiepayUsePgKeyKeyin.val().length < 1)) {
+            alert("인증 또는 비인증(수기결제) 연동 아이디와 연동 시크릿키를 입력해 주세요.");
             cookiepayUsePgId.focus();
             return false;
         }

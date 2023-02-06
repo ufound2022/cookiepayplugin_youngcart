@@ -67,6 +67,7 @@
         - /adm/shop_admin/configformupdate.php  
         - /adm/shop_admin/orderform.php  
         - /adm/shop_admin/orderformcartupdate.php  
+        - /adm/shop_admin/orderlist.php  
         - /shop/orderform.sub.php  
         - /shop/orderformupdate.php  
         - /shop/orderinquiryview.php  

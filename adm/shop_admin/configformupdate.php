@@ -271,6 +271,18 @@ $check_sanitize_keys = array(
     'de_cookiepay_ki_cookiepay_key',          //이지페이의 쿠키페이 연동 시크릿키
     'de_cookiepay_wp_cookiepay_id',           //웰컴페이의 쿠키페이 연동 아이디
     'de_cookiepay_wp_cookiepay_key',          //웰컴페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_al_cookiepay_id_keyin',     //모빌페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_al_cookiepay_key_keyin',    //모빌페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_ts_cookiepay_id_keyin',     //토스페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_ts_cookiepay_key_keyin',    //토스페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_kw_cookiepay_id_keyin',     //키움페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_kw_cookiepay_key_keyin',    //키움페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_dn_cookiepay_id_keyin',     //다날의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_dn_cookiepay_key_keyin',    //다날의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_ki_cookiepay_id_keyin',     //이지페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_ki_cookiepay_key_keyin',    //이지페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_wp_cookiepay_id_keyin',     //웰컴페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_wp_cookiepay_key_keyin',    //웰컴페이의 쿠키페이 수기결제 연동 시크릿키
     );
     
 foreach( $check_sanitize_keys as $key ){
