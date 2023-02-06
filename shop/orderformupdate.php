@@ -3,7 +3,6 @@ include_once('./_common.php');
 include_once(G5_LIB_PATH.'/mailer.lib.php');
 
 // s: cookiepay-plugin
-// 상수/라이브러리
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
 // 세션 생성
@@ -13,7 +12,6 @@ if (isset($_POST['ETC1']) && !empty($_POST['ETC1'])) {
     if ($res) {
         $arrSess = json_decode($res['json_sess'], true);
         foreach ($arrSess as $key => $val) {
-            // set_session($key, $val);
             $_SESSION[$key] = $val;
         }
     }
@@ -25,10 +23,13 @@ $member = get_member($_SESSION['ss_mb_id']);
 // api account
 $cookiepayApi = cookiepay_get_api_account($default);
 
+// keyin api account
+$cookiepayApiKeyin = cookiepay_get_api_account_keyin($default);
+
 // 결제 취소
 function cookiepay_cancel($tno) {
     global $cookiepayApi;
-
+    
     $return = false;
 
     $sql = " select * from ".COOKIEPAY_PG_RESULT." where TID='{$tno}' ";
@@ -52,22 +53,45 @@ function cookiepay_cancel($tno) {
             'cancel_amt'
         ];
 
-        /* // column 쿼리 처리
-        $columnStr = implode(",", $pgCancelColumns);
-
-        // values 쿼리 처리
-        $values = [];
-        foreach ($pgCancelColumns as $val) {
-            $values[$val] = "''";
+        $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
+        $res = sql_query($sql, false);
+        if ($res) {
+            @cookiepay_payment_log("결제금액차이로 인한 결제취소결과 저장 성공", $sql, 3);
+            $return = true;
+        } else {
+            @cookiepay_payment_log("결제금액차이로 인한 결제취소결과 저장 실패", $sql, 3);
         }
-        foreach ($cancelArr as $key => $val) {
-            if (array_key_exists($key, $values)) {
-                $values[$key] = "'{$val}'";
-            }
-        }
-        $valueStr = implode(",", $values); */
+    }
 
-        // $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." ({$columnStr}) VALUES ({$valueStr}) ";
+    return $return;
+}
+
+function cookiepay_cancel_keyin($tno) {
+    global $cookiepayApiKeyin;
+
+    $return = false;
+
+    $sql = " select * from ".COOKIEPAY_PG_RESULT." where TID='{$tno}' ";
+    $cookiepay = sql_fetch($sql);
+    if ($cookiepay) {
+        $ret = cookipay_cancel_payment($cookiepayApiKeyin['api_id'], $cookiepayApiKeyin['api_key'], $cookiepay['TID']);
+
+        if ($ret['status'] === true) {
+            @cookiepay_payment_log("수기결제 취소 성공", $ret['data'], 3);
+        } else {
+            @cookiepay_payment_log("수기결제 취소 실패", $ret['data'], 3);
+        }
+
+        $cancelArr = json_decode($ret['data'], true);
+
+        $pgCancelColumns = [
+            'cancel_tid',
+            'cancel_code',
+            'cancel_msg',
+            'cancel_date',
+            'cancel_amt'
+        ];
+
         $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
         $res = sql_query($sql, false);
         if ($res) {
@@ -539,6 +563,24 @@ else if ($od_settle_case == "신용카드")
     if($od_misu == 0)
         $od_status      = '입금';
 }
+// s: cookiepay-plugin - 수기결제
+else if ($od_settle_case == "수기결제") 
+{
+    if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
+        require_once G5_PATH."/cookiepay/pgresult.update.php";
+    }
+    $od_tno             = $tno;
+    $od_app_no          = $app_no;
+    $od_receipt_price   = $amount;
+    $od_receipt_point   = $i_temp_point;
+    $od_receipt_time    = preg_replace("/([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})/", "\\1-\\2-\\3 \\4:\\5:\\6", $app_time);
+    $od_bank_account    = $card_name;
+    $pg_price           = $amount;
+    $od_misu            = $i_price - $od_receipt_price;
+    if($od_misu == 0)
+        $od_status      = '입금';
+}
+// e: cookiepay-plugin
 else if ($od_settle_case == "간편결제" || (($od_settle_case == "lpay" || $od_settle_case == "inicis_kakaopay") && $default['de_pg_service'] === 'inicis') )
 {
     switch($default['de_pg_service']) {
@@ -623,7 +665,11 @@ if($tno) {
 
                 // s: cookiepay-plugin - 쿠키페이 처리
                 if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
-                    $cookiepayCancelRes = cookiepay_cancel($tno);
+                    if ($od_settle_case == "수기결제") {
+                        $cookiepayCancelRes = cookiepay_cancel_keyin($tno);
+                    } else {
+                        $cookiepayCancelRes = cookiepay_cancel($tno);
+                    }
                     break;
                 }
                 // e: cookiepay-plugin - 쿠키페이 처리
@@ -768,7 +814,11 @@ if(! $result || ! (isset($exists_order['od_id']) && $od_id && $exists_order['od_
 
                 // s: cookiepay-plugin - 쿠키페이 처리
                 if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
-                    $cookiepayCancelRes = cookiepay_cancel($tno);
+                    if ($od_settle_case == "수기결제") {
+                        $cookiepayCancelRes = cookiepay_cancel_keyin($tno);
+                    } else {
+                        $cookiepayCancelRes = cookiepay_cancel($tno);
+                    }
                     break;
                 }
                 // e: cookiepay-plugin - 쿠키페이 처리
@@ -823,7 +873,11 @@ if(!$result) {
 
                 // s: cookiepay-plugin - 쿠키페이 처리
                 if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
-                    $cookiepayCancelRes = cookiepay_cancel($tno);
+                    if ($od_settle_case == "수기결제") {
+                        $cookiepayCancelRes = cookiepay_cancel_keyin($tno);
+                    } else {
+                        $cookiepayCancelRes = cookiepay_cancel($tno);
+                    }
                     break;
                 }
                 // e: cookiepay-plugin - 쿠키페이 처리

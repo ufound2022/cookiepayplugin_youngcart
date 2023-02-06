@@ -18,6 +18,21 @@ function cookiepay_get_api_accountByPg($default, $params) {
     return $ret;
 }
 
+// PG명(EX: COOKIEPAY_TS)으로 쿠키페이 연동 수기결제 아이디와 키를 리턴
+function cookiepay_get_api_accountByPg_keyin($default, $params) {
+    $pg = strtolower($params);
+
+    $ret = [
+        'api_id'  => '', 
+        'api_key' => ''
+    ];
+    
+    $ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
+    $ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
+
+    return $ret;
+}
+
 // 사용 설정된 PG의 쿠키페이 연동 아이디와 키를 리턴
 function cookiepay_get_api_account($params) {
     $pg = strtolower($params['de_pg_service']);
@@ -29,6 +44,21 @@ function cookiepay_get_api_account($params) {
     
     $ret['api_id'] = $params["de_{$pg}_cookiepay_id"];
     $ret['api_key'] = $params["de_{$pg}_cookiepay_key"];
+
+    return $ret;
+}
+
+// 사용 설정된 PG의 쿠키페이 수기결제 연동 아이디와 키를 리턴
+function cookiepay_get_api_account_keyin($params) {
+    $pg = strtolower($params['de_pg_service']);
+
+    $ret = [
+        'api_id'  => '', 
+        'api_key' => ''
+    ];
+    
+    $ret['api_id'] = $params["de_{$pg}_cookiepay_id_keyin"];
+    $ret['api_key'] = $params["de_{$pg}_cookiepay_key_keyin"];
 
     return $ret;
 }

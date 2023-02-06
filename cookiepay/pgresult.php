@@ -44,13 +44,13 @@ if (!isset($cookiepay['RESULTCODE'])) {
 $set = [];
 foreach ($cookiepay as $key => $val) {
     if (in_array($key, $pgResultColumns)) {
-        $set[$key] = "'{$val}'";
+        $set[$key] = "{$key}='{$val}'";
     }
 }
-$set['PGNAME'] = "'{$default['de_pg_service']}'"; // pg사 추가
+$set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'"; // pg사 추가
 $setStr = implode(",", $set);
 
-$sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$set} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
+$sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
 
 $res = sql_query($sql, false);
 if ($res) {

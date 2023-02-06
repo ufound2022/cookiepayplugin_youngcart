@@ -657,6 +657,13 @@ if($is_kakaopay_use) {
                 $isCookiepay = strpos($default['de_pg_service'], "COOKIEPAY");
                 if($isCookiepay !== false) {
                     $easypay_prints = [];
+                    
+                    // 관리자일 경우 수기결제 표시
+                    if ($is_admin) {
+                        echo '<input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제">';
+                        echo '<label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label>';
+                        $checked = '';
+                    }
                 }
                 // e: cookiepay-plugin - PAYCO 간편 결제 숨김
 
@@ -1359,32 +1366,32 @@ function forderform_check(f)
 
     var tot_price = od_price + send_cost + send_cost2 - send_coupon - temp_point;
 
-    if (document.getElementById("od_settle_iche")) {
-        if (document.getElementById("od_settle_iche").checked) {
-            if (tot_price < 150) {
-                alert("계좌이체는 150원 이상 결제가 가능합니다.");
-                return false;
-            }
-        }
-    }
+    // if (document.getElementById("od_settle_iche")) {
+    //     if (document.getElementById("od_settle_iche").checked) {
+    //         if (tot_price < 150) {
+    //             alert("계좌이체는 150원 이상 결제가 가능합니다.");
+    //             return false;
+    //         }
+    //     }
+    // }
     
-    if (document.getElementById("od_settle_card")) {
-        if (document.getElementById("od_settle_card").checked) {
-            if (tot_price < 1000) {
-                alert("신용카드는 1000원 이상 결제가 가능합니다.");
-                return false;
-            }
-        }
-    }
+    // if (document.getElementById("od_settle_card")) {
+    //     if (document.getElementById("od_settle_card").checked) {
+    //         if (tot_price < 1000) {
+    //             alert("신용카드는 1000원 이상 결제가 가능합니다.");
+    //             return false;
+    //         }
+    //     }
+    // }
 
-    if (document.getElementById("od_settle_hp")) {
-        if (document.getElementById("od_settle_hp").checked) {
-            if (tot_price < 350) {
-                alert("휴대폰은 350원 이상 결제가 가능합니다.");
-                return false;
-            }
-        }
-    }
+    // if (document.getElementById("od_settle_hp")) {
+    //     if (document.getElementById("od_settle_hp").checked) {
+    //         if (tot_price < 350) {
+    //             alert("휴대폰은 350원 이상 결제가 가능합니다.");
+    //             return false;
+    //         }
+    //     }
+    // }
     
     <?php if($default['de_tax_flag_use']) { ?>
     calculate_tax();

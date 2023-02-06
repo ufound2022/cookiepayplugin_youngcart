@@ -4,10 +4,19 @@ include_once(G5_PATH."/cookiepay/cookiepay.lib.php");
 
 $orderno = $od_id;
 
-$cookiepayPgResultSql = "SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='$orderno' ORDER BY ACCEPTDATE DESC LIMIT 1";
+// $cookiepayPgResultSql = "SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='$orderno' ORDER BY ACCEPTDATE DESC LIMIT 1";
+$cookiepayPgResultSql = "SELECT CPR.*, (SELECT PAYMETHOD FROM ".COOKIEPAY_PG_VERIFY." WHERE ORDERNO=CPR.ORDERNO) AS pay_method FROM ".COOKIEPAY_PG_RESULT." AS CPR WHERE CPR.ORDERNO='$orderno' ORDER BY CPR.ACCEPTDATE DESC LIMIT 1";
+
 $cookiepayPgResultRes = sql_fetch($cookiepayPgResultSql);
 if (isset($cookiepayPgResultRes['PGNAME']) && !empty($cookiepayPgResultRes['PGNAME'])) {
-    $cookiepayApi = cookiepay_get_api_accountByPg($default, $cookiepayPgResultRes['PGNAME']);
+    
+    // $cookiepayApi = cookiepay_get_api_accountByPg($default, $cookiepayPgResultRes['PGNAME']);
+    if ($cookiepayPgResultRes['pay_method'] == "CARD_SUGI") {
+        $cookiepayApi = cookiepay_get_api_accountByPg_keyin($default, $cookiepayPgResultRes['PGNAME']);
+    } else {
+        $cookiepayApi = cookiepay_get_api_accountByPg($default, $cookiepayPgResultRes['PGNAME']);
+    }
+
     $api_id = $cookiepayApi['api_id'];
     $api_key = $cookiepayApi['api_key'];
 

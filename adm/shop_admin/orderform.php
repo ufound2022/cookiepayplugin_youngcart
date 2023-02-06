@@ -444,7 +444,12 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                 </tr>
                 <?php } ?>
 
-                <?php if ($od['od_settle_case'] == '신용카드') { ?>
+                <?php
+                // s: cookiepay-plugin
+                // if ($od['od_settle_case'] == '신용카드') {
+                if ($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제') { 
+                // e: cookiepay-plugin
+                ?>
                 <tr>
                     <th scope="row" class="sodr_sppay">신용카드 결제금액</th>
                     <td>
@@ -746,7 +751,12 @@ add_javascript(G5_POSTCODE_JS, 0);    //다음 주소 js
                 </tr>
                 <?php } ?>
 
-                <?php if ($od['od_settle_case'] == '신용카드') { ?>
+                <?php
+                // s: cookiepay-plugin
+                // if ($od['od_settle_case'] == '신용카드') {
+                if ($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제') { 
+                // e: cookiepay-plugin
+                ?>
                 <tr>
                     <th scope="row" class="sodr_sppay"><label for="od_receipt_price">신용카드 결제금액</label></th>
                     <td>
