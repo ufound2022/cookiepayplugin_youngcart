@@ -638,8 +638,8 @@ if($is_kakaopay_use) {
         if($isCookiepay !== false) {
             $easypay_prints = [];
             
-            // 관리자일 경우 수기결제 표시
-            if ($is_admin) {
+            // 관리자일 경우 수기결제 표시(레벨 10)
+            if ($member['mb_level'] >= 10) {
                 echo '<li><input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제" '.$checked.'> <label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label></li>'.PHP_EOL;
                 $checked = '';
             }

@@ -23,7 +23,7 @@ if ($mode == "get") {
     $cancelAmount = 0; // 취소금액
     $cancelAbleAmount = 0; // 취소가능금액
 
-    $sql = " SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderNo}' ORDER BY ACCEPTDATE DESC LIMIT 1 ";
+    $sql = " SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderNo}' AND RESULTCODE='0000' ORDER BY ACCEPTDATE DESC LIMIT 1 ";
     $res = sql_fetch($sql);
     if ($res) {
         $payAmount = $res['AMOUNT'];
