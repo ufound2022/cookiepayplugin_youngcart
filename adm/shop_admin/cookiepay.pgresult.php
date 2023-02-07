@@ -18,170 +18,135 @@ if ($tab == 's') {
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 include_once(G5_PLUGIN_PATH.'/jquery-ui/datepicker.php');
 
-$fr_date = (isset($_GET['fr_date']) && preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $_GET['fr_date'])) ? $_GET['fr_date'] : '2023-01-01';
+$data = [];
+$success = [];
+$cancel = [];
+$cancelOrderno = [];
+
+$fr_date = (isset($_GET['fr_date']) && preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $_GET['fr_date'])) ? $_GET['fr_date'] : date("Y-m-01", strtotime("-1 month"));
 $to_date = (isset($_GET['to_date']) && preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $_GET['to_date'])) ? $_GET['to_date'] : date("Y-m-d");
 
-$data = [];
-foreach (COOKIEPAY_PG as $key => $val) {
-    $pg = strtolower($key);
-    if (!empty($default["de_{$pg}_cookiepay_id"]) && $default["de_{$pg}_cookiepay_key"]) {
-        // api account
-        $cookiepayApi = [];
-        $cookiepayApi['api_id'] = $default["de_{$pg}_cookiepay_id"];
-        $cookiepayApi['api_key'] = $default["de_{$pg}_cookiepay_key"];
+$from = date("Ymd", strtotime($fr_date))."00000000";
+$to = date("Ymd", strtotime($to_date))."99999999";
 
-        // s: 쿠키페이 결제내역 조회
-        $tokenheaders = array(); 
-        array_push($tokenheaders, "content-type: application/json; charset=utf-8");
-
-        $token_request_data = array(
-            'pay2_id' => $cookiepayApi['api_id'],
-            'pay2_key'=> $cookiepayApi['api_key'],
-        );
-
-        $req_json = json_encode($token_request_data, TRUE);
-
-        $ch = curl_init();
-        curl_setopt($ch,CURLOPT_URL, COOKIEPAY_TOKEN_URL);
-        curl_setopt($ch,CURLOPT_POST, false);
-        curl_setopt($ch,CURLOPT_POSTFIELDS, $req_json);
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
-        curl_setopt($ch,CURLOPT_TIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $tokenheaders);
-        $resJson = curl_exec($ch);
-        curl_close($ch);
-        $resArr = json_decode($resJson,TRUE);
-
-        if($resArr['RTN_CD'] == '0000'){
-            $headers = array(); 
-            array_push($headers, "content-type: application/json; charset=utf-8");
-            array_push($headers, "TOKEN: ".$resArr['TOKEN']);
-
-            $request_data_array = array(
-                'API_ID' => $cookiepayApi['api_id'],
-                'STD_DT' => $fr_date,
-                'END_DT' => $to_date,
-            );
-
-            $cookiepayments_json = json_encode($request_data_array, TRUE);
-
-            $ch = curl_init();
-            curl_setopt($ch,CURLOPT_URL, COOKIEPAY_SEARCH_URL);
-            curl_setopt($ch,CURLOPT_POST, false);
-            curl_setopt($ch,CURLOPT_POSTFIELDS, $cookiepayments_json);
-            curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
-            curl_setopt($ch,CURLOPT_TIMEOUT, 20);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            $response = curl_exec($ch);
-            curl_close($ch);
-
-            $result = json_decode($response, true);
-
-            foreach($result as $index => $value) {
-                $result[$index]['pg'] = $pg; // pg사
-                $result[$index]['api_id'] = $cookiepayApi['api_id']; // 연동아이디
-                $result[$index]['api_key'] = $cookiepayApi['api_key']; // 연동키
-            }
-        }
-        // e: 쿠키페이 결제내역 조회
-
-        $data = array_merge($data, $result);
-    }
-
-    if (!empty($default["de_{$pg}_cookiepay_id_keyin"]) && $default["de_{$pg}_cookiepay_key_keyin"]) {
-        // api account
-        $cookiepayApi = [];
-        $cookiepayApi['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
-        $cookiepayApi['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
-
-        // s: 쿠키페이 결제내역 조회
-        $tokenheaders = array(); 
-        array_push($tokenheaders, "content-type: application/json; charset=utf-8");
-
-        $token_request_data = array(
-            'pay2_id' => $cookiepayApi['api_id'],
-            'pay2_key'=> $cookiepayApi['api_key'],
-        );
-
-        $req_json = json_encode($token_request_data, TRUE);
-
-        $ch = curl_init();
-        curl_setopt($ch,CURLOPT_URL, COOKIEPAY_TOKEN_URL);
-        curl_setopt($ch,CURLOPT_POST, false);
-        curl_setopt($ch,CURLOPT_POSTFIELDS, $req_json);
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
-        curl_setopt($ch,CURLOPT_TIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $tokenheaders);
-        $resJson = curl_exec($ch);
-        curl_close($ch);
-        $resArr = json_decode($resJson,TRUE);
-
-        if($resArr['RTN_CD'] == '0000'){
-            $headers = array(); 
-            array_push($headers, "content-type: application/json; charset=utf-8");
-            array_push($headers, "TOKEN: ".$resArr['TOKEN']);
-
-            $request_data_array = array(
-                'API_ID' => $cookiepayApi['api_id'],
-                'STD_DT' => $fr_date,
-                'END_DT' => $to_date,
-            );
-
-            $cookiepayments_json = json_encode($request_data_array, TRUE);
-
-            $ch = curl_init();
-            curl_setopt($ch,CURLOPT_URL, COOKIEPAY_SEARCH_URL);
-            curl_setopt($ch,CURLOPT_POST, false);
-            curl_setopt($ch,CURLOPT_POSTFIELDS, $cookiepayments_json);
-            curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
-            curl_setopt($ch,CURLOPT_TIMEOUT, 20);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            $response = curl_exec($ch);
-            curl_close($ch);
-
-            $result = json_decode($response, true);
-
-            foreach($result as $index => $value) {
-                $result[$index]['pg'] = $pg; // pg사
-                $result[$index]['api_id'] = $cookiepayApi['api_id']; // 연동아이디
-                $result[$index]['api_key'] = $cookiepayApi['api_key']; // 연동키
-            }
-        }
-        // e: 쿠키페이 결제내역 조회
-
-        $data = array_merge($data, $result);
-    }
-}
-
-// s: 주문내역에 있는 건만 추려냄 - 연동아이디와 키가 정해진 후에는 이 코드블록은 필요없음
-$sql = " SELECT * FROM {$g5['g5_shop_order_table']} ORDER BY od_id ASC ";
+$sql = "SELECT (SELECT SUM(cancel_amt) FROM cookiepay_pg_cancel WHERE orderno=R.ORDERNO) AS CANCEL_SUM_AMOUNT, C.cancel_tid, C.cancel_code, C.cancel_date, C.cancel_amt, R.*, V.PAYMETHOD, V.TID AS verify_tid, V.BUYERNAME, V.BUYEREMAIL, V.PRODUCTNAME, V.PRODUCTCODE, V.BUYERID, V.CARDCODE AS verify_cardcode FROM cookiepay_pg_cancel AS C LEFT JOIN cookiepay_pg_result AS R ON C.orderno=R.ORDERNO LEFT JOIN cookiepay_pg_verify AS V ON C.orderno=V.ORDERNO WHERE C.cancel_code='0000' AND R.RESULTCODE='0000' AND V.RESULTCODE='0000' AND C.cancel_date BETWEEN '{$from}' AND '{$to}' ORDER BY C.cancel_date DESC, C.id DESC";
 $res = sql_query($sql);
-
-$ordernoList = [];
 for($i=0; $row=sql_fetch_array($res); $i++) {
-    array_push($ordernoList, $row['od_id']);
+    $cancelOrderno[$row['ORDERNO']] = $row['CANCEL_SUM_AMOUNT'];
+
+    $cancel[$i]['cookiepayPg'] = '';
+    $cancel[$i]['apiId'] = '';
+    $cancel[$i]['apiKey'] = '';
+    $cancel[$i]['status'] = '';
+    $cancel[$i]['btnPgCancel'] = '';
+    $cancel[$i]['payMethod'] = '';
+    $cancel[$i]['orderno'] = $row['ORDERNO'];
+    $cancel[$i]['TID'] = $row['verify_tid'];
+    $cancel[$i]['amount'] = 0;
+    $cancel[$i]['cancelAmount'] = $row['cancel_amt'] ?? 0;
+    $cancel[$i]['CANCEL_SUM_AMOUNT'] = $row['CANCEL_SUM_AMOUNT'] ?? 0;
+    $cancel[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
+    $cancel[$i]['ACCEPTNO'] = $row['ACCEPTNO'];
+    $cancel[$i]['BUYERNAME'] = $row['BUYERNAME'];
+    $cancel[$i]['BUYERID'] = $row['BUYERID'];
+    $cancel[$i]['PRODUCTNAME'] = $row['PRODUCTNAME'];
+
+    $pgUpper = strtoupper($row['PGNAME']);
+    $pgLower = strtolower($pgUpper);
+    $cancel[$i]['cookiepayPg'] = mb_substr(COOKIEPAY_PG[$pgUpper], 0, 2);
+
+    $cancel[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
+    $cancel[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
+    
+    switch ($row['PAYMETHOD']) {
+        case 'CARD':
+            $cancel[$i]['payMethod'] = '카드';
+            break;
+        case 'BANK':
+            $cancel[$i]['payMethod'] = '계좌이체';
+            break;
+        case 'VACCT':
+            $cancel[$i]['payMethod'] = '가상계좌';
+            break;
+        case 'MOBILE':
+            $cancel[$i]['payMethod'] = '휴대폰';
+            break;
+        case 'CARD_SUGI':
+            $cancel[$i]['payMethod'] = '수기결제';
+            $cancel[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id_keyin"];
+            $cancel[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key_keyin"];
+            break;
+        default:
+            $cancel[$i]['payMethod'] = $row['PAYMETHOD'];
+    }
+
+    $cancel[$i]['status'] = '<span style="color:red;">취소</span>';
 }
 
-if (count($ordernoList) > 0) {
-    foreach ($data as $key => $val) {
-        if (!in_array($val['ORDERNO'], $ordernoList)) {
-            unset($data[$key]);
-        }
+$sql = "SELECT R.*, V.PAYMETHOD, V.TID AS verify_tid, V.BUYERNAME, V.BUYEREMAIL, V.PRODUCTNAME, V.PRODUCTCODE, V.BUYERID, V.CARDCODE AS verify_cardcode FROM cookiepay_pg_result AS R LEFT JOIN cookiepay_pg_verify AS V ON R.ACCEPTNO=V.ACCEPTNO WHERE R.RESULTCODE='0000' AND R.ACCEPTDATE BETWEEN '{$from}' AND '{$to}'  ORDER BY R.ACCEPTDATE DESC, R.id DESC";
+$res = sql_query($sql);
+for($i=0; $row=sql_fetch_array($res); $i++) {
+    $success[$i]['cookiepayPg'] = '';
+    $success[$i]['apiId'] = '';
+    $success[$i]['apiKey'] = '';
+    $success[$i]['status'] = '';
+    $success[$i]['btnPgCancel'] = '';
+    $success[$i]['payMethod'] = '';
+    $success[$i]['orderno'] = $row['ORDERNO'];
+    $success[$i]['TID'] = $row['verify_tid'];
+    $success[$i]['amount'] = $row['AMOUNT'] ?? 0;
+    $success[$i]['cancelAmount'] = 0;
+    $success[$i]['CANCEL_SUM_AMOUNT'] = $row['CANCEL_SUM_AMOUNT'] ?? 0;
+    $success[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
+    $success[$i]['ACCEPTNO'] = $row['ACCEPTNO'];
+    $success[$i]['BUYERNAME'] = $row['BUYERNAME'];
+    $success[$i]['BUYERID'] = $row['BUYERID'];
+    $success[$i]['PRODUCTNAME'] = $row['PRODUCTNAME'];
+
+    $pgUpper = strtoupper($row['PGNAME']);
+    $pgLower = strtolower($pgUpper);
+    $success[$i]['cookiepayPg'] = mb_substr(COOKIEPAY_PG[$pgUpper], 0, 2);
+
+    $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
+    $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
+    
+    switch ($row['PAYMETHOD']) {
+        case 'CARD':
+            $success[$i]['payMethod'] = '카드';
+            break;
+        case 'BANK':
+            $success[$i]['payMethod'] = '계좌이체';
+            break;
+        case 'VACCT':
+            $success[$i]['payMethod'] = '가상계좌';
+            break;
+        case 'MOBILE':
+            $success[$i]['payMethod'] = '휴대폰';
+            break;
+        case 'CARD_SUGI':
+            $success[$i]['payMethod'] = '수기결제';
+            $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id_keyin"];
+            $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key_keyin"];
+            break;
+        default:
+            $success[$i]['payMethod'] = $row['PAYMETHOD'];
+    }
+
+    $success[$i]['status'] = '<span style="color:blue;">승인</span>';
+
+    $now = strtotime("now");
+    $ableDate = strtotime("+1 day", strtotime($row['ACCEPTDATE']));
+    if ($now <= $ableDate && (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount']) ) {
+        $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-apiid="'.$success[$i]['apiId'].'" data-apikey="'.$success[$i]['apiKey'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">결제취소</button>';
     }
 }
-// e: 주문내역에 있는 건만 추려냄
 
-// 결제성공/결제취소 탭 별 데이터 처리
-foreach ($data as $key => $val) {
-    if ($tab == 's' && !empty($val['CANCELDATE'])) { // success
-        unset($data[$key]);
-    } else if ($tab == 'c' && empty($val['CANCELDATE'])) { // cancel
-        unset($data[$key]);
-    }
+if ($tab == 's') {
+    $data = $success;
+} else if ($tab == 'c') {
+    $data = $cancel;
+} else {
+    $data = array_merge($cancel, $success);
 }
 ?>
 
@@ -215,7 +180,7 @@ foreach ($data as $key => $val) {
     <button type="button" onclick="javascript:set_date('이번달');">이번달</button>
     <button type="button" onclick="javascript:set_date('지난주');">지난주</button>
     <button type="button" onclick="javascript:set_date('지난달');">지난달</button>
-    <button type="button" onclick="javascript:set_date('전체');">전체</button>
+    <!-- <button type="button" onclick="javascript:set_date('전체');">전체</button> -->
     <input type="submit" value="검색" class="btn_submit">
 </div>
 </form>
@@ -248,78 +213,26 @@ if (count($data) == 0) {
         </tr>';
 } else {
     foreach ($data as $val) {
-        $amount = $val['AMOUNT'];
-        $cancelAmount = 0;
-        $cancelSumAmount = !empty($val['CANCEL_SUM_AMOUNT']) ? $val['CANCEL_SUM_AMOUNT'] : 0;
-        $status = '';
-
-        $btnPgCancel = '';
-
-        // PG사
-        $pgKey = strtoupper($val['pg']);
-        $cookiepayPg = mb_substr(COOKIEPAY_PG[$pgKey], 0, 2);
-        
-        // 결제수단
-        switch ($val['PAYMETHOD']) {
-            case 'CARD':
-                $payMethod = '카드';
-                break;
-            case 'BANK':
-                $payMethod = '계좌이체';
-                break;
-            case 'VACCT':
-                $payMethod = '가상계좌';
-                break;
-            case 'MOBILE':
-                $payMethod = '휴대폰';
-                break;
-            case 'CARD_SUGI':
-                $payMethod = '수기결제';
-                break;
-            default:
-                $payMethod = $val['PAYMETHOD'];
-        }
-
-        // 결제상태: 승인
-        if ($val['RESULTCODE'] == '0000' && !empty($val['ACCEPTDATE']) && empty($val['CANCELDATE'])) {
-            $status = '<span style="color:blue;">승인</span>';
-
-            $now = strtotime("now");
-            $ableDate = strtotime("+1 day", strtotime($val['ACCEPTDATE']));
-            if ($now <= $ableDate) {
-                $btnPgCancel = '<button type="button" id="btn_'.$val['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$val['ORDERNO'].'" data-apiid="'.$val['api_id'].'" data-apikey="'.$val['api_key'].'" data-tid="'.$val['TID'].'" data-bank="'.$val['CARDNAME'].'" data-accountno="'.$val['ACCOUNTNO'].'" data-accountname="'.$val['RECEIVERNAME'].'">결제취소</button>';
-            }
-        }
-
-        // 결제상태: 취소
-        if (!empty($val['CANCELDATE'])) {
-            $amount = 0;
-            $cancelAmount = $val['AMOUNT'] - $cancelSumAmount;
-            
-            $status = '<span style="color:red;">취소</span>';
-
-            $btnPgCancel = '';
-        }
 ?>
         <tr>
-            <td><?php echo $cookiepayPg; ?></td>
+            <td><?php echo $val['cookiepayPg']; ?></td>
             <td>
-                <a href="/adm/shop_admin/orderlist.php?token=<?php echo $token; ?>&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo $val['ORDERNO']; ?>&sel_field=od_id&search=<?php echo $val['ORDERNO']; ?>" target="_blank" style="color:blue;">
-                <?php echo $val['ORDERNO']; ?>
+                <a href="/adm/shop_admin/orderlist.php?token=<?php echo $token; ?>&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo $val['orderno']; ?>&sel_field=od_id&search=<?php echo $val['orderno']; ?>" target="_blank" style="color:blue;">
+                <?php echo $val['orderno']; ?>
                 </a>
             </td>
             <td><?php echo !empty($val['ACCEPTDATE']) ? date("Y-m-d H:i:s", strtotime($val['ACCEPTDATE'])) : ''; ?></td>
             <td><?php echo !empty($val['CANCELDATE']) ? date("Y-m-d H:i:s", strtotime($val['CANCELDATE'])) : ''; ?></td>
             <td><?php echo $val['ACCEPTNO']; ?></td>
-            <td><?php echo !empty($amount) ? number_format($amount) : ''; ?></td>
-            <td><?php echo !empty($cancelAmount) ? number_format($cancelAmount) : ''; ?></td>
-            <td><?php echo $status; ?></td>
+            <td><?php echo !empty($val['amount']) ? number_format($val['amount']) : ''; ?></td>
+            <td><?php echo !empty($val['cancelAmount']) ? number_format($val['cancelAmount']) : ''; ?></td>
+            <td><?php echo $val['status']; ?></td>
             <td><?php echo $val['BUYERNAME']; ?></td>
             <td><?php echo $val['BUYERID']; ?></td>
             <td><?php echo mb_strlen($val['PRODUCTNAME']) > 20 ? mb_substr($val['PRODUCTNAME'], 0, 20)."…" : $val['PRODUCTNAME']; ?></td>
-            <td><?php echo $payMethod; ?></td>
+            <td><?php echo $val['payMethod']; ?></td>
             <td><button type="button" onclick="receipt('<?php echo $val['TID']; ?>')">전표출력</button></td>
-            <td><?php echo $btnPgCancel; ?></td>
+            <td><?php echo $val['btnPgCancel']; ?></td>
         </tr>
 <?php
     }

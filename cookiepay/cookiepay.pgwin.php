@@ -350,25 +350,25 @@ table {
             <tr>
                 <th>카드번호</th>
                 <td>
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO2" type="number" pattern="\d*" name="CARDNO1" id="CARDNO1" maxlength="4" placeholder="●●●●" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO2" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDNO1" id="CARDNO1" maxlength="4" placeholder="●●●●" autocomplete="off">
                 </td>
                 <td>
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO3" type="number" pattern="\d*" name="CARDNO2" id="CARDNO2" maxlength="4" placeholder="●●●●" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO3" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDNO2" id="CARDNO2" maxlength="4" placeholder="●●●●" autocomplete="off">
                 </td>
                 <td>
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO4" type="number" pattern="\d*" name="CARDNO3" id="CARDNO3" maxlength="4" placeholder="●●●●" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO4" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="-webkit-text-security: disc;" name="CARDNO3" id="CARDNO3" maxlength="4" placeholder="●●●●" autocomplete="off">
                 </td>
                 <td>
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="EXPIREDT2" type="number" pattern="\d*" name="CARDNO4" id="CARDNO4" maxlength="4" placeholder="●●●●" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="EXPIREDT2" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="-webkit-text-security: disc;" name="CARDNO4" id="CARDNO4" maxlength="4" placeholder="●●●●" autocomplete="off">
                 </td>
             </tr>
             <tr>
                 <th>유효기간(월:MM/년:YY)</th>
                 <td colspan="2">
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="EXPIREDT1" type="number" pattern="\d*" name="EXPIREDT2" id="EXPIREDT2" maxlength="2" placeholder="MM" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="EXPIREDT1" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="EXPIREDT2" id="EXPIREDT2" maxlength="2" placeholder="MM" autocomplete="off">
                 </td>
                 <td colspan="2">
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="QUOTA" type="number" pattern="\d*" name="EXPIREDT1" id="EXPIREDT1" maxlength="2" placeholder="YY" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="QUOTA" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="EXPIREDT1" id="EXPIREDT1" maxlength="2" placeholder="YY" autocomplete="off">
                 </td>
             </tr>
             <tr>
@@ -400,7 +400,7 @@ table {
             <tr class="d-none" id="birthday_tr">
                 <th>생년월일 (사업자등록번호)</th>
                 <td colspan="4">
-                    <input class="frm_input w-100 text-center only-number" type="number" pattern="\d*" name="CARDAUTH" id="CARDAUTH" maxlength="13" placeholder="- 없이 숫자만 입력해 주세요." autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDAUTH" id="CARDAUTH" maxlength="13" placeholder="- 없이 숫자만 입력해 주세요." autocomplete="off">
                     <br>
                     <small>개인(생년월일) : 761203 / 법인(사업자등록번호) : 1231212345</small>
                 </td>
@@ -408,7 +408,7 @@ table {
             <tr class="d-none" id="password_tr">
                 <th>카드 비밀번호</th>
                 <td colspan="4">
-                    <input class="frm_input w-100 text-center only-number" type="password" name="CARDPWD" id="CARDPWD" maxlength="2" placeholder="" autocomplete="new-password">
+                    <input class="frm_input w-100 text-center only-number" type="text" name="CARDPWD" id="CARDPWD" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="-webkit-text-security: disc;" maxlength="2" placeholder="" autocomplete="new-password">
                     <br>
                     <small>카드비밀번호 앞 2자리</small>
                 </td>
