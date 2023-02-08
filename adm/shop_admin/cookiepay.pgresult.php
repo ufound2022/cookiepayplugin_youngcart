@@ -134,9 +134,10 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
 
     $success[$i]['status'] = '<span style="color:blue;">승인</span>';
 
-    $now = strtotime("now");
-    $ableDate = strtotime("+1 day", strtotime($row['ACCEPTDATE']));
-    if ($now <= $ableDate && (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount']) ) {
+    // $now = strtotime("now");
+    // $ableDate = strtotime("+1 day", strtotime($row['ACCEPTDATE']));
+    // if ($now <= $ableDate && (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
+    if (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount']) {
         $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-apiid="'.$success[$i]['apiId'].'" data-apikey="'.$success[$i]['apiKey'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">결제취소</button>';
     }
 }
