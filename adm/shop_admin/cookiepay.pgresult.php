@@ -47,6 +47,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $cancel[$i]['CANCEL_SUM_AMOUNT'] = $row['CANCEL_SUM_AMOUNT'] ?? 0;
     $cancel[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
     $cancel[$i]['ACCEPTNO'] = $row['ACCEPTNO'];
+    $cancel[$i]['CANCELDATE'] = $row['cancel_date'];
     $cancel[$i]['BUYERNAME'] = $row['BUYERNAME'];
     $cancel[$i]['BUYERID'] = $row['BUYERID'];
     $cancel[$i]['PRODUCTNAME'] = $row['PRODUCTNAME'];
@@ -99,6 +100,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $success[$i]['CANCEL_SUM_AMOUNT'] = $row['CANCEL_SUM_AMOUNT'] ?? 0;
     $success[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
     $success[$i]['ACCEPTNO'] = $row['ACCEPTNO'];
+    $success[$i]['CANCELDATE'] = "";
     $success[$i]['BUYERNAME'] = $row['BUYERNAME'];
     $success[$i]['BUYERID'] = $row['BUYERID'];
     $success[$i]['PRODUCTNAME'] = $row['PRODUCTNAME'];
@@ -137,7 +139,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     // $now = strtotime("now");
     // $ableDate = strtotime("+1 day", strtotime($row['ACCEPTDATE']));
     // if ($now <= $ableDate && (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
-    if (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount']) {
+    if (!isset($cancelOrderno[$row['ORDERNO']]) || (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
         $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-apiid="'.$success[$i]['apiId'].'" data-apikey="'.$success[$i]['apiKey'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">결제취소</button>';
     }
 }

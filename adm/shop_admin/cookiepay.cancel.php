@@ -73,6 +73,8 @@ if (isset($cookiepayPgResultRes['PGNAME']) && !empty($cookiepayPgResultRes['PGNA
 
         $cookiepayments_json = json_encode($request_data_array, TRUE);
 
+        @cookiepay_payment_log("결제 취소 요청 json", $cookiepayments_json, 3);
+
         $ch = curl_init();
 
         curl_setopt($ch,CURLOPT_URL, $cookiepayments_url);
