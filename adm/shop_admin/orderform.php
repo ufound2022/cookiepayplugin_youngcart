@@ -1099,7 +1099,12 @@ function form_submit(f)
 
     var msg = "";
 
-    <?php if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == 'KAKAOPAY' || $od['od_settle_case'] == '간편결제' || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) { ?>
+    <?php 
+    // s: cookiepay-plugin
+    // if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == 'KAKAOPAY' || $od['od_settle_case'] == '간편결제' || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
+    if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || $od['od_settle_case'] == '간편결제' || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) { 
+    // e: cookiepay-plugin
+    ?>
     if(status == "취소" || status == "반품" || status == "품절") {
         var $ct_chk = $("input[name^=ct_chk]");
         var chk_cnt = $ct_chk.length;

@@ -195,7 +195,10 @@ if (in_array($_POST['ct_status'], $status_cancel)) {
             $sql = " select * from {$g5['g5_shop_order_table']} where od_id = '$od_id' ";
             $od = sql_fetch($sql);
 
-            if($od['od_tno'] && ($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '간편결제' || $od['od_settle_case'] == 'KAKAOPAY') || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
+            // s: cookiepay-plugin
+            // if($od['od_tno'] && ($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '간편결제' || $od['od_settle_case'] == 'KAKAOPAY') || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
+            if($od['od_tno'] && ($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == '간편결제' || $od['od_settle_case'] == 'KAKAOPAY') || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
+            // e: cookiepay-plugin
                 switch($od['od_pg']) {
                     case 'lg':
                         include_once(G5_SHOP_PATH.'/settle_lg.inc.php');
