@@ -22,12 +22,15 @@ $payType = $_GET["pm"]; // settle_method
 <script src="https://js.tosspayments.com/v1"></script>
 <script>
 $(function(){
-    var pgWin2 = window.open("about:blank;", "pgWin2", "left=-10000, top=0, width=10, height=10");
+    var browserName = checkBrowser();
+    if (browserName != "Safari" && browserName != "other") {
+        var pgWin2 = window.open("about:blank;", "pgWin2", "left=-10000, top=0, width=10, height=10");
 
-    if(!pgWin2 || pgWin2.closed || typeof pgWin2.closed=='undefined') { 
-        alert("팝업이 차단되어 있습니다.\n팝업 차단 해제 후 다시 시도해 주세요.");
-    } else {
-        pgWin2.close();
+        if(!pgWin2 || pgWin2.closed || typeof pgWin2.closed=='undefined') { 
+            alert("팝업이 차단되어 있습니다.\n팝업 차단 해제 후 다시 시도해 주세요.");
+        } else {
+            pgWin2.close();
+        }
     }
 
     var payType = "<?php echo $payType; ?>";
@@ -232,6 +235,37 @@ function payKeyin(){
 
         $("#payform").submit();
     });
+}
+
+function checkBrowser() { 
+    var agent = window.navigator.userAgent.toLowerCase(); 
+    var browserName; 
+    switch (true) { 
+        case agent.indexOf("edge") > -1:  
+            browserName = "MS Edge"; // MS 엣지 
+            break; 
+        case agent.indexOf("edg/") > -1:  
+            browserName = "Edge (chromium based)"; // 크롬 기반 엣지 
+            break; 
+        case agent.indexOf("opr") > -1 && !!window.opr:  
+            browserName = "Opera"; // 오페라 
+            break; 
+        case agent.indexOf("chrome") > -1 && !!window.chrome:  
+            browserName = "Chrome"; // 크롬 
+            break; 
+        case agent.indexOf("trident") > -1:  
+            browserName = "MS IE"; // 익스플로러 
+            break; 
+        case agent.indexOf("firefox") > -1:  
+            browserName = "Mozilla Firefox"; // 파이어 폭스 
+            break; 
+        case agent.indexOf("safari") > -1:  
+            browserName = "Safari"; // 사파리 
+            break; 
+        default:  
+            browserName = "other"; // 기타 
+    }
+    return browserName;
 }
 </script>
 
