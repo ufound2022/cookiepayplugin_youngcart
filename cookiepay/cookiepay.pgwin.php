@@ -181,7 +181,12 @@ function payKeyin(){
         e.preventDefault();
         var valid = true;
         $(".required").each(function(){
-            if ($(this).val().length < $(this).data("nextcount")) {
+            var nextCount = $(this).data("nextcount");
+            var thisId = $(this).attr("id");
+            if (thisId == "CARDNO4") {
+                nextCount = 3; // lotte card 대응
+            }
+            if ($(this).val().length < nextCount) {
                 alert("[" + $(this).parent().parent().children("th").text() + "] 필수 입력 항목입니다.");
                 $(this).focus();
                 valid = false;
@@ -321,10 +326,11 @@ table {
     font-size: .85rem !important;
 }
 .keyin-table th {
-    width: 10.4rem;
+    /* width: 10.4rem; */
+    width: 7rem;
     height: 3rem;
     line-height: 2.4rem;
-    text-align: left;
+    text-align: center;
     background-color: #F6F6F6;
     padding-left: .6rem;
 }
@@ -393,16 +399,16 @@ table {
                     <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO4" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="-webkit-text-security: disc;" name="CARDNO3" id="CARDNO3" maxlength="4" placeholder="●●●●" autocomplete="off">
                 </td>
                 <td>
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="EXPIREDT2" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="-webkit-text-security: disc;" name="CARDNO4" id="CARDNO4" maxlength="4" placeholder="●●●●" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="EXPIREDT2" type="text" pattern="[0-9]*" inputmode="numeric" min="111" max="9999" style="-webkit-text-security: disc;" name="CARDNO4" id="CARDNO4" maxlength="4" placeholder="●●●●" autocomplete="off">
                 </td>
             </tr>
             <tr>
-                <th>유효기간(월:MM/년:YY)</th>
+                <th>유효기간</th>
                 <td colspan="2">
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="EXPIREDT1" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="EXPIREDT2" id="EXPIREDT2" maxlength="2" placeholder="MM" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="EXPIREDT1" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="EXPIREDT2" id="EXPIREDT2" maxlength="2" placeholder="MM(월)" autocomplete="off">
                 </td>
                 <td colspan="2">
-                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="QUOTA" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="EXPIREDT1" id="EXPIREDT1" maxlength="2" placeholder="YY" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number required" data-nextcount="2" data-nextid="QUOTA" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="EXPIREDT1" id="EXPIREDT1" maxlength="2" placeholder="YY(년)" autocomplete="off">
                 </td>
             </tr>
             <tr>
@@ -425,16 +431,16 @@ table {
                 </td>
             </tr>
             <tr class="<?php echo $needPassword ? '' : 'd-none' ?>">
-                <th>결제 카드</th>
+                <th>결제카드</th>
                 <td colspan="4">
                     <input type="checkbox" name="use_hanacard" id="use_hanacard" value="1"> 
                     <label for="use_hanacard"> <strong>[하나카드]</strong>로 결제하시는 경우 체크해 주세요.</label>
                 </td>
             </tr>
             <tr class="d-none" id="birthday_tr">
-                <th>생년월일 (사업자등록번호)</th>
+                <th>생년월일</th>
                 <td colspan="4">
-                    <input class="frm_input w-100 text-center only-number" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDAUTH" id="CARDAUTH" maxlength="13" placeholder="- 없이 숫자만 입력해 주세요." autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDAUTH" id="CARDAUTH" maxlength="13" placeholder="- 없이 숫자만 입력" autocomplete="off">
                     <br>
                     <small>개인(생년월일) : 761203 / 법인(사업자등록번호) : 1231212345</small>
                 </td>
