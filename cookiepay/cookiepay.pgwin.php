@@ -220,6 +220,12 @@ function payKeyin(){
         
         var cardNumber = $("#CARDNO1").val() + $("#CARDNO2").val() + $("#CARDNO3").val() + $("#CARDNO4").val();
         var cardExpireDt = $("#EXPIREDT1").val() + $("#EXPIREDT2").val();
+        var useHanacard = $("input:checkbox[name='use_hanacard']:checked").val();
+        if (useHanacard == 1) {
+            $("input[name='HANACARD_USE']").val("Y");
+        } else {
+            $("input[name='HANACARD_USE']").val('');
+        }
         
         $("input[name='ORDERNO']").val(opener.document.getElementById("ORDERNO").value);
         $("input[name='PRODUCTNAME']").val(opener.document.getElementById("PRODUCTNAME").value);
@@ -379,6 +385,7 @@ table {
     <!-- <input type="hidden" name="CARDAUTH"> -->
     <!-- <input type="hidden" name="CARDPWD"> -->
     <!-- <input type="hidden" name="QUOTA"> -->
+    <input type="hidden" name="HANACARD_USE">
     <input type="hidden" name="ETC1">
     <input type="hidden" name="ETC2">
     <input type="hidden" name="ETC3">
