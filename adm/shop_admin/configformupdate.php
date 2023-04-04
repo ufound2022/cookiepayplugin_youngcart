@@ -258,33 +258,39 @@ if( $de_kakaopay_enckey && ($de_pg_service === 'inicis' || $de_inicis_lpay_use |
 
 // s: cookiepay-plugin
 $check_sanitize_keys = array(
-    'cookiepay_de_pg_service',                //쿠키페이 결제대행사
-    'de_cookiepay_al_cookiepay_id',           //모빌페이의 쿠키페이 연동 아이디
-    'de_cookiepay_al_cookiepay_key',          //모빌페이의 쿠키페이 연동 시크릿키
-    'de_cookiepay_ts_cookiepay_id',           //토스페이의 쿠키페이 연동 아이디
-    'de_cookiepay_ts_cookiepay_key',          //토스페이의 쿠키페이 연동 시크릿키
-    'de_cookiepay_kw_cookiepay_id',           //키움페이의 쿠키페이 연동 아이디
-    'de_cookiepay_kw_cookiepay_key',          //키움페이의 쿠키페이 연동 시크릿키
-    'de_cookiepay_dn_cookiepay_id',           //다날의 쿠키페이 연동 아이디
-    'de_cookiepay_dn_cookiepay_key',          //다날의 쿠키페이 연동 시크릿키
-    'de_cookiepay_ki_cookiepay_id',           //이지페이의 쿠키페이 연동 아이디
-    'de_cookiepay_ki_cookiepay_key',          //이지페이의 쿠키페이 연동 시크릿키
-    'de_cookiepay_wp_cookiepay_id',           //웰컴페이의 쿠키페이 연동 아이디
-    'de_cookiepay_wp_cookiepay_key',          //웰컴페이의 쿠키페이 연동 시크릿키
-    'de_cookiepay_al_cookiepay_id_keyin',     //모빌페이의 쿠키페이 수기결제 연동 아이디
-    'de_cookiepay_al_cookiepay_key_keyin',    //모빌페이의 쿠키페이 수기결제 연동 시크릿키
-    'de_cookiepay_ts_cookiepay_id_keyin',     //토스페이의 쿠키페이 수기결제 연동 아이디
-    'de_cookiepay_ts_cookiepay_key_keyin',    //토스페이의 쿠키페이 수기결제 연동 시크릿키
-    'de_cookiepay_kw_cookiepay_id_keyin',     //키움페이의 쿠키페이 수기결제 연동 아이디
-    'de_cookiepay_kw_cookiepay_key_keyin',    //키움페이의 쿠키페이 수기결제 연동 시크릿키
-    'de_cookiepay_dn_cookiepay_id_keyin',     //다날의 쿠키페이 수기결제 연동 아이디
-    'de_cookiepay_dn_cookiepay_key_keyin',    //다날의 쿠키페이 수기결제 연동 시크릿키
-    'de_cookiepay_ki_cookiepay_id_keyin',     //이지페이의 쿠키페이 수기결제 연동 아이디
-    'de_cookiepay_ki_cookiepay_key_keyin',    //이지페이의 쿠키페이 수기결제 연동 시크릿키
-    'de_cookiepay_wp_cookiepay_id_keyin',     //웰컴페이의 쿠키페이 수기결제 연동 아이디
-    'de_cookiepay_wp_cookiepay_key_keyin',    //웰컴페이의 쿠키페이 수기결제 연동 시크릿키
-    );
-    
+    'cookiepay_de_pg_service',                      //쿠키페이 결제대행사
+    'de_cookiepay_al_cookiepay_id',                 //모빌페이의 쿠키페이 연동 아이디
+    'de_cookiepay_al_cookiepay_key',                //모빌페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_ts_cookiepay_id',                 //토스페이의 쿠키페이 연동 아이디
+    'de_cookiepay_ts_cookiepay_key',                //토스페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_kw_cookiepay_id',                 //키움페이의 쿠키페이 연동 아이디
+    'de_cookiepay_kw_cookiepay_key',                //키움페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_dn_cookiepay_id',                 //다날의 쿠키페이 연동 아이디
+    'de_cookiepay_dn_cookiepay_key',                //다날의 쿠키페이 연동 시크릿키
+    'de_cookiepay_ki_cookiepay_id',                 //이지페이의 쿠키페이 연동 아이디
+    'de_cookiepay_ki_cookiepay_key',                //이지페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_wp_cookiepay_id',                 //웰컴페이의 쿠키페이 연동 아이디
+    'de_cookiepay_wp_cookiepay_key',                //웰컴페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_al_cookiepay_id_keyin',           //모빌페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_al_cookiepay_key_keyin',          //모빌페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_ts_cookiepay_id_keyin',           //토스페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_ts_cookiepay_key_keyin',          //토스페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_kw_cookiepay_id_keyin',           //키움페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_kw_cookiepay_key_keyin',          //키움페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_dn_cookiepay_id_keyin',           //다날의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_dn_cookiepay_key_keyin',          //다날의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_ki_cookiepay_id_keyin',           //이지페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_ki_cookiepay_key_keyin',          //이지페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_wp_cookiepay_id_keyin',           //웰컴페이의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_wp_cookiepay_key_keyin',          //웰컴페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_al_cookiepay_id_global_won',      //모빌페이의 쿠키페이 해외원화 결제 연동 아이디
+    'de_cookiepay_al_cookiepay_key_global_won',     //모빌페이의 쿠키페이 해외원화 결제 연동 시크릿키
+    'de_cookiepay_al_cookiepay_id_global_dollar',   //모빌페이의 쿠키페이 해외달러 결제 연동 아이디
+    'de_cookiepay_al_cookiepay_key_global_dollar',  //모빌페이의 쿠키페이 해외달러 결제 연동 시크릿키
+    'de_cookiepay_kw_cookiepay_id_global_won',      //키움페이의 쿠키페이 해외원화 결제 연동 아이디
+    'de_cookiepay_kw_cookiepay_key_global_won',     //키움페이의 쿠키페이 해외원화 결제 연동 시크릿키
+);
+
 foreach( $check_sanitize_keys as $key ){
     $$key = isset($_POST[$key]) ? clean_xss_tags($_POST[$key], 1, 1) : '';
 }

@@ -17,8 +17,8 @@ function pay(settle_method) {
             var popupPos = "left=0, top=0, width=500, height=150";
         }
     }
-    
-    var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${settle_method}`, "pgWin1", popupPos);
+    var pt = document.querySelector("#PAY_TYPE").value;
+    var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${settle_method}&pt=${pt}`, "pgWin1", popupPos);
 
     if(!pgWin1 || pgWin1.closed || typeof pgWin1.closed=='undefined') { 
         alert("팝업이 차단되어 있습니다.\n팝업 차단 해제 후 다시 시도해 주세요.");

@@ -26,8 +26,6 @@ if ($mode == "after") {
     exit;
 }
 
-$cookiepayApi = cookiepay_get_api_account($default);
-
 $cookiepay = $_REQUEST;
 
 require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
@@ -48,6 +46,9 @@ foreach ($cookiepay as $key => $val) {
     }
 }
 $set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'"; // pg사 추가
+if (isset($cookiepay['ETC3']) && !empty($cookiepay['ETC3'])) { // 응답전문에는 pay_type이 없으므로 pay_type을 etc3에 추가해 보내고 받음
+    $set['pay_type'] = "pay_type='{$cookiepay['ETC3']}'";
+}
 $setStr = implode(",", $set);
 
 $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
@@ -59,9 +60,15 @@ if ($res) {
     @cookiepay_payment_log("결제결과 저장 실패", $sql, 3);
 }
 
+if (isset($cookiepay['ETC3']) && !empty($cookiepay['ETC3'])) {
+    $cookiepayApi = cookiepay_get_api_account_info($default, $cookiepay['ETC3']);
+} else {
+    $cookiepayApi = cookiepay_get_api_account_info($default, 3);
+}
+
 if ($cookiepay['RESULTCODE'] == '0000') {
     // 결제 성공 로그 기록
-    @cookiepay_payment_log("결재 성공", json_encode($cookiepay), 1);
+    @cookiepay_payment_log("결제 성공", json_encode($cookiepay), 1);
 
     // 결제 검증
     $headers = array(
@@ -192,7 +199,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
 
 } else {
     // 결제 실패 로그 기록
-    @cookiepay_payment_log("결재 실패", json_encode($cookiepay), 3);
+    @cookiepay_payment_log("결제 실패", json_encode($cookiepay), 3);
 
     echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE='.$cookiepay['RESULTCODE'].'&RESULTMSG='.$cookiepay['RESULTMSG'].'";</script>';
 

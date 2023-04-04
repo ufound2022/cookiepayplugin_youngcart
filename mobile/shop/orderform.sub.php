@@ -633,18 +633,19 @@ if($is_kakaopay_use) {
             $easypay_prints['nhnkcp_naverpay'] = '<li><input type="radio" id="od_settle_nhnkcp_naverpay" name="od_settle_case" data-pay="naverpay" value="간편결제" > <label for="od_settle_nhnkcp_naverpay" class="naverpay_icon nhnkcp_naverpay lb_icon" title="NHN_KCP - 네이버페이">네이버페이</label></li>';
         }
 
-        // s: cookiepay-plugin - PAYCO 간편 결제 숨김
+        // s: cookiepay-plugin
         $isCookiepay = strpos($default['de_pg_service'], "COOKIEPAY");
         if($isCookiepay !== false) {
             $easypay_prints = [];
             
             // 관리자일 경우 수기결제 표시(레벨 10)
             if ($member['mb_level'] >= 10) {
+                $multi_settle++;
                 echo '<li><input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제" '.$checked.'> <label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label></li>'.PHP_EOL;
                 $checked = '';
             }
         }
-        // e: cookiepay-plugin - PAYCO 간편 결제 숨김
+        // e: cookiepay-plugin
 
         if($easypay_prints) {
             $multi_settle++;
@@ -730,6 +731,39 @@ if($is_kakaopay_use) {
 
         if ($multi_settle == 0)
             echo '<p>결제할 방법이 없습니다.<br>운영자에게 알려주시면 감사하겠습니다.</p>';
+        ?>
+
+        <?php 
+        // s: cookiepay-plugin 
+        if ($default['de_pg_service'] == "COOKIEPAY_KW" || $default['de_pg_service'] == "COOKIEPAY_AL") {
+        ?>
+        <div id="cookiepay_use_global_card" style="display:none;">
+            <?php 
+            if (
+                ($default['de_pg_service'] == "COOKIEPAY_KW" && 
+                $default['de_cookiepay_kw_cookiepay_id_global_won'] && 
+                $default['de_cookiepay_kw_cookiepay_key_global_won']) || 
+                ($default['de_pg_service'] == "COOKIEPAY_AL" && 
+                $default['de_cookiepay_al_cookiepay_id_global_won'] && 
+                $default['de_cookiepay_al_cookiepay_key_global_won'])
+            ) {
+            ?>
+            <p style="margin-left:10px;margin-top:10px;"><input type="checkbox" style="-webkit-appearance:auto;" name="cookiepay_use_global_won" id="cookiepay_use_global_won" value="1"><label for="cookiepay_use_global_won"> 신용카드 - <strong>"해외 원화"</strong>로 결제시 체크해 주세요.</label></p>
+            <?php 
+            }
+
+            if (
+                $default['de_pg_service'] == "COOKIEPAY_AL" && 
+                $default['de_cookiepay_al_cookiepay_id_global_dollar'] && 
+                $default['de_cookiepay_al_cookiepay_key_global_dollar']
+            ) {
+            ?>
+            <p style="margin-left:10px;margin-top:10px;"><input type="checkbox" style="-webkit-appearance:auto;" name="cookiepay_use_global_dollar" id="cookiepay_use_global_dollar" value="1"><label for="cookiepay_use_global_dollar"> 신용카드 - <strong>"해외 달러"</strong>로 결제시 체크해 주세요.</label></p>
+            <?php } ?>
+        </div>
+        <?php 
+        }
+        // e: cookiepay-plugin 
         ?>
     </section>
 
@@ -1031,18 +1065,75 @@ $(function() {
         calculate_sendcost(code);
     });
 
+    // s: cookiepay-plugin
+    // $("#od_settle_bank").on("click", function() {
+    //     $("[name=od_deposit_name]").val( $("[name=od_name]").val() );
+    //     $("#settle_bank").show();
+    //     $("#show_req_btn").css("display", "none");
+    //     $("#show_pay_btn").css("display", "inline");
+    // });
     $("#od_settle_bank").on("click", function() {
+        $("#PAY_TYPE").val('');
+        $("#ETC3").val('');
+        $("#cookiepay_use_global_won").prop("checked", false);
+        $("#cookiepay_use_global_dollar").prop("checked", false);
+        $("#cookiepay_use_global_card").hide();
+
         $("[name=od_deposit_name]").val( $("[name=od_name]").val() );
         $("#settle_bank").show();
         $("#show_req_btn").css("display", "none");
         $("#show_pay_btn").css("display", "inline");
     });
 
-    $("#od_settle_iche,#od_settle_card,#od_settle_vbank,#od_settle_hp,#od_settle_easy_pay,#od_settle_kakaopay,#od_settle_samsungpay,#od_settle_nhnkcp_payco,#od_settle_nhnkcp_naverpay,#od_settle_nhnkcp_kakaopay,#od_settle_inicislpay,#od_settle_inicis_kakaopay").bind("click", function() {
+    $("#od_settle_card").on("click", function() {
         $("#settle_bank").hide();
         $("#show_req_btn").css("display", "inline");
         $("#show_pay_btn").css("display", "none");
+
+        $("#cookiepay_use_global_card").show();
     });
+
+    $("#cookiepay_use_global_won").on("click", function() {
+        if ($("#cookiepay_use_global_won").is(":checked")) {
+            $("#PAY_TYPE").val('7');
+            $("#ETC3").val('7');
+            $("#cookiepay_use_global_dollar").prop("checked", false);
+        }
+        if (!$("#cookiepay_use_global_won").is(":checked") && !$("#cookiepay_use_global_dollar").is(":checked")) {
+            $("#PAY_TYPE").val('');
+            $("#ETC3").val('');
+        }
+    });
+
+    $("#cookiepay_use_global_dollar").on("click", function() {
+        if ($("#cookiepay_use_global_dollar").is(":checked")) {
+            $("#PAY_TYPE").val('5');
+            $("#ETC3").val('5');
+            $("#cookiepay_use_global_won").prop("checked", false);
+        }
+        if (!$("#cookiepay_use_global_won").is(":checked") && !$("#cookiepay_use_global_dollar").is(":checked")) {
+            $("#PAY_TYPE").val('');
+            $("#ETC3").val('');
+        }
+    });
+
+    // $("#od_settle_iche,#od_settle_card,#od_settle_vbank,#od_settle_hp,#od_settle_easy_pay,#od_settle_kakaopay,#od_settle_samsungpay,#od_settle_nhnkcp_payco,#od_settle_nhnkcp_naverpay,#od_settle_nhnkcp_kakaopay,#od_settle_inicislpay,#od_settle_inicis_kakaopay").bind("click", function() {
+    //     $("#settle_bank").hide();
+    //     $("#show_req_btn").css("display", "inline");
+    //     $("#show_pay_btn").css("display", "none");
+    // });
+    $("#od_settle_iche,#od_settle_keyin,#od_settle_vbank,#od_settle_hp,#od_settle_easy_pay,#od_settle_kakaopay,#od_settle_nhnkcp_payco,#od_settle_nhnkcp_naverpay,#od_settle_nhnkcp_kakaopay,#od_settle_inicislpay,#od_settle_inicis_kakaopay").bind("click", function() {
+        $("#settle_bank").hide();
+        $("#show_req_btn").css("display", "inline");
+        $("#show_pay_btn").css("display", "none");
+
+        $("#PAY_TYPE").val('');
+        $("#ETC3").val('');
+        $("#cookiepay_use_global_won").prop("checked", false);
+        $("#cookiepay_use_global_dollar").prop("checked", false);
+        $("#cookiepay_use_global_card").hide();
+    });
+    // e: cookiepay-plugin
 
     // 배송지선택
     $("input[name=ad_sel_addr]").on("click", function() {
@@ -1614,8 +1705,6 @@ function payment_check(f)
 
     var tot_price = od_price + send_cost + send_cost2 - send_coupon - temp_point;
 
-    
-    // cookiepay-plugin: test용 주석 처리
     if (document.getElementById("od_settle_iche")) {
         if (document.getElementById("od_settle_iche").checked) {
             if (tot_price < 150) {

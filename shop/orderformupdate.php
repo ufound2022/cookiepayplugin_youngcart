@@ -21,10 +21,10 @@ if (isset($_POST['ETC1']) && !empty($_POST['ETC1'])) {
 $member = get_member($_SESSION['ss_mb_id']);
 
 // api account
-$cookiepayApi = cookiepay_get_api_account($default);
+$cookiepayApi = cookiepay_get_api_account_info($default, 3);
 
 // keyin api account
-$cookiepayApiKeyin = cookiepay_get_api_account_keyin($default);
+$cookiepayApiKeyin = cookiepay_get_api_account_info($default, 1);
 
 // 결제 취소
 function cookiepay_cancel($tno) {
@@ -35,6 +35,9 @@ function cookiepay_cancel($tno) {
     $sql = " select * from ".COOKIEPAY_PG_RESULT." where TID='{$tno}' ";
     $cookiepay = sql_fetch($sql);
     if ($cookiepay) {
+        if (isset($cookiepay['pay_type']) && !empty($cookiepay['pay_type'])) {
+            $cookiepayApi = cookiepay_get_api_account_info($default, $cookiepay['pay_type']);
+        }
         $ret = cookipay_cancel_payment($cookiepayApi['api_id'], $cookiepayApi['api_key'], $cookiepay['TID'], $cookiepay['CARDCODE'], $cookiepay['ACCOUNTNO'], $cookiepay['RECEIVERNAME']);
 
         if ($ret['status'] === true) {

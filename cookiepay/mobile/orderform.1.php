@@ -15,6 +15,7 @@ function pay(settle_method) {
     var h = screen.height;
     var w = screen.width;
     var popupPos = `left=0, top=0, width=${w}, height=${h}`;
-    var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${settle_method}`, "pgWin1", popupPos);
+    var pt = document.querySelector("#PAY_TYPE").value;
+    var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${settle_method}&pt=${pt}`, "pgWin1", popupPos);
 }
 </script>

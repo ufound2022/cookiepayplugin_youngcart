@@ -109,8 +109,9 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $pgLower = strtolower($pgUpper);
     $success[$i]['cookiepayPg'] = mb_substr(COOKIEPAY_PG[$pgUpper], 0, 2);
 
-    $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
-    $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
+    $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, 3); // 신용카드
+    // $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
+    // $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
     
     switch ($row['PAYMETHOD']) {
         case 'CARD':
@@ -127,12 +128,21 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
             break;
         case 'CARD_SUGI':
             $success[$i]['payMethod'] = '수기결제';
-            $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id_keyin"];
-            $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key_keyin"];
+            $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, 1); // 수기결제
+            // $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id_keyin"];
+            // $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key_keyin"];
             break;
         default:
             $success[$i]['payMethod'] = $row['PAYMETHOD'];
     }
+
+    $success[$i]['pay_type'] = $row['pay_type'] ?? '';
+    if (!empty($success[$i]['pay_type'])) {
+        $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, $success[$i]['pay_type']); // 해외원화/달러인 경우
+    }
+
+    $success[$i]['apiId'] = $cookiepayApi['api_id'];
+    $success[$i]['apiKey'] = $cookiepayApi['api_key'];
 
     $success[$i]['status'] = '<span style="color:blue;">승인</span>';
 
