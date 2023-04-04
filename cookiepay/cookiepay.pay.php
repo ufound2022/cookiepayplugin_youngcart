@@ -17,7 +17,7 @@ unset($cookiepay['mode']);
 
 // 결제창 팝업시 결제결과 데이터 사전 생성
 if ($mode == "try_pay") {
-    @cookiepay_payment_log("결재 시도", json_encode($cookiepay), 3);
+    @cookiepay_payment_log("결제 시도", json_encode($cookiepay), 3);
     
     $orderno = $cookiepay['ORDERNO'] ?? '';
     
@@ -52,7 +52,7 @@ if ($mode == "try_pay") {
 
 // 수기결제
 if ($mode == "keyin_pay") {
-    $cookiepayApiKeyin = cookiepay_get_api_account_keyin($default);
+    $cookiepayApiKeyin = cookiepay_get_api_account_info($default, 1);
 
     $req_json = json_encode([
         'pay2_id' => $cookiepayApiKeyin['api_id'],
@@ -143,7 +143,7 @@ if ($mode == "keyin_pay") {
         $keyinRes = json_decode($keyinResJson, true);
 
         if ($keyinRes['RESULTCODE'] == '0000') {
-            @cookiepay_payment_log("수기결재 성공", $keyinResJson, 1);
+            @cookiepay_payment_log("수기결제 성공", $keyinResJson, 1);
 
             // update
             $set = [];
@@ -159,9 +159,9 @@ if ($mode == "keyin_pay") {
 
             $res = sql_query($sql, false);
             if ($res) {
-                @cookiepay_payment_log("수기결재 결과 저장 성공", $sql, 3);
+                @cookiepay_payment_log("수기결제 결과 저장 성공", $sql, 3);
             } else {
-                @cookiepay_payment_log("수기결재 결과 저장 실패", $sql, 3);
+                @cookiepay_payment_log("수기결제 결과 저장 실패", $sql, 3);
             }
             // end update
 
@@ -275,7 +275,7 @@ if ($mode == "keyin_pay") {
                 }
             }
         } else {
-            @cookiepay_payment_log("수기결재 실패", json_encode($keyinResJson), 3);
+            @cookiepay_payment_log("수기결제 실패", json_encode($keyinResJson), 3);
         }
     } else {
         @cookiepay_payment_log("수기결제 토큰 발행 실패", $tokenResJson, 3);

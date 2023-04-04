@@ -5,7 +5,7 @@ include_once('../shop/_common.php');
 
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
-$cookiepayApi = cookiepay_get_api_account($default);
+// $cookiepayApi = cookiepay_get_api_account_info($default, 3);
 
 $pay_type = '';
 $tno = '';

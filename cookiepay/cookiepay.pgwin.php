@@ -5,9 +5,13 @@ include_once('../shop/_common.php');
 
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
-$cookiepayApi = cookiepay_get_api_account($default);
-
+$payTypeCode = $_GET["pt"] ?? 3; // pay_type code
 $payType = $_GET["pm"]; // settle_method
+if ($payType == "수기결제") {
+    $payTypeCode = 1;
+}
+
+$cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
 ?>
 <html lang="ko">
 <head>
@@ -79,6 +83,11 @@ function pay() {
         var url = "<?php echo COOKIEPAY_TESTPAY_URL; ?>"; // 테스트결제
     }
 
+    var payTypeCode = opener.document.getElementById("PAY_TYPE").value;
+    if (payTypeCode != 3) {
+        // 
+    }
+
     var params = {
         API_ID: "<?php echo $cookiepayApi['api_id']; ?>",
         ORDERNO: opener.document.getElementById("ORDERNO").value, //주문번호 (필수)
@@ -93,6 +102,8 @@ function pay() {
         BUYERPHONE : opener.document.getElementById("BUYERPHONE").value, //고객 휴대폰번호 (선택, 웰컴페이는 필수)
         RETURNURL: opener.document.getElementById("RETURNURL").value, //결제 완료 후 리다이렉트 url (필수)
         CANCELURL : opener.document.getElementById("CANCELURL").value,
+        PAY_TYPE : payTypeCode,
+        ENG_FLAG : opener.document.getElementById("ENG_FLAG").value,
         ETC1 : opener.document.getElementById("ETC1").value, //사용자 추가필드1 (선택)
         ETC2 : opener.document.getElementById("ETC2").value, //사용자 추가필드2 (선택)
         ETC3 : opener.document.getElementById("ETC3").value, //사용자 추가필드3 (선택)

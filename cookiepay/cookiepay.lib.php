@@ -3,62 +3,104 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 include_once(G5_PATH."/cookiepay/cookiepay.constants.php");
 
-// PG명(EX: COOKIEPAY_TS)으로 쿠키페이 연동 아이디와 키를 리턴
-function cookiepay_get_api_accountByPg($default, $params) {
-    $pg = strtolower($params);
+// Deprecated - PG명(EX: COOKIEPAY_TS)으로 쿠키페이 연동 아이디와 키를 리턴
+// function cookiepay_get_api_accountByPg($default, $params) {
+//     $pg = strtolower($params);
+//     $ret = [
+//         'api_id'  => '', 
+//         'api_key' => ''
+//     ];
+//     $ret['api_id'] = $default["de_{$pg}_cookiepay_id"];
+//     $ret['api_key'] = $default["de_{$pg}_cookiepay_key"];
+//     return $ret;
+// }
+
+// Deprecated - PG명(EX: COOKIEPAY_TS)으로 쿠키페이 연동 수기결제 아이디와 키를 리턴
+// function cookiepay_get_api_accountByPg_keyin($default, $params) {
+//     $pg = strtolower($params);
+//     $ret = [
+//         'api_id'  => '', 
+//         'api_key' => ''
+//     ];
+//     $ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
+//     $ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
+//     return $ret;
+// }
+
+// Deprecated - 사용 설정된 PG의 쿠키페이 연동 아이디와 키를 리턴
+// function cookiepay_get_api_account($params) {
+//     $pg = strtolower($params['de_pg_service']);
+//     $ret = [
+//         'api_id'  => '', 
+//         'api_key' => ''
+//     ];
+//     $ret['api_id'] = $params["de_{$pg}_cookiepay_id"];
+//     $ret['api_key'] = $params["de_{$pg}_cookiepay_key"];
+//     return $ret;
+// }
+
+// Deprecated - 사용 설정된 PG의 쿠키페이 수기결제 연동 아이디와 키를 리턴
+// function cookiepay_get_api_account_keyin($params) {
+//     $pg = strtolower($params['de_pg_service']);
+//     $ret = [
+//         'api_id'  => '', 
+//         'api_key' => ''
+//     ];
+//     $ret['api_id'] = $params["de_{$pg}_cookiepay_id_keyin"];
+//     $ret['api_key'] = $params["de_{$pg}_cookiepay_key_keyin"];
+//     return $ret;
+// }
+
+// 결제타입에 따른 쿠키페이 연동 아이디와 키를 리턴
+// $pay_type: 1=수기결제, 3=신용카드인증, 5=해외달러결제, 7=해외원화결제
+function cookiepay_get_api_account_info($default, $pay_type=3) {
+    $pg = strtolower($default['de_pg_service']);
 
     $ret = [
         'api_id'  => '', 
         'api_key' => ''
     ];
     
-    $ret['api_id'] = $default["de_{$pg}_cookiepay_id"];
-    $ret['api_key'] = $default["de_{$pg}_cookiepay_key"];
+	if ($pay_type == 1) {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
+	} else if ($pay_type == 5) {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_global_dollar"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_global_dollar"];
+	} else if ($pay_type == 7) {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_global_won"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_global_won"];
+	} else {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key"];
+	}
 
     return $ret;
 }
 
-// PG명(EX: COOKIEPAY_TS)으로 쿠키페이 연동 수기결제 아이디와 키를 리턴
-function cookiepay_get_api_accountByPg_keyin($default, $params) {
-    $pg = strtolower($params);
+// 결제타입, PG명(EX: COOKIEPAY_TS)으로 쿠키페이 연동 아이디와 키를 리턴
+// $pay_type: 1=수기결제, 3=신용카드인증, 5=해외달러결제, 7=해외원화결제
+function cookiepay_get_api_account_info_by_pg($default, $pg, $pay_type=3) {
+    $pg = strtolower($pg);
 
     $ret = [
         'api_id'  => '', 
         'api_key' => ''
     ];
-    
-    $ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
-    $ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
 
-    return $ret;
-}
-
-// 사용 설정된 PG의 쿠키페이 연동 아이디와 키를 리턴
-function cookiepay_get_api_account($params) {
-    $pg = strtolower($params['de_pg_service']);
-
-    $ret = [
-        'api_id'  => '', 
-        'api_key' => ''
-    ];
-    
-    $ret['api_id'] = $params["de_{$pg}_cookiepay_id"];
-    $ret['api_key'] = $params["de_{$pg}_cookiepay_key"];
-
-    return $ret;
-}
-
-// 사용 설정된 PG의 쿠키페이 수기결제 연동 아이디와 키를 리턴
-function cookiepay_get_api_account_keyin($params) {
-    $pg = strtolower($params['de_pg_service']);
-
-    $ret = [
-        'api_id'  => '', 
-        'api_key' => ''
-    ];
-    
-    $ret['api_id'] = $params["de_{$pg}_cookiepay_id_keyin"];
-    $ret['api_key'] = $params["de_{$pg}_cookiepay_key_keyin"];
+	if ($pay_type == 1) {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
+	} else if ($pay_type == 5) {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_global_dollar"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_global_dollar"];
+	} else if ($pay_type == 7) {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_global_won"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_global_won"];
+	} else {
+		$ret['api_id'] = $default["de_{$pg}_cookiepay_id"];
+    	$ret['api_key'] = $default["de_{$pg}_cookiepay_key"];
+	}
 
     return $ret;
 }

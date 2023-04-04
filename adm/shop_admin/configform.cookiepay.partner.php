@@ -250,6 +250,18 @@ if(!isset($default['de_cookiepay_al_cookiepay_id_keyin'])) {
                 ADD `de_cookiepay_wp_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id_keyin` ";
     sql_query($sql, true);
 }
+
+if(!isset($default['de_cookiepay_al_cookiepay_id_global_won'])) {
+    // 쿠키페이 모빌/키움 PG사 해외원화/해외달러 결제 연동 정보 컬럼 추가
+    $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
+                ADD `de_cookiepay_al_cookiepay_id_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외원화 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_al_cookiepay_key_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_global_won`, 
+                ADD `de_cookiepay_al_cookiepay_id_global_dollar` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외달러 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_global_won`, 
+                ADD `de_cookiepay_al_cookiepay_key_global_dollar` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외달러 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_global_dollar`, 
+                ADD `de_cookiepay_kw_cookiepay_id_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_global_dollar`, 
+                ADD `de_cookiepay_kw_cookiepay_key_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_global_won` ";
+    sql_query($sql, true);
+}
 // e: cookiepay-plugin
 ?>
 
@@ -869,6 +881,35 @@ if(!isset($default['de_cookiepay_al_cookiepay_id_keyin'])) {
                 <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
         </tr>
+
+        <?php if ($cookiepayPgCodeLower == "cookiepay_kw" || $cookiepayPgCodeLower == "cookiepay_al") { ?>
+        <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld">
+            <th scope="row">
+                <label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won"><?php echo $cookiepayPgName; ?> 인증-해외원화<br>연동아이디 &amp; 시크릿키</label>
+            </th>
+            <td>
+                <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id_global_won"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <br>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_won" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_global_won"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_won" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
+            </td>
+        </tr>
+        <?php } ?>
+
+        <?php if ($cookiepayPgCodeLower == "cookiepay_al") { ?>
+        <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld">
+            <th scope="row">
+                <label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar"><?php echo $cookiepayPgName; ?> 인증-해외달러<br>연동아이디 &amp; 시크릿키</label>
+            </th>
+            <td>
+                <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id_global_dollar"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <br>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_dollar" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_global_dollar"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_dollar" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
+            </td>
+        </tr>
+        <?php } ?>
+
         <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld">
             <th scope="row"><label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key"><?php echo $cookiepayPgName; ?> 비인증(수기결제)<br>연동아이디 &amp; 시크릿키</label></th>
             <td>

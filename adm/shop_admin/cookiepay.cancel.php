@@ -10,11 +10,14 @@ $cookiepayPgResultSql = "SELECT CPR.*, (SELECT PAYMETHOD FROM ".COOKIEPAY_PG_VER
 $cookiepayPgResultRes = sql_fetch($cookiepayPgResultSql);
 if (isset($cookiepayPgResultRes['PGNAME']) && !empty($cookiepayPgResultRes['PGNAME'])) {
     
-    // $cookiepayApi = cookiepay_get_api_accountByPg($default, $cookiepayPgResultRes['PGNAME']);
     if ($cookiepayPgResultRes['pay_method'] == "CARD_SUGI") {
-        $cookiepayApi = cookiepay_get_api_accountByPg_keyin($default, $cookiepayPgResultRes['PGNAME']);
+        $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $cookiepayPgResultRes['PGNAME'], 1);
     } else {
-        $cookiepayApi = cookiepay_get_api_accountByPg($default, $cookiepayPgResultRes['PGNAME']);
+        if ($cookiepayPgResultRes['pay_type']) {
+            $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $cookiepayPgResultRes['PGNAME'], $cookiepayPgResultRes['pay_type']);
+        } else {
+            $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $cookiepayPgResultRes['PGNAME'], 3);
+        }
     }
 
     $api_id = $cookiepayApi['api_id'];
