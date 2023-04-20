@@ -27,6 +27,7 @@ if ($result) {
     $insertId = sql_insert_id();
 }
 ?>
+    <input type="hidden" name="good_mny" value="<?php echo $tot_price; ?>">
 
     <input type="hidden" name="ORDERNO" id="ORDERNO" placeholder="주문번호" value="<?php echo $od_id; ?>">
     <input type="hidden" name="PRODUCTNAME" id="PRODUCTNAME" placeholder="상품명" value="<?php echo mb_substr(str_replace("&", "", $goods), 0, 40); ?>">

@@ -1084,8 +1084,19 @@ $(function() {
         $("#settle_bank").show();
     });
 
+    $("#od_settle_keyin").on("click", function() {
+        $("#PAY_TYPE").val('1');
+        $("#ETC3").val('1');
+        $("#settle_bank").hide();
+        $("#cookiepay_use_global_won").prop("checked", false);
+        $("#cookiepay_use_global_dollar").prop("checked", false);
+        $("#cookiepay_use_global_card").hide();
+    });
+
     $("#od_settle_card").on("click", function() {
         $("#settle_bank").hide();
+        $("#PAY_TYPE").val('3');
+        $("#ETC3").val('3');
         $("#cookiepay_use_global_card").show();
     });
 
@@ -1096,8 +1107,8 @@ $(function() {
             $("#cookiepay_use_global_dollar").prop("checked", false);
         }
         if (!$("#cookiepay_use_global_won").is(":checked") && !$("#cookiepay_use_global_dollar").is(":checked")) {
-            $("#PAY_TYPE").val('');
-            $("#ETC3").val('');
+            $("#PAY_TYPE").val('3');
+            $("#ETC3").val('3');
         }
     });
 
@@ -1108,15 +1119,15 @@ $(function() {
             $("#cookiepay_use_global_won").prop("checked", false);
         }
         if (!$("#cookiepay_use_global_won").is(":checked") && !$("#cookiepay_use_global_dollar").is(":checked")) {
-            $("#PAY_TYPE").val('');
-            $("#ETC3").val('');
+            $("#PAY_TYPE").val('3');
+            $("#ETC3").val('3');
         }
     });
 
     // $("#od_settle_iche,#od_settle_card,#od_settle_vbank,#od_settle_hp,#od_settle_easy_pay,#od_settle_kakaopay,#od_settle_nhnkcp_payco,#od_settle_nhnkcp_naverpay,#od_settle_nhnkcp_kakaopay,#od_settle_inicislpay,#od_settle_inicis_kakaopay").bind("click", function() {
     //     $("#settle_bank").hide();
     // });
-    $("#od_settle_iche,#od_settle_keyin,#od_settle_vbank,#od_settle_hp,#od_settle_easy_pay,#od_settle_kakaopay,#od_settle_nhnkcp_payco,#od_settle_nhnkcp_naverpay,#od_settle_nhnkcp_kakaopay,#od_settle_inicislpay,#od_settle_inicis_kakaopay").bind("click", function() {
+    $("#od_settle_iche,#od_settle_vbank,#od_settle_hp,#od_settle_easy_pay,#od_settle_kakaopay,#od_settle_nhnkcp_payco,#od_settle_nhnkcp_naverpay,#od_settle_nhnkcp_kakaopay,#od_settle_inicislpay,#od_settle_inicis_kakaopay").bind("click", function() {
         $("#settle_bank").hide();
         $("#PAY_TYPE").val('');
         $("#ETC3").val('');
@@ -1444,7 +1455,13 @@ function forderform_check(f)
 
         // pg 결제 금액에서 포인트 금액 차감
         if(settle_method != "무통장") {
-            f.good_mny.value = od_price + send_cost + send_cost2 - send_coupon - temp_point;
+            try {
+                f.good_mny.value = od_price + send_cost + send_cost2 - send_coupon - temp_point;
+            } catch (error) {
+                // f.good_mny.value = od_price + send_cost + send_cost2 - send_coupon - temp_point;
+                console.log(error);
+            }
+            
         }
     }
 

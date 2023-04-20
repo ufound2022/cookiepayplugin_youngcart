@@ -20,8 +20,14 @@ if ($mode == "try_pay") {
     @cookiepay_payment_log("결제 시도", json_encode($cookiepay), 3);
     
     $orderno = $cookiepay['ORDERNO'] ?? '';
-    
+
+    $pgResultId = '';
     if (!empty($orderno)) {
+        $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderno}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
+        $pgResultId = $pgResult['id'] ?? '';
+    }
+    
+    if (!empty($orderno) && empty($pgResultId)) {
         $columnStr = implode(",", $pgResultColumns);
         $values = [];
         foreach ($pgResultColumns as $val) {
@@ -34,6 +40,9 @@ if ($mode == "try_pay") {
         }
         $values['PGNAME'] = "'{$default['de_pg_service']}'"; // pg사 추가
         $values['ORDERNO'] = "'{$orderno}'";
+        $payType = $cookiepay['PAY_TYPE'] ?? 3;
+        $values['pay_type'] = "'{$payType}'";
+        $values['pay_status'] = "0";
         $valueStr = implode(",", $values);
 
         $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
@@ -73,31 +82,41 @@ if ($mode == "keyin_pay") {
     
     if ($tokenRes['RTN_CD'] == '0000') {
         
-        // insert
-        $columnStr = implode(",", $pgResultColumns);
-        $values = [];
-        foreach ($pgResultColumns as $val) {
-            $values[$val] = "''";
+        $pgResultId = '';
+        if (!empty($cookiepay['ORDERNO'])) {
+            $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
+            $pgResultId = $pgResult['id'] ?? '';
         }
-        foreach ($tokenRes as $key => $val) {
-            if (array_key_exists($key, $values)) {
-                $values[$key] = "'{$val}'";
-            }
-        }
-        $values['PGNAME'] = "'{$default['de_pg_service']}'";
-        $values['ORDERNO'] = "'{$cookiepay['ORDERNO']}'";
-        $valueStr = implode(",", $values);
 
-        $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
-        $res = sql_query($sql, false);
-        if ($res) {
-            @cookiepay_payment_log("수기결제 시도 저장 성공", $sql, 3);
-        } else {
-            @cookiepay_payment_log("수기결제 시도 저장 실패", $sql, 3);
-            echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE=&RESULTMSG=";</script>';
-            exit;
+        if (empty($pgResultId)) {
+            // insert
+            $columnStr = implode(",", $pgResultColumns);
+            $values = [];
+            foreach ($pgResultColumns as $val) {
+                $values[$val] = "''";
+            }
+            foreach ($tokenRes as $key => $val) {
+                if (array_key_exists($key, $values)) {
+                    $values[$key] = "'{$val}'";
+                }
+            }
+            $values['PGNAME'] = "'{$default['de_pg_service']}'";
+            $values['ORDERNO'] = "'{$cookiepay['ORDERNO']}'";
+            $values['pay_type'] = "'1'";
+            $values['pay_status'] = "0";
+            $valueStr = implode(",", $values);
+
+            $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
+            $res = sql_query($sql, false);
+            if ($res) {
+                @cookiepay_payment_log("수기결제 시도 저장 성공", $sql, 3);
+            } else {
+                @cookiepay_payment_log("수기결제 시도 저장 실패", $sql, 3);
+                echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE=&RESULTMSG=";</script>';
+                exit;
+            }
+            // end insert
         }
-        // end insert
 
         $headers = [
             "content-type: application/json; charset=utf-8",
@@ -145,25 +164,60 @@ if ($mode == "keyin_pay") {
         if ($keyinRes['RESULTCODE'] == '0000') {
             @cookiepay_payment_log("수기결제 성공", $keyinResJson, 1);
 
-            // update
-            $set = [];
-            foreach ($keyinRes as $key => $val) {
-                if (in_array($key, $pgResultColumns)) {
-                    $set[$key] = "{$key}='{$val}'";
+            $payStatus = '';
+            if (!empty($keyinRes['ORDERNO'])) {
+                $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$keyinRes['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
+                $payStatus = $pgResult['pay_status'] ?? '';
+            }
+
+            if ($payStatus == '') {
+                // insert
+                $columnStr = implode(",", $pgResultColumns);
+                $values = [];
+                foreach ($pgResultColumns as $val) {
+                    $values[$val] = "''";
                 }
-            }
-            $set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'";
-            $setStr = implode(",", $set);
+                foreach ($keyinRes as $key => $val) {
+                    if (array_key_exists($key, $values)) {
+                        $values[$key] = "'{$val}'";
+                    }
+                }
+                $values['PGNAME'] = "'{$default['de_pg_service']}'";
+                $values['pay_type'] = "'1'";
+                $values['pay_status'] = "1";
+                $valueStr = implode(",", $values);
 
-            $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$keyinRes['ORDERNO']}'";
+                $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
+                $res = sql_query($sql, false);
+                if ($res) {
+                    @cookiepay_payment_log("수기결제 결과 저장 성공", $sql, 3);
+                } else {
+                    @cookiepay_payment_log("수기결제 결과 저장 실패", $sql, 3);
+                }
+                // end insert
+            } else if ($payStatus != 1) {
+                // update
+                $set = [];
+                foreach ($keyinRes as $key => $val) {
+                    if (in_array($key, $pgResultColumns)) {
+                        $set[$key] = "{$key}='{$val}'";
+                    }
+                }
+                $set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'";
+                $set['pay_type'] = "pay_type='1'";
+                $set['pay_status'] = "pay_status=1";
+                $setStr = implode(",", $set);
 
-            $res = sql_query($sql, false);
-            if ($res) {
-                @cookiepay_payment_log("수기결제 결과 저장 성공", $sql, 3);
-            } else {
-                @cookiepay_payment_log("수기결제 결과 저장 실패", $sql, 3);
+                $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$keyinRes['ORDERNO']}'";
+
+                $res = sql_query($sql, false);
+                if ($res) {
+                    @cookiepay_payment_log("수기결제 결과 저장 성공", $sql, 3);
+                } else {
+                    @cookiepay_payment_log("수기결제 결과 저장 실패", $sql, 3);
+                }
+                // end update
             }
-            // end update
 
             // 결제 검증
             $token_url = COOKIEPAY_TOKEN_URL;
@@ -239,6 +293,7 @@ if ($mode == "keyin_pay") {
         
                     if ($ret['status'] === true) {
                         @cookiepay_payment_log("수기결제 취소 성공", $ret['data'], 3);
+                        $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
                     } else {
                         @cookiepay_payment_log("수기결제 취소 실패", $ret['data'], 3);
                     }
@@ -260,6 +315,7 @@ if ($mode == "keyin_pay") {
         
                 if ($ret['status'] === true) {
                     @cookiepay_payment_log("수기결제 취소 성공", $ret['data'], 3);
+                    $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
                 } else {
                     @cookiepay_payment_log("수기결제 취소 실패", $ret['data'], 3);
                 }
