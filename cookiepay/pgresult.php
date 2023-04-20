@@ -38,37 +38,76 @@ if (!isset($cookiepay['RESULTCODE'])) {
     exit;
 }
 
-// 결제 결과 테이블에 저장
-$set = [];
-foreach ($cookiepay as $key => $val) {
-    if (in_array($key, $pgResultColumns)) {
-        $set[$key] = "{$key}='{$val}'";
-    }
-}
-$set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'"; // pg사 추가
-if (isset($cookiepay['ETC3']) && !empty($cookiepay['ETC3'])) { // 응답전문에는 pay_type이 없으므로 pay_type을 etc3에 추가해 보내고 받음
-    $set['pay_type'] = "pay_type='{$cookiepay['ETC3']}'";
-}
-$setStr = implode(",", $set);
-
-$sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
-
-$res = sql_query($sql, false);
-if ($res) {
-    @cookiepay_payment_log("결제결과 저장 성공", $sql, 3);
-} else {
-    @cookiepay_payment_log("결제결과 저장 실패", $sql, 3);
-}
-
 if (isset($cookiepay['ETC3']) && !empty($cookiepay['ETC3'])) {
     $cookiepayApi = cookiepay_get_api_account_info($default, $cookiepay['ETC3']);
 } else {
     $cookiepayApi = cookiepay_get_api_account_info($default, 3);
 }
 
+// @cookiepay_payment_log("통지 테스트", json_encode($cookiepay), 3);
+// exit;
+
 if ($cookiepay['RESULTCODE'] == '0000') {
     // 결제 성공 로그 기록
     @cookiepay_payment_log("결제 성공", json_encode($cookiepay), 1);
+
+    $payStatus = '';
+    if (!empty($cookiepay['ORDERNO'])) {
+        $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
+        $payStatus = $pgResult['pay_status'] ?? '';
+    }
+
+    // 결제 결과 테이블에 저장
+    if ($payStatus == '') {
+        // insert
+        $columnStr = implode(",", $pgResultColumns);
+        $values = [];
+        foreach ($pgResultColumns as $val) {
+            $values[$val] = "''";
+        }
+        foreach ($cookiepay as $key => $val) {
+            if (array_key_exists($key, $values)) {
+                $values[$key] = "'{$val}'";
+            }
+        }
+        $values['PGNAME'] = "'{$default['de_pg_service']}'"; // pg사 추가
+        if (isset($cookiepay['ETC3']) && !empty($cookiepay['ETC3'])) { // 응답전문에는 pay_type이 없으므로 pay_type을 etc3에 추가해 보내고 받음
+            $values['pay_type'] = "'{$cookiepay['ETC3']}'";
+        }
+        $values['pay_status'] = 1;
+        $valueStr = implode(",", $values);
+
+        $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
+        $res = sql_query($sql, false);
+        if ($res) {
+            @cookiepay_payment_log("결제결과 저장 성공", $sql, 3);
+        } else {
+            @cookiepay_payment_log("결제결과 저장 실패", $sql, 3);
+        }
+    } else if ($payStatus != 1) {
+        // update
+        $set = [];
+        foreach ($cookiepay as $key => $val) {
+            if (in_array($key, $pgResultColumns)) {
+                $set[$key] = "{$key}='{$val}'";
+            }
+        }
+        $set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'"; // pg사 추가
+        if (isset($cookiepay['ETC3']) && !empty($cookiepay['ETC3'])) { // 응답전문에는 pay_type이 없으므로 pay_type을 etc3에 추가해 보내고 받음
+            $set['pay_type'] = "pay_type='{$cookiepay['ETC3']}'";
+        }
+        $set['pay_status'] = "pay_status=1";
+        $setStr = implode(",", $set);
+
+        $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
+
+        $res = sql_query($sql, false);
+        if ($res) {
+            @cookiepay_payment_log("결제결과 저장 성공", $sql, 3);
+        } else {
+            @cookiepay_payment_log("결제결과 저장 실패", $sql, 3);
+        }
+    }
 
     // 결제 검증
     $headers = array(
@@ -160,6 +199,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
 
             if ($ret['status'] === true) {
                 @cookiepay_payment_log("결제취소 성공", $ret['data'], 3);
+                $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
             } else {
                 @cookiepay_payment_log("결제취소 실패", $ret['data'], 3);
             }
@@ -182,6 +222,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
 
         if ($ret['status'] === true) {
             @cookiepay_payment_log("결제취소 성공", $ret['data'], 3);
+            $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
         } else {
             @cookiepay_payment_log("결제취소 실패", $ret['data'], 3);
         }

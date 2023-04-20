@@ -39,6 +39,8 @@ if(!sql_query(" DESCRIBE ".COOKIEPAY_PG_RESULT." ", false)) {
 
 @sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN IF NOT EXISTS `pay_type` VARCHAR(2) NOT NULL COMMENT '결제타입. 1:수기결제,3:신용카드인증,5:해외달러결제,7:해외원화결제' COLLATE 'utf8_general_ci' AFTER `PGNAME` ", true);
 
+@sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN IF NOT EXISTS `pay_status` TINYINT NOT NULL DEFAULT 0 COMMENT '결제상태. 0:결제시도,1:결제성공,2:결제취소,3:결제실패,4:가상계좌' AFTER `pay_type` ", true);
+
 $pgResultColumns = [
     'RESULTCODE',
     'RESULTMSG',
@@ -60,7 +62,8 @@ $pgResultColumns = [
     'ETC4',
     'ETC5',
     'PGNAME',
-    'pay_type'
+    'pay_type',
+    'pay_status'
 ];
 
 // 결제 검증 테이블 없으면 생성
