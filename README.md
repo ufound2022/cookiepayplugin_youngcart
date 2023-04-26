@@ -16,7 +16,14 @@
       ```  
       define('COOKIEPAY_USE_HTTPS', true);
       ```  
-
+  
+- 결제 통지 설정 안내 
+    - 아래의 URL을 쿠키페이 담당자에게 전달해 [PG 통지 URL] 설정을 요청해 주세요.    
+      ```  
+      https://[플러그인설치도메인]/cookiepay/result.noti.php  
+      ```  
+  
+  
 - 영카트를 커스터마이징 하지 않은 경우  
     - 아래 디렉토리와 파일을 영카트 설치 디렉토리에 Copy & Paste(덮어쓰기) 
     - (cookiepay-plugin)  
