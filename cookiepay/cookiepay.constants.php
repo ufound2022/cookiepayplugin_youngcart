@@ -22,7 +22,8 @@ define('COOKIEPAY_PG',
     "COOKIEPAY_KW" => "키움페이", 
     "COOKIEPAY_DN" => "다날", 
     "COOKIEPAY_AL" => "모빌페이", 
-    "COOKIEPAY_WP" => "웰컴페이"
+    "COOKIEPAY_WP" => "웰컴페이",
+    "COOKIEPAY_PN" => "페이누리",
 ]);
 
 $cookiepayProtocol = COOKIEPAY_USE_HTTPS === true ? "https://" : "http://";

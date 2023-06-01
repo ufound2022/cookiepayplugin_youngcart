@@ -271,6 +271,8 @@ $check_sanitize_keys = array(
     'de_cookiepay_ki_cookiepay_key',                //이지페이의 쿠키페이 연동 시크릿키
     'de_cookiepay_wp_cookiepay_id',                 //웰컴페이의 쿠키페이 연동 아이디
     'de_cookiepay_wp_cookiepay_key',                //웰컴페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_pn_cookiepay_id',                 //페이누리의 쿠키페이 연동 아이디
+    'de_cookiepay_pn_cookiepay_key',                //페이누리의 쿠키페이 연동 시크릿키
     'de_cookiepay_al_cookiepay_id_keyin',           //모빌페이의 쿠키페이 수기결제 연동 아이디
     'de_cookiepay_al_cookiepay_key_keyin',          //모빌페이의 쿠키페이 수기결제 연동 시크릿키
     'de_cookiepay_ts_cookiepay_id_keyin',           //토스페이의 쿠키페이 수기결제 연동 아이디
@@ -283,12 +285,16 @@ $check_sanitize_keys = array(
     'de_cookiepay_ki_cookiepay_key_keyin',          //이지페이의 쿠키페이 수기결제 연동 시크릿키
     'de_cookiepay_wp_cookiepay_id_keyin',           //웰컴페이의 쿠키페이 수기결제 연동 아이디
     'de_cookiepay_wp_cookiepay_key_keyin',          //웰컴페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_pn_cookiepay_id_keyin',           //페이누리의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_pn_cookiepay_key_keyin',          //페이누리의 쿠키페이 수기결제 연동 시크릿키
     'de_cookiepay_al_cookiepay_id_global_won',      //모빌페이의 쿠키페이 해외원화 결제 연동 아이디
     'de_cookiepay_al_cookiepay_key_global_won',     //모빌페이의 쿠키페이 해외원화 결제 연동 시크릿키
     'de_cookiepay_al_cookiepay_id_global_dollar',   //모빌페이의 쿠키페이 해외달러 결제 연동 아이디
     'de_cookiepay_al_cookiepay_key_global_dollar',  //모빌페이의 쿠키페이 해외달러 결제 연동 시크릿키
     'de_cookiepay_kw_cookiepay_id_global_won',      //키움페이의 쿠키페이 해외원화 결제 연동 아이디
     'de_cookiepay_kw_cookiepay_key_global_won',     //키움페이의 쿠키페이 해외원화 결제 연동 시크릿키
+    'de_cookiepay_pn_cookiepay_pgid',               //페이누리의 쿠키페이 인증 결제 PG 아이디
+    'de_cookiepay_pn_cookiepay_pgid_keyin',         //페이누리의 쿠키페이 수기 결제 PG 아이디
 );
 
 foreach( $check_sanitize_keys as $key ){

@@ -13,6 +13,8 @@ function pay(settle_method) {
     } else {
         if ("<?php echo $default['de_pg_service']; ?>" == "COOKIEPAY_TS") {
             var popupPos = "left=0, top=0, width=800, height=670";
+        } else if ("<?php echo $default['de_pg_service']; ?>" == "COOKIEPAY_PN") {
+            var popupPos = "left=0, top=0, width=600, height=655";
         } else {
             var popupPos = "left=0, top=0, width=500, height=150";
         }

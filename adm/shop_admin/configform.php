@@ -262,6 +262,18 @@ if(!isset($default['de_cookiepay_al_cookiepay_id_global_won'])) {
                 ADD `de_cookiepay_kw_cookiepay_key_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_global_won` ";
     sql_query($sql, true);
 }
+
+if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
+    // 쿠키페이 PG사 연동 정보 컬럼 추가
+    $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}` 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_id` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_key` text NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_pn_cookiepay_id`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_id_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_key_keyin` text NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_pn_cookiepay_id_keyin`,
+                ADD COLUMN `de_cookiepay_pn_cookiepay_pgid` VARCHAR(50) NOT NULL DEFAULT '' AFTER `de_cookiepay_kw_cookiepay_key_global_won`,
+	            ADD COLUMN `de_cookiepay_pn_cookiepay_pgid_keyin` VARCHAR(50) NOT NULL DEFAULT '' AFTER `de_cookiepay_pn_cookiepay_pgid` ";
+    sql_query($sql, true);
+}
 // e: cookiepay-plugin
 ?>
 
@@ -905,6 +917,22 @@ if(!isset($default['de_cookiepay_al_cookiepay_id_global_won'])) {
                 <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_keyin" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_keyin"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_keyin" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
         </tr>
+
+        <?php if ($cookiepayPgCodeLower == "cookiepay_pn") { ?>
+        <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld">
+            <th scope="row">
+                <label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid"><?php echo $cookiepayPgName; ?> 인증/비인증(수기)<br> PG 아이디</label>
+            </th>
+            <td>
+                <?php echo help("쿠키페이에 입력한 인증 결제용 PG 아이디를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_pgid"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="인증 결제용 PG 아이디">
+                <br>
+                <?php echo help("쿠키페이에 입력한 비인증(수기) 결제용 PG 아이디를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid_keyin" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_pgid_keyin"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid_keyin" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="비인증(수기) 결제용 PG 아이디">
+            </td>
+        </tr>
+        <?php } ?>
+
         <?php
             $i++;
         }

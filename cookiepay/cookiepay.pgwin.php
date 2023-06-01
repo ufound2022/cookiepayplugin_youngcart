@@ -24,6 +24,15 @@ $cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
 
 <script src="<?php echo G5_JS_URL; ?>/jquery-1.12.4.min.js"></script>
 <script src="https://js.tosspayments.com/v1"></script>
+
+<?php if ($default['de_pg_service'] == 'COOKIEPAY_PN') { ?>
+
+<script src="https://www.cookiepayments.com/js/paynuri.js"></script>
+<script src="https://pg.paynuri.com/js/jquery-ui-1.11.4.base/jquery-ui.min.js"></script>
+<script src="https://pg.paynuri.com/js/jquery-dateFormat.min.js"></script>
+
+<?php } ?>
+
 <script>
 $(function(){
     var browserName = checkBrowser();
@@ -136,6 +145,11 @@ function pay() {
                         const obj = JSON.parse(result);
                         console.log(obj.RTN_MSG);
                     } catch(e) {
+
+                        <?php if ($default['de_pg_service'] == 'COOKIEPAY_PN') { ?>
+                        $("#dialog_payment").remove();
+                        <?php } ?>
+
                         const newDiv = document.createElement('div');
                         newDiv.setAttribute("id","cookiepayform");
                         document.body.appendChild(newDiv);
@@ -299,7 +313,8 @@ if ($payType == "수기결제") {
         "COOKIEPAY_KI", 
         "COOKIEPAY_KW", 
         "COOKIEPAY_AL", 
-        "COOKIEPAY_WP"
+        "COOKIEPAY_WP",
+        "COOKIEPAY_PN",
     ];
 
     if (in_array($default["de_pg_service"], $needPasswordPg)) {
@@ -396,6 +411,11 @@ table {
     <!-- <input type="hidden" name="CARDAUTH"> -->
     <!-- <input type="hidden" name="CARDPWD"> -->
     <!-- <input type="hidden" name="QUOTA"> -->
+    
+    <?php if ($default['de_pg_service'] == 'COOKIEPAY_PN') { ?>
+    <input type="hidden" name="TAXYN" value="Y">
+    <?php } ?>
+
     <input type="hidden" name="HANACARD_USE">
     <input type="hidden" name="ETC1">
     <input type="hidden" name="ETC2">
@@ -492,13 +512,22 @@ table {
 <?php
 } // end if ($payType == "수기결제")
 else {
+    if ($default['de_pg_service'] == 'COOKIEPAY_PN') {
 ?>
-
-<small>결제를 돕기 위해 생성된 창 입니다.</small>
-<h3>결제가 진행 중인 경우 이 창을 닫지 말아주세요.</h3>
-<small>결제를 중지한 경우에도 현재 창이 보이신다면 <button type="button" onClick="self.close();">닫기</button>를 눌러주세요.</small>
+    <script>
+        document.querySelector('body').style.margin='0px';
+    </script>
+<?
+    } else {
+?>
+<div>
+    <small>결제를 돕기 위해 생성된 창 입니다.</small>
+    <h3>결제가 진행 중인 경우 이 창을 닫지 말아주세요.</h3>
+    <small>결제를 중지한 경우에도 현재 창이 보이신다면 <button type="button" onClick="self.close();">닫기</button>를 눌러주세요.</small>
+</div>
 
 <?php
+    }
 }
 ?>
 

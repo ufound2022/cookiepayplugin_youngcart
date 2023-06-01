@@ -57,6 +57,17 @@ if(!isset($default['de_cookiepay_al_cookiepay_id_global_won'])) {
     sql_query($sql, true);
 }
 
+if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
+    // 쿠키페이 PG사 연동 정보 컬럼 추가
+    $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}` 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_id` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_key` text NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_pn_cookiepay_id`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_id_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_key_keyin` text NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_pn_cookiepay_id_keyin`,
+                ADD COLUMN `de_cookiepay_pn_cookiepay_pgid` VARCHAR(50) NOT NULL DEFAULT '' AFTER `de_cookiepay_kw_cookiepay_key_global_won`,
+                ADD COLUMN `de_cookiepay_pn_cookiepay_pgid_keyin` VARCHAR(50) NOT NULL DEFAULT '' AFTER `de_cookiepay_pn_cookiepay_pgid` ";
+    sql_query($sql, true);
+}
 
 $check_sanitize_keys = array(
     'de_pg_service',                		        //결제대행사
@@ -72,6 +83,8 @@ $check_sanitize_keys = array(
     'de_cookiepay_ki_cookiepay_key',                //이지페이의 쿠키페이 연동 시크릿키
     'de_cookiepay_wp_cookiepay_id',                 //웰컴페이의 쿠키페이 연동 아이디
     'de_cookiepay_wp_cookiepay_key',                //웰컴페이의 쿠키페이 연동 시크릿키
+    'de_cookiepay_pn_cookiepay_id',                 //페이누리의 쿠키페이 연동 아이디
+    'de_cookiepay_pn_cookiepay_key',                //페이누리의 쿠키페이 연동 시크릿키
     'de_cookiepay_al_cookiepay_id_keyin',           //모빌페이의 쿠키페이 수기결제 연동 아이디
     'de_cookiepay_al_cookiepay_key_keyin',          //모빌페이의 쿠키페이 수기결제 연동 시크릿키
     'de_cookiepay_ts_cookiepay_id_keyin',           //토스페이의 쿠키페이 수기결제 연동 아이디
@@ -84,12 +97,16 @@ $check_sanitize_keys = array(
     'de_cookiepay_ki_cookiepay_key_keyin',          //이지페이의 쿠키페이 수기결제 연동 시크릿키
     'de_cookiepay_wp_cookiepay_id_keyin',           //웰컴페이의 쿠키페이 수기결제 연동 아이디
     'de_cookiepay_wp_cookiepay_key_keyin',          //웰컴페이의 쿠키페이 수기결제 연동 시크릿키
+    'de_cookiepay_pn_cookiepay_id_keyin',           //페이누리의 쿠키페이 수기결제 연동 아이디
+    'de_cookiepay_pn_cookiepay_key_keyin',          //페이누리의 쿠키페이 수기결제 연동 시크릿키
     'de_cookiepay_al_cookiepay_id_global_won',      //모빌페이의 쿠키페이 해외원화 결제 연동 아이디
     'de_cookiepay_al_cookiepay_key_global_won',     //모빌페이의 쿠키페이 해외원화 결제 연동 시크릿키
     'de_cookiepay_al_cookiepay_id_global_dollar',   //모빌페이의 쿠키페이 해외달러 결제 연동 아이디
     'de_cookiepay_al_cookiepay_key_global_dollar',  //모빌페이의 쿠키페이 해외달러 결제 연동 시크릿키
     'de_cookiepay_kw_cookiepay_id_global_won',      //키움페이의 쿠키페이 해외원화 결제 연동 아이디
     'de_cookiepay_kw_cookiepay_key_global_won',     //키움페이의 쿠키페이 해외원화 결제 연동 시크릿키
+    'de_cookiepay_pn_cookiepay_pgid',               //페이누리의 쿠키페이 인증 결제 PG 아이디
+    'de_cookiepay_pn_cookiepay_pgid_keyin',         //페이누리의 쿠키페이 수기 결제 PG 아이디
 );
 
 foreach( $check_sanitize_keys as $key ){
