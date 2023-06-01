@@ -55,6 +55,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $pgUpper = strtoupper($row['PGNAME']);
     $pgLower = strtolower($pgUpper);
     $cancel[$i]['cookiepayPg'] = mb_substr(COOKIEPAY_PG[$pgUpper], 0, 2);
+    $cancel[$i]['cookiepayPg'] = $cancel[$i]['cookiepayPg'] == '페이' ? '페누' : $cancel[$i]['cookiepayPg'];
 
     $cancel[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
     $cancel[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
@@ -108,6 +109,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $pgUpper = strtoupper($row['PGNAME']);
     $pgLower = strtolower($pgUpper);
     $success[$i]['cookiepayPg'] = mb_substr(COOKIEPAY_PG[$pgUpper], 0, 2);
+    $success[$i]['cookiepayPg'] = $success[$i]['cookiepayPg'] == '페이' ? '페누' : $success[$i]['cookiepayPg'];
 
     $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, 3); // 신용카드
     // $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
@@ -244,7 +246,13 @@ if (count($data) == 0) {
             <td><?php echo $val['BUYERID']; ?></td>
             <td><?php echo mb_strlen($val['PRODUCTNAME']) > 20 ? mb_substr($val['PRODUCTNAME'], 0, 20)."…" : $val['PRODUCTNAME']; ?></td>
             <td><?php echo $val['payMethod']; ?></td>
-            <td><button type="button" onclick="receipt('<?php echo $val['TID']; ?>')">전표출력</button></td>
+            <td>
+            <?php if ($val['cookiepayPg'] == '페누') { ?>
+                <button type="button" onclick="receiptPaynuri('<?php echo $default['de_cookiepay_pn_cookiepay_pgid_keyin']; ?>', '<?php echo $val['TID']; ?>')">전표출력</button>
+            <?php } else { ?>
+                <button type="button" onclick="receipt('<?php echo $val['TID']; ?>')">전표출력</button>
+            <?php } ?>
+            </td>
             <td><?php echo $val['btnPgCancel']; ?></td>
         </tr>
 <?php
@@ -482,9 +490,17 @@ function base64_encode(str) {
 }
 
 function receipt(tid) {
-    var tid = base64_encode(tid);
+    tid = base64_encode(tid);
     window.open(
         "<?php echo COOKIEPAY_RECEIPT_URL ?>?tid="+tid,
+        "cookiepayments Receipt",
+        "width=468,height=750"
+    );
+}
+
+function receiptPaynuri(pgid, tid) {
+    window.open(
+        `https://pg.paynuri.com/receipt/view_receipt.do?TRANSACTIONID=${pgid}_${tid}_MNUL_1`,
         "cookiepayments Receipt",
         "width=468,height=750"
     );
