@@ -13,11 +13,11 @@ if($data['error']) {
     exit;
 }
 
-$mode = $_POST['mode'];
+$mode = clean_xss_tags($_POST['mode'], 1, 1);
 
 // 결제, 취소내역 조회
 if ($mode == "get") {
-    $orderNo = $_POST['orderno'];
+    $orderNo = clean_xss_tags($_POST['orderno'], 1, 1);
 
     $payAmount = 0; // 결제금액
     $cancelAmount = 0; // 취소금액
@@ -54,14 +54,14 @@ if ($mode == "get") {
 // 취소 처리
 if ($mode == "cancel") {
     
-    $orderno = $_POST['orderno'];
-    $api_id = $_POST['api_id'];
-    $api_key = $_POST['api_key'];
-    $tid = $_POST['tid'];
-    $bank = $_POST['bank'];
-    $accountno = $_POST['accountno'];
-    $accountname = $_POST['accountname'];
-    $amount = $_POST['amount'];
+    $orderno = clean_xss_tags($_POST['orderno'], 1, 1);
+    $api_id = clean_xss_tags($_POST['api_id'], 1, 1);
+    $api_key = clean_xss_tags($_POST['api_key'], 1, 1);
+    $tid = clean_xss_tags($_POST['tid'], 1, 1);
+    $bank = clean_xss_tags($_POST['bank'], 1, 1);
+    $accountno = clean_xss_tags($_POST['accountno'], 1, 1);
+    $accountname = clean_xss_tags($_POST['accountname'], 1, 1);
+    $amount = clean_xss_tags($_POST['amount'], 1, 1);
 
     $tokenheaders = array(); 
 	array_push($tokenheaders, "content-type: application/json; charset=utf-8");

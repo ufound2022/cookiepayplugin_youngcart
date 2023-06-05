@@ -6,7 +6,7 @@ include_once(G5_PATH."/cookiepay/cookiepay.lib.php");
 
 auth_check_menu($auth, $sub_menu, "r");
 
-$tab = $_GET['t'] ?? '';
+$tab = isset($_GET['t']) ? clean_xss_tags($_GET['t'], 1, 1) : '';
 if ($tab == 's') {
     $g5['title'] = '결제내역 - 결제성공';
 } else if ($tab == 'c') {
@@ -23,8 +23,10 @@ $success = [];
 $cancel = [];
 $cancelOrderno = [];
 
-$fr_date = (isset($_GET['fr_date']) && preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $_GET['fr_date'])) ? $_GET['fr_date'] : date("Y-m-01", strtotime("-1 month"));
-$to_date = (isset($_GET['to_date']) && preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $_GET['to_date'])) ? $_GET['to_date'] : date("Y-m-d");
+$fr_date = isset($_GET['fr_date']) ? clean_xss_tags($_GET['fr_date'], 1, 1) : '';
+$fr_date = (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $fr_date)) ? $fr_date : date("Y-m-01", strtotime("-1 month"));
+$to_date = isset($_GET['to_date']) ? clean_xss_tags($_GET['to_date'], 1, 1) : '';
+$to_date = (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $to_date)) ? $to_date : date("Y-m-d");
 
 $from = date("Ymd", strtotime($fr_date))."00000000";
 $to = date("Ymd", strtotime($to_date))."99999999";

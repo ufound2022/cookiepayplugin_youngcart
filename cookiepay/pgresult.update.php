@@ -24,7 +24,8 @@ $cash_yn = '';
 $cash_authno = '';
 $cash_tr_code = '';
 
-$sql = " select * from ".COOKIEPAY_PG_RESULT." where ORDERNO='{$_POST['ORDERNO']}' ";
+$postOrderno = isset($_POST['ORDERNO']) ? clean_xss_tags($_POST['ORDERNO'], 1, 1) : '';
+$sql = " select * from ".COOKIEPAY_PG_RESULT." where ORDERNO='{$postOrderno}' ";
 $cookiepayPgResult = sql_fetch($sql);
 
 if ($cookiepayPgResult) {

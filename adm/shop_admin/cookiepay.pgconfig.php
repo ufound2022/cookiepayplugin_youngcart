@@ -71,7 +71,7 @@ input, select {padding-left:6px;}
             </th>
             <td>
                 <?php echo help("쿠키페이에서 발급 받으신 연동 아이디를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $pgCodeLower; ?>_cookiepay_id" value="<?php echo $default["de_{$pgCodeLower}_cookiepay_id"]; ?>" id="de_<?php echo $pgCodeLower; ?>_cookiepay_id" class="frm_input code_input" size="50" maxlength="50">
+                <input type="text" name="de_<?php echo $pgCodeLower; ?>_cookiepay_id" value="<?php echo get_sanitize_input($default["de_{$pgCodeLower}_cookiepay_id"]); ?>" id="de_<?php echo $pgCodeLower; ?>_cookiepay_id" class="frm_input code_input" size="50" maxlength="50">
             </td>
         </tr>
         <tr class="pg_info_fld <?php echo $pgCodeLower; ?>_info_fld">

@@ -5,10 +5,15 @@ include_once('../shop/_common.php');
 
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
-$mode = $_GET['mode'] ?? '';
+// $mode = $_GET['mode'] ?? '';
+$mode = isset($_GET['mode']) ? clean_xss_tags($_GET['mode'], 1, 1) : '';
+
 if ($mode == "after") {
-    $resCode = $_GET['RESULTCODE'] ?? '';
-    $resMsg = $_GET['RESULTMSG'] ?? '';
+    // $resCode = $_GET['RESULTCODE'] ?? '';
+    $resCode = isset($_GET['RESULTCODE']) ? clean_xss_tags($_GET['RESULTCODE'], 1, 1) : '';
+
+    // $resMsg = $_GET['RESULTMSG'] ?? '';
+    $resMsg = isset($_GET['RESULTMSG']) ? clean_xss_tags($_GET['RESULTMSG'], 1, 1) : '';
 
     if ($resCode == '0000') {
         echo '<script>
@@ -19,6 +24,7 @@ if ($mode == "after") {
     } else {
         echo '<script>
             alert("결제가 실패했습니다.\n오류코드: '.$resCode.'\n오류메시지: '.$resMsg.'");
+            opener.location.reload();
             self.close();
         </script>';
     }
@@ -26,7 +32,11 @@ if ($mode == "after") {
     exit;
 }
 
-$cookiepay = $_REQUEST;
+// $cookiepay = $_REQUEST;
+$cookiepay = array();
+foreach ($_REQUEST as $key => $value) {
+    $cookiepay[$key] = clean_xss_tags($value, 1, 1);
+}
 
 require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
 
@@ -164,24 +174,40 @@ if ($cookiepay['RESULTCODE'] == '0000') {
         curl_close($ch);
         $verify = json_decode($response, true);
 
+        $pgVerify = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_VERIFY." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
+        $verifyId = $pgVerify['id'] ?? null;
+
         // 결제 검증 결과 테이블에 저장
-        // column 쿼리 처리
-        $columnStr = implode(",", $pgVerifyColumns);
+        if (is_null($verifyId)) {
+            // column 쿼리 처리
+            $columnStr = implode(",", $pgVerifyColumns);
 
-        // values 쿼리 처리
-        $values = [];
-        foreach ($pgVerifyColumns as $val) {
-            $values[$val] = "''";
-        }
-        foreach ($verify as $key => $val) {
-            if (array_key_exists($key, $values)) {
-                $values[$key] = "'{$val}'";
+            // values 쿼리 처리
+            $values = [];
+            foreach ($pgVerifyColumns as $val) {
+                $values[$val] = "''";
             }
-        }
-        $valueStr = implode(",", $values);
+            foreach ($verify as $key => $val) {
+                if (array_key_exists($key, $values)) {
+                    $values[$key] = "'{$val}'";
+                }
+            }
+            $valueStr = implode(",", $values);
 
-        $sql = " INSERT INTO ".COOKIEPAY_PG_VERIFY." ({$columnStr}) VALUES ({$valueStr}) ";
-        $res = sql_query($sql, false);
+            $sql = " INSERT INTO ".COOKIEPAY_PG_VERIFY." ({$columnStr}) VALUES ({$valueStr}) ";
+            $res = sql_query($sql, false);
+        } else {
+            $set = [];
+            foreach ($verify as $key => $val) {
+                if (in_array($key, $pgVerifyColumns)) {
+                    $set[$key] = "{$key}='{$val}'";
+                }
+            }
+            $setStr = implode(",", $set);
+            $sql = "UPDATE ".COOKIEPAY_PG_VERIFY." SET {$setStr} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
+            $res = sql_query($sql, false);
+        }
+
         if ($res) {
             @cookiepay_payment_log("결제검증결과 저장 성공", $sql, 3);
         } else {

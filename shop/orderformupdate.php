@@ -6,8 +6,9 @@ include_once(G5_LIB_PATH.'/mailer.lib.php');
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
 // 세션 생성
-if (isset($_POST['ETC1']) && !empty($_POST['ETC1'])) {
-    $sql = " select * from ".COOKIEPAY_SESSION." where id={$_POST['ETC1']} ";
+$postEtc1 = isset($_POST['ETC1']) ? clean_xss_tags($_POST['ETC1'], 1, 1) : '';
+if (!empty($postEtc1)) {
+    $sql = " select * from ".COOKIEPAY_SESSION." where id={$postEtc1} ";
     $res = sql_fetch($sql);
     if ($res) {
         $arrSess = json_decode($res['json_sess'], true);
