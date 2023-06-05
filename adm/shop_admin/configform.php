@@ -874,7 +874,7 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
             </th>
             <td>
                 <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_id"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
                 <br>
                 <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
@@ -887,7 +887,7 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
             </th>
             <td>
                 <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id_global_won"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_id_global_won"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_won" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
                 <br>
                 <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_won" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_global_won"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_won" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
@@ -901,7 +901,7 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
             </th>
             <td>
                 <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id_global_dollar"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_id_global_dollar"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_global_dollar" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
                 <br>
                 <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_dollar" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_global_dollar"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_global_dollar" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
@@ -912,7 +912,7 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
             <th scope="row"><label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key"><?php echo $cookiepayPgName; ?> 비인증(수기결제)<br>연동아이디 &amp; 시크릿키</label></th>
             <td>
                 <?php echo help("쿠키페이에서 발급 받으신 연동 아이디 및 시크릿 키를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_keyin" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_id_keyin"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_keyin" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_keyin" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_id_keyin"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_id_keyin" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
                 <br>
                 <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_keyin" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_key_keyin"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_key_keyin" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
             </td>
@@ -925,10 +925,10 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
             </th>
             <td>
                 <?php echo help("쿠키페이에 입력한 인증 결제용 PG 아이디를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_pgid"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="인증 결제용 PG 아이디">
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_pgid"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="인증 결제용 PG 아이디">
                 <br>
                 <?php echo help("쿠키페이에 입력한 비인증(수기) 결제용 PG 아이디를 입력합니다."); ?>
-                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid_keyin" value="<?php echo $default["de_{$cookiepayPgCodeLower}_cookiepay_pgid_keyin"]; ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid_keyin" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="비인증(수기) 결제용 PG 아이디">
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid_keyin" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_cookiepay_pgid_keyin"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_pgid_keyin" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="비인증(수기) 결제용 PG 아이디">
             </td>
         </tr>
         <?php } ?>

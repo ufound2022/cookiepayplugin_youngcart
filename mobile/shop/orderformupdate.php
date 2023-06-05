@@ -6,8 +6,9 @@ include_once(G5_LIB_PATH.'/mailer.lib.php');
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
 // 세션 생성
-if (isset($_POST['ETC1']) && !empty($_POST['ETC1'])) {
-    $sql = " select * from ".COOKIEPAY_SESSION." where id={$_POST['ETC1']} ";
+$postEtc1 = isset($_POST['ETC1']) ? clean_xss_tags($_POST['ETC1'], 1, 1) : '';
+if (!empty($postEtc1)) {
+    $sql = " select * from ".COOKIEPAY_SESSION." where id={$postEtc1} ";
     $res = sql_fetch($sql);
     if ($res) {
         $arrSess = json_decode($res['json_sess'], true);
@@ -109,7 +110,8 @@ function cookiepay_cancel_keyin($tno) {
     return $return;
 }
 
-$od_settle_case = isset($od_settle_case) && !empty($od_settle_case) ? $od_settle_case : $_POST['ETC2'];
+$postEtc2 = isset($_POST['ETC2']) ? clean_xss_tags($_POST['ETC2'], 1, 1) : '';
+$od_settle_case = isset($od_settle_case) && !empty($od_settle_case) ? $od_settle_case : $postEtc2;
 // e: cookiepay-plugin
 
 $post_p_hash = isset($_POST['P_HASH']) ? $_POST['P_HASH'] : '';

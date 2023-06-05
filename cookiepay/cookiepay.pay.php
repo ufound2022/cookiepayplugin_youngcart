@@ -10,7 +10,11 @@ $ret = [
     'data' => ''
 ];
 
-$cookiepay = $_POST;
+// $cookiepay = $_POST;
+$cookiepay = array();
+foreach ($_POST as $key => $value) {
+    $cookiepay[$key] = clean_xss_tags($value, 1, 1);
+}
 
 $mode = $cookiepay['mode'];
 unset($cookiepay['mode']);

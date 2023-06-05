@@ -5,8 +5,12 @@ include_once('../shop/_common.php');
 
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
-$payTypeCode = $_GET["pt"] ?? 3; // pay_type code
-$payType = $_GET["pm"]; // settle_method
+// $payTypeCode = $_GET["pt"] ?? 3; // pay_type code
+$payTypeCode = isset($_GET['pt']) ? clean_xss_tags($_GET['pt'], 1, 1) : 3;
+
+// $payType = $_GET["pm"]; // settle_method
+$payType = isset($_GET['pm']) ? clean_xss_tags($_GET['pm'], 1, 1) : '';
+
 if ($payType == "수기결제") {
     $payTypeCode = 1;
 }
@@ -523,7 +527,7 @@ else {
 <div>
     <small>결제를 돕기 위해 생성된 창 입니다.</small>
     <h3>결제가 진행 중인 경우 이 창을 닫지 말아주세요.</h3>
-    <small>결제를 중지한 경우에도 현재 창이 보이신다면 <button type="button" onClick="self.close();">닫기</button>를 눌러주세요.</small>
+    <small>결제를 중지한 경우에도 현재 창이 보이신다면 <button type="button" onClick="opener.location.reload();self.close();">닫기</button>를 눌러주세요.</small>
 </div>
 
 <?php
