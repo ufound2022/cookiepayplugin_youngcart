@@ -23,12 +23,12 @@ unset($cookiepay['mode']);
 if ($mode == "try_pay") {
     @cookiepay_payment_log("결제 시도", json_encode($cookiepay), 3);
     
-    $orderno = $cookiepay['ORDERNO'] ?? '';
+    $orderno = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : '';
 
     $pgResultId = '';
     if (!empty($orderno)) {
         $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderno}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
-        $pgResultId = $pgResult['id'] ?? '';
+        $pgResultId = isset($pgResult['id']) && !empty($pgResult['id']) ? $pgResult['id'] : '';
     }
     
     if (!empty($orderno) && empty($pgResultId)) {
@@ -44,7 +44,7 @@ if ($mode == "try_pay") {
         }
         $values['PGNAME'] = "'{$default['de_pg_service']}'"; // pg사 추가
         $values['ORDERNO'] = "'{$orderno}'";
-        $payType = $cookiepay['PAY_TYPE'] ?? 3;
+        $payType = isset($cookiepay['PAY_TYPE']) && !empty($cookiepay['PAY_TYPE']) ? $cookiepay['PAY_TYPE'] : 3;
         $values['pay_type'] = "'{$payType}'";
         $values['pay_status'] = "0";
         $valueStr = implode(",", $values);
@@ -89,7 +89,7 @@ if ($mode == "keyin_pay") {
         $pgResultId = '';
         if (!empty($cookiepay['ORDERNO'])) {
             $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
-            $pgResultId = $pgResult['id'] ?? '';
+            $pgResultId = isset($pgResult['id']) && !empty($pgResult['id']) ? $pgResult['id'] : '';
         }
 
         if (empty($pgResultId)) {
@@ -171,7 +171,7 @@ if ($mode == "keyin_pay") {
             $payStatus = '';
             if (!empty($keyinRes['ORDERNO'])) {
                 $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$keyinRes['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-                $payStatus = $pgResult['pay_status'] ?? '';
+                $payStatus = isset($pgResult['pay_status']) && !empty($pgResult['pay_status']) ? $pgResult['pay_status'] : '';
             }
 
             if ($payStatus == '') {

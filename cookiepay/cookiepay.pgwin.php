@@ -5,10 +5,8 @@ include_once('../shop/_common.php');
 
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
-// $payTypeCode = $_GET["pt"] ?? 3; // pay_type code
 $payTypeCode = isset($_GET['pt']) ? clean_xss_tags($_GET['pt'], 1, 1) : 3;
 
-// $payType = $_GET["pm"]; // settle_method
 $payType = isset($_GET['pm']) ? clean_xss_tags($_GET['pm'], 1, 1) : '';
 
 if ($payType == "수기결제") {

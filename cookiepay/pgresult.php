@@ -5,14 +5,11 @@ include_once('../shop/_common.php');
 
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
-// $mode = $_GET['mode'] ?? '';
 $mode = isset($_GET['mode']) ? clean_xss_tags($_GET['mode'], 1, 1) : '';
 
 if ($mode == "after") {
-    // $resCode = $_GET['RESULTCODE'] ?? '';
     $resCode = isset($_GET['RESULTCODE']) ? clean_xss_tags($_GET['RESULTCODE'], 1, 1) : '';
 
-    // $resMsg = $_GET['RESULTMSG'] ?? '';
     $resMsg = isset($_GET['RESULTMSG']) ? clean_xss_tags($_GET['RESULTMSG'], 1, 1) : '';
 
     if ($resCode == '0000') {
@@ -64,7 +61,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
     $payStatus = '';
     if (!empty($cookiepay['ORDERNO'])) {
         $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-        $payStatus = $pgResult['pay_status'] ?? '';
+        $payStatus = isset($pgResult['pay_status']) && !empty($pgResult['pay_status']) ? $pgResult['pay_status'] : '';
     }
 
     // 결제 결과 테이블에 저장
@@ -175,7 +172,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
         $verify = json_decode($response, true);
 
         $pgVerify = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_VERIFY." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-        $verifyId = $pgVerify['id'] ?? null;
+        $verifyId = isset($pgVerify['id']) && !empty($pgVerify['id']) ? $pgVerify['id'] : null;
 
         // 결제 검증 결과 테이블에 저장
         if (is_null($verifyId)) {

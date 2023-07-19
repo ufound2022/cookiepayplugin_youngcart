@@ -45,8 +45,8 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $cancel[$i]['orderno'] = $row['ORDERNO'];
     $cancel[$i]['TID'] = $row['verify_tid'];
     $cancel[$i]['amount'] = 0;
-    $cancel[$i]['cancelAmount'] = $row['cancel_amt'] ?? 0;
-    $cancel[$i]['CANCEL_SUM_AMOUNT'] = $row['CANCEL_SUM_AMOUNT'] ?? 0;
+    $cancel[$i]['cancelAmount'] = isset($row['cancel_amt']) && !empty($row['cancel_amt']) ? $row['cancel_amt'] : 0;
+    $cancel[$i]['CANCEL_SUM_AMOUNT'] = isset($row['CANCEL_SUM_AMOUNT']) && !empty($row['CANCEL_SUM_AMOUNT']) ? $row['CANCEL_SUM_AMOUNT'] : 0;
     $cancel[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
     $cancel[$i]['ACCEPTNO'] = $row['ACCEPTNO'];
     $cancel[$i]['CANCELDATE'] = $row['cancel_date'];
@@ -98,9 +98,9 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $success[$i]['payMethod'] = '';
     $success[$i]['orderno'] = $row['ORDERNO'];
     $success[$i]['TID'] = $row['verify_tid'];
-    $success[$i]['amount'] = $row['AMOUNT'] ?? 0;
+    $success[$i]['amount'] = isset($row['AMOUNT']) && !empty($row['AMOUNT']) ? $row['AMOUNT'] : 0;
     $success[$i]['cancelAmount'] = 0;
-    $success[$i]['CANCEL_SUM_AMOUNT'] = $row['CANCEL_SUM_AMOUNT'] ?? 0;
+    $success[$i]['CANCEL_SUM_AMOUNT'] = isset($row['CANCEL_SUM_AMOUNT']) && !empty($row['CANCEL_SUM_AMOUNT']) ? $row['CANCEL_SUM_AMOUNT'] : 0;
     $success[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
     $success[$i]['ACCEPTNO'] = $row['ACCEPTNO'];
     $success[$i]['CANCELDATE'] = "";
@@ -140,7 +140,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
             $success[$i]['payMethod'] = $row['PAYMETHOD'];
     }
 
-    $success[$i]['pay_type'] = $row['pay_type'] ?? '';
+    $success[$i]['pay_type'] = isset($row['pay_type']) && !empty($row['pay_type']) ? $row['pay_type'] : '';
     if (!empty($success[$i]['pay_type'])) {
         $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, $success[$i]['pay_type']); // 해외원화/달러인 경우
     }
