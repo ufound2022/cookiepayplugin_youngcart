@@ -1392,6 +1392,7 @@ function pay_approval()
         if($isCookiepay !== false) {
         ?>
         if(settle_method != "무통장") {
+			$('#AMOUNT').val(f.good_mny.value);
             pay(settle_method);
             return false;
         } else {

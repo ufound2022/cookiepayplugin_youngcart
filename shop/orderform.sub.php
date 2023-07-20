@@ -1476,14 +1476,14 @@ function forderform_check(f)
         }
     }
     
-    if (document.getElementById("od_settle_card")) {
-        if (document.getElementById("od_settle_card").checked) {
-            if (tot_price < 1000) {
-                alert("신용카드는 1000원 이상 결제가 가능합니다.");
-                return false;
-            }
-        }
-    }
+    // if (document.getElementById("od_settle_card")) {
+    //     if (document.getElementById("od_settle_card").checked) {
+    //         if (tot_price < 1000) {
+    //             alert("신용카드는 1000원 이상 결제가 가능합니다.");
+    //             return false;
+    //         }
+    //     }
+    // }
 
     if (document.getElementById("od_settle_hp")) {
         if (document.getElementById("od_settle_hp").checked) {
@@ -1532,6 +1532,7 @@ function forderform_check(f)
         if($isCookiepay !== false) {
         ?>
         if(settle_method != "무통장") {
+			$('#AMOUNT').val(f.good_mny.value);
             pay(settle_method);
             return false;
         } else {
