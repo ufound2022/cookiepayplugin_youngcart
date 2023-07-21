@@ -171,7 +171,7 @@ if ($mode == "keyin_pay") {
             $payStatus = '';
             if (!empty($keyinRes['ORDERNO'])) {
                 $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$keyinRes['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-                $payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
+				$payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
             }
 
             if ($payStatus == '') {
