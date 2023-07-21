@@ -16,7 +16,7 @@ $resultMode = null;
 
 if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cookiepay['ORDERNO'])) {
     $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-    $payStatus = isset($pgResult['pay_status']) && !empty($pgResult['pay_status']) ? $pgResult['pay_status'] : '';
+    $payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
 
     $cookiepay['RESULTCODE'] = '0000';
     $cookiepay['RESULTMSG'] = '성공';

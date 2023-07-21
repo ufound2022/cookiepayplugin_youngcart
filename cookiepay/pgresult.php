@@ -61,7 +61,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
     $payStatus = '';
     if (!empty($cookiepay['ORDERNO'])) {
         $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-        $payStatus = isset($pgResult['pay_status']) && !empty($pgResult['pay_status']) ? $pgResult['pay_status'] : '';
+        $payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
     }
 
     // 결제 결과 테이블에 저장
