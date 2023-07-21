@@ -20,6 +20,9 @@ if (!empty($postEtc1)) {
 
 // 회원정보
 $member = get_member($_SESSION['ss_mb_id']);
+if($member) {
+	$is_member = true;
+}
 
 // api account
 $cookiepayApi = cookiepay_get_api_account_info($default, 3);
