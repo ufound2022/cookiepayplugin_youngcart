@@ -39,7 +39,7 @@ $cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
 $(function(){
     var browserName = checkBrowser();
     if (browserName != "Safari" && browserName != "other") {
-        var pgWin2 = window.open("about:blank;", "pgWin2", "left=-10000, top=0, width=10, height=10");
+        var pgWin2 = window.open("blank", "pgWin2", "left=-10000, top=0, width=10, height=10");
 
         if(!pgWin2 || pgWin2.closed || typeof pgWin2.closed=='undefined') { 
             alert("팝업이 차단되어 있습니다.\n팝업 차단 해제 후 다시 시도해 주세요.");
