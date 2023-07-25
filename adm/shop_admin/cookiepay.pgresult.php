@@ -87,7 +87,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $cancel[$i]['status'] = '<span style="color:red;">취소</span>';
 }
 
-$sql = "SELECT R.*, V.PAYMETHOD, V.TID AS verify_tid, V.BUYERNAME, V.BUYEREMAIL, V.PRODUCTNAME, V.PRODUCTCODE, V.BUYERID, V.CARDCODE AS verify_cardcode FROM cookiepay_pg_result AS R LEFT JOIN cookiepay_pg_verify AS V ON R.ACCEPTNO=V.ACCEPTNO WHERE R.RESULTCODE='0000' AND R.ACCEPTDATE BETWEEN '{$from}' AND '{$to}'  ORDER BY R.ACCEPTDATE DESC, R.id DESC";
+$sql = "SELECT R.*, V.PAYMETHOD, V.TID AS verify_tid, V.BUYERNAME, V.BUYEREMAIL, V.PRODUCTNAME, V.PRODUCTCODE, V.BUYERID, V.CARDCODE AS verify_cardcode FROM cookiepay_pg_result AS R LEFT JOIN cookiepay_pg_verify AS V ON R.ORDERNO=V.ORDERNO WHERE R.RESULTCODE='0000' AND R.ACCEPTDATE BETWEEN '{$from}' AND '{$to}'  ORDER BY R.ACCEPTDATE DESC, R.id DESC";
 $res = sql_query($sql);
 for($i=0; $row=sql_fetch_array($res); $i++) {
     $success[$i]['cookiepayPg'] = '';
