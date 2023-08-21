@@ -20,7 +20,7 @@ $cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>쿠키페이 결제</title>
+    <title>쿠키페이 결제 ver.1.0.1</title>
 </head>
 <body>
 
