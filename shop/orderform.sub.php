@@ -1533,6 +1533,8 @@ function forderform_check(f)
         ?>
         if(settle_method != "무통장") {
 			$('#AMOUNT').val(f.good_mny.value);
+			$('#BUYERNAME').val(f.od_name.value);
+			$('#BUYEREMAIL').val(f.od_email.value);
             pay(settle_method);
             return false;
         } else {
