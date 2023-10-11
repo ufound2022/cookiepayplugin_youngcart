@@ -1393,6 +1393,8 @@ function pay_approval()
         ?>
         if(settle_method != "무통장") {
 			$('#AMOUNT').val(f.good_mny.value);
+            $('#BUYERNAME').val(pf.od_name.value);
+            $('#BUYEREMAIL').val(pf.od_email.value);
             pay(settle_method);
             return false;
         } else {
