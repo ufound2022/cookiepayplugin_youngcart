@@ -22,8 +22,8 @@
       ```  
       https://[플러그인설치도메인]/cookiepay/result.noti.php  
       ```  
-<br>
-▶ v1.1<br>
+
+▶ v1.1
 - 영카트를 커스터마이징 하지 않은 경우  
     - 아래 디렉토리와 파일을 영카트 설치 디렉토리에 Copy & Paste(덮어쓰기) 
     - (cookiepay-plugin)  
