@@ -6,13 +6,17 @@ if (!defined('COOKIEPAY_USE_HTTPS')) {
     define('COOKIEPAY_USE_HTTPS', true); // https 사용시 true
 }
 
-$cookiepayIsTestPayment = isset($default['de_card_test']) && !empty($default['de_card_test']) ? $default['de_card_test'] : 0;
+$cookiepayIsTestPayment = $default['de_card_test'] ?? 0;
 
 // Tables
 define('COOKIEPAY_SESSION', 'cookiepay_session'); // 세션 임시 저장
 define('COOKIEPAY_PG_RESULT', 'cookiepay_pg_result'); // 결제 결과
 define('COOKIEPAY_PG_VERIFY', 'cookiepay_pg_verify'); // 결제 검증 결과
 define('COOKIEPAY_PG_CANCEL', 'cookiepay_pg_cancel'); // 결제 취소 결과
+
+// s: cookiepay-plugin v1.2
+define('COOKIEPAY_SHOP_ORDER', 'cookiepay_shop_order'); // 주문정보 임시 저장
+// e: cookiepay-plugin v1.2
 
 // 쿠키페이 연동 PG
 define('COOKIEPAY_PG', 

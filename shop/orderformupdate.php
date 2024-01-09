@@ -21,7 +21,7 @@ if (!empty($postEtc1)) {
 // 회원정보
 $member = get_member($_SESSION['ss_mb_id']);
 if($member) {
-	$is_member = true;
+    $is_member = true;
 }
 
 // api account
@@ -112,6 +112,69 @@ function cookiepay_cancel_keyin($tno) {
     return $return;
 }
 // e: cookiepay-plugin
+
+// s: cookiepay-plugin v1.2
+$od_id = isset($_POST['od_id']) ? $_POST['od_id'] : '';
+if (!empty($od_id))
+{
+    // 세션 생성
+    $sql = " select ETC1 from ".COOKIEPAY_PG_RESULT." where ORDERNO = {$od_id} ";
+    $res = sql_fetch($sql);
+    if ($res)
+    {
+        $sql = " select * from ".COOKIEPAY_SESSION." where id={$res['ETC1']} ";
+        $res = sql_fetch($sql);
+        if ($res) {
+            $arrSess = json_decode($res['json_sess'], true);
+            foreach ($arrSess as $key => $val) {
+                $_SESSION[$key] = $val;
+            }
+        }
+    }
+    // 주문정보 설정
+    $sql = " select * from ".COOKIEPAY_SHOP_ORDER." where od_id = {$od_id} ";
+    $order_data = sql_fetch($sql);
+    if ($order_data)
+    {
+        $_POST['od_temp_point'] = $order_data['od_temp_point'];
+        $_POST['od_hope_date'] = $order_data['od_hope_date'];
+        $_POST['ad_default'] = $order_data['ad_default'];
+        $_POST['od_price'] = $order_data['od_price'];
+        $_POST['od_send_cost'] = $order_data['od_send_cost'];
+        $_POST['od_send_cost2'] = $order_data['od_send_cost2'];
+        $_POST['od_send_coupon'] = $order_data['od_send_coupon'];
+        $_POST['cp_id'] = $order_data['cp_id'];
+        $_POST['it_id'] = $order_data['it_id'];
+        $_POST['od_cp_id'] = $order_data['od_cp_id'];
+        $_POST['sc_cp_id'] = $order_data['sc_cp_id'];
+        $_POST['od_pwd'] = $order_data['od_pwd'];
+        $_POST['comm_tax_mny'] = $order_data['comm_tax_mny'];
+        $_POST['comm_vat_mny'] = $order_data['comm_vat_mny'];
+        $_POST['comm_free_mny'] = $order_data['comm_free_mny'];
+        $_POST['ad_subject'] = $order_data['ad_subject'];
+        $od_settle_case = $order_data['od_settle_case'];
+        $od_email = $order_data['od_email'];
+        $od_name = $order_data['od_name'];
+        $od_tel = $order_data['od_tel'];
+        $od_hp = $order_data['od_hp'];
+        $od_zip = $order_data['od_zip1'].$order_data['od_zip2'];
+        $od_addr1 = $order_data['od_addr1'];
+        $od_addr2 = $order_data['od_addr2'];
+        $od_addr3 = $order_data['od_addr3'];
+        $od_addr_jibeon = $order_data['od_addr_jibeon'];
+        $od_b_name = $order_data['od_b_name'];
+        $od_b_tel = $order_data['od_b_tel'];
+        $od_b_hp = $order_data['od_b_hp'];
+        $od_b_zip = $order_data['od_b_zip1'].$order_data['od_b_zip2'];
+        $od_b_addr1 = $order_data['od_b_addr1'];
+        $od_b_addr2 = $order_data['od_b_addr2'];
+        $od_b_addr3 = $order_data['od_b_addr3'];
+        $od_b_addr_jibeon = $order_data['od_b_addr_jibeon'];
+        $od_memo = $order_data['od_memo'];
+        $od_deposit_name = $order_data['od_deposit_name'];
+    }
+}
+// e: cookiepay-plugin v1.2
 
 //이니시스 lpay 요청으로 왔다면 $default['de_pg_service'] 값을 이니시스로 변경합니다.
 if( in_array($od_settle_case, array('lpay', 'inicis_kakaopay')) ){
@@ -550,9 +613,12 @@ else if ($od_settle_case == "신용카드")
             // s: cookiepay-plugin - 쿠키페이 처리
             if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
                 require_once G5_PATH."/cookiepay/pgresult.update.php";
+                @cookiepay_payment_log("Debug", "신용카드결제후break시도", 3);
                 break;
             }
             // e: cookiepay-plugin - 쿠키페이 처리
+
+            @cookiepay_payment_log("Debug", "신용카드결제후break실패", 3);
 
             include G5_SHOP_PATH.'/kcp/pp_ax_hub.php';
             $card_name  = iconv("cp949", "utf-8", $card_name);
@@ -799,8 +865,14 @@ $result = sql_query($sql, false);
 $exists_sql = "select od_id, od_tno, od_ip from {$g5['g5_shop_order_table']} where od_id = '$od_id'";
 $exists_order = sql_fetch($exists_sql);
 
+
 // 주문정보 입력 오류시 결제 취소
-if(! $result || ! (isset($exists_order['od_id']) && $od_id && $exists_order['od_id'] === $od_id)) {
+
+// s: cookiepay-plugin v1.2
+//if(! $result || ! (isset($exists_order['od_id']) && $od_id && $exists_order['od_id'] === $od_id)) {
+if(! (isset($exists_order['od_id']) && $od_id && $exists_order['od_id'] === $od_id)) {
+// e: cookiepay-plugin v1.2
+
     if($tno) {
         $cancel_msg = '주문정보 입력 오류 : '.$sql;
         switch($od_pg) {

@@ -6,9 +6,9 @@ require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
 // 결제 결과 통지 수신 후 처리
 
 $cookiepay = json_decode(file_get_contents('php://input'), true);
-$cookiepay['ACCEPT_NO'] = isset($cookiepay['ACCEPT_NO']) && !empty($cookiepay['ACCEPT_NO']) ? $cookiepay['ACCEPT_NO'] : '';
-$cookiepay['TID'] = isset($cookiepay['TID']) && !empty($cookiepay['TID']) ? $cookiepay['TID'] : '';
-$cookiepay['ORDERNO'] = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : '';
+$cookiepay['ACCEPT_NO'] = $cookiepay['ACCEPT_NO'] ?? '';
+$cookiepay['TID'] = $cookiepay['TID'] ?? '';
+$cookiepay['ORDERNO'] = $cookiepay['ORDERNO'] ?? '';
 
 $resultMode = null;
 
@@ -16,7 +16,7 @@ $resultMode = null;
 
 if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cookiepay['ORDERNO'])) {
     $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-	$payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
+    $payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
 
     $cookiepay['RESULTCODE'] = '0000';
     $cookiepay['RESULTMSG'] = '성공';
@@ -47,10 +47,10 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
         $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
         $res = sql_query($sql, false);
         if ($res) {
-            @cookiepay_payment_log("[통지]결제결과 저장 성공", $sql, 3);
+            @cookiepay_payment_log("[통지]결제결과 저장 성공1", $sql, 3);
             $resultMode = 'insert';
         } else {
-            @cookiepay_payment_log("[통지]결제결과 저장 실패", $sql, 3);
+            @cookiepay_payment_log("[통지]결제결과 저장 실패1", $sql, 3);
         }
     } else if ($payStatus != 1) {
         // update
@@ -71,10 +71,10 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
 
         $res = sql_query($sql, false);
         if ($res) {
-            @cookiepay_payment_log("[통지]결제결과 저장 성공", $sql, 3);
+            @cookiepay_payment_log("[통지]결제결과 저장 성공2", $sql, 3);
             $resultMode = 'update';
         } else {
-            @cookiepay_payment_log("[통지]결제결과 저장 실패", $sql, 3);
+            @cookiepay_payment_log("[통지]결제결과 저장 실패2", $sql, 3);
         }
     }
 
@@ -141,7 +141,7 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
             $verify = json_decode($response, true);
 
             $pgVerify = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_VERIFY." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-            $verifyId = isset($pgVerify['id']) && !empty($pgVerify['id']) ? $pgVerify['id'] : null;
+            $verifyId = $pgVerify['id'] ?? null;
 
             // 결제 검증 결과 테이블에 저장
             if (is_null($verifyId)) {
@@ -175,14 +175,121 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
             }
 
             if ($res) {
-                @cookiepay_payment_log("[통지]결제검증결과 저장 성공", $sql, 3);
+                @cookiepay_payment_log("[통지]결제검증결과 저장 성공3", $sql, 3);
             } else {
-                @cookiepay_payment_log("[통지]결제검증결과 저장 실패", $sql, 3);
+                @cookiepay_payment_log("[통지]결제검증결과 저장 실패3", $sql, 3);
             }
 
             if($verify['RESULTCODE'] == '0000') {
+                
+                // s: cookiepay-plugin v1.2
+                $exists_sql = "select od_id from {$g5['g5_shop_order_table']} where od_id = '{$cookiepay['ORDERNO']}'";
+                $exists_order = sql_fetch($exists_sql);
+                if (!isset($exists_order['od_id']))
+                {
+                    $sql = "select * from ".COOKIEPAY_SHOP_ORDER." where od_id = '{$cookiepay['ORDERNO']}'";
+                    $order_data = sql_fetch($sql);
+                    if ($order_data)
+                    {
+                        $sql = "SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
+                        $pg_data = sql_fetch($sql);
+                        
+                        $i_price = $order_data['od_price'] + $order_data['od_send_cost'] + $order_data['od_send_cost2'] - $order_data['od_temp_point'] - $order_data['od_send_coupon'];
+                        $od_receipt_time = preg_replace("/([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})/", "\\1-\\2-\\3 \\4:\\5:\\6", $pg_data['ACCEPTDATE']);
+                        $od_misu = $i_price - $pg_data['AMOUNT'];
+                        if ($od_misu == 0)
+                        {
+                            $od_status = '입금';
+                        }
+                        else
+                        {
+                            $od_status = '주문';
+                        }
+                        
+                        // 복합과세 금액
+                        $od_tax_mny = round($i_price / 1.1);
+                        $od_vat_mny = $i_price - $od_tax_mny;
+                        $od_free_mny = 0;
+                        if ($default['de_tax_flag_use'])
+                        {
+                            $od_tax_mny = $order_data['comm_tax_mny'] ? (int) $order_data['comm_tax_mny'] : 0;
+                            $od_vat_mny = $order_data['comm_vat_mny'] ? (int) $order_data['comm_vat_mny'] : 0;
+                            $od_free_mny = $order_data['comm_free_mny'] ? (int) $order_data['comm_free_mny'] : 0;
+                        }
+                        
+                        $sql = " insert {$g5['g5_shop_order_table']}
+                                    set od_id               = '{$order_data['od_id']}',
+                                        mb_id               = '{$order_data['mb_id']}',
+                                        od_name             = '{$order_data['od_name']}',
+                                        od_email            = '{$order_data['od_email']}',
+                                        od_tel              = '{$order_data['od_tel']}',
+                                        od_hp               = '{$order_data['od_hp']}',
+                                        od_zip1             = '{$order_data['od_zip1']}',
+                                        od_zip2             = '{$order_data['od_zip2']}',
+                                        od_addr1            = '{$order_data['od_addr1']}',
+                                        od_addr2            = '{$order_data['od_addr2']}',
+                                        od_addr3            = '{$order_data['od_addr3']}',
+                                        od_addr_jibeon      = '{$order_data['od_addr_jibeon']}',
+                                        od_deposit_name     = '{$order_data['od_deposit_name']}',
+                                        od_b_name           = '{$order_data['od_b_name']}',
+                                        od_b_tel            = '{$order_data['od_b_tel']}',
+                                        od_b_hp             = '{$order_data['od_b_hp']}',
+                                        od_b_zip1           = '{$order_data['od_b_zip1']}',
+                                        od_b_zip2           = '{$order_data['od_b_zip2']}',
+                                        od_b_addr1          = '{$order_data['od_b_addr1']}',
+                                        od_b_addr2          = '{$order_data['od_b_addr2']}',
+                                        od_b_addr3          = '{$order_data['od_b_addr3']}',
+                                        od_b_addr_jibeon    = '{$order_data['od_b_addr_jibeon']}',
+                                        od_memo             = '{$order_data['od_memo']}',
+                                        od_cart_count       = '{$order_data['od_cart_count']}',
+                                        od_cart_price       = '{$order_data['od_cart_price']}',
+                                        od_cart_coupon      = '{$order_data['od_cart_coupon']}',
+                                        od_send_cost        = '{$order_data['od_send_cost']}',
+                                        od_send_cost2       = '{$order_data['od_send_cost2']}',
+                                        od_send_coupon      = '{$order_data['od_send_coupon']}',
+                                        od_receipt_price    = '{$pg_data['AMOUNT']}',
+                                        od_cancel_price     = '{$order_data['od_cancel_price']}',
+                                        od_receipt_point    = '{$order_data['od_temp_point']}',
+                                        od_refund_price     = '{$order_data['od_refund_price']}',
+                                        od_bank_account     = '{$pg_data['CARDCODE']}',
+                                        od_receipt_time     = '{$od_receipt_time}',
+                                        od_coupon           = '{$order_data['od_coupon']}',
+                                        od_misu             = '{$od_misu}',
+                                        od_shop_memo        = '{$order_data['od_shop_memo']}',
+                                        od_mod_history      = '{$order_data['od_mod_history']}',
+                                        od_status           = '{$od_status}',
+                                        od_hope_date        = '{$order_data['od_hope_date']}',
+                                        od_settle_case      = '{$order_data['od_settle_case']}',
+                                        od_other_pay_type   = '{$order_data['od_other_pay_type']}',
+                                        od_test             = '{$order_data['od_test']}',
+                                        od_mobile           = '{$order_data['od_mobile']}',
+                                        od_pg               = '{$pg_data['PGNAME']}',
+                                        od_tno              = '{$pg_data['TID']}',
+                                        od_app_no           = '{$pg_data['ACCEPTNO']}',
+                                        od_escrow           = '{$order_data['od_escrow']}',
+                                        od_casseqno         = '{$order_data['od_casseqno']}',
+                                        od_tax_flag         = '{$order_data['od_tax_flag']}',
+                                        od_tax_mny          = '{$od_tax_mny}',
+                                        od_vat_mny          = '{$od_vat_mny}',
+                                        od_free_mny         = '{$od_free_mny}',
+                                        od_delivery_company = '{$order_data['od_delivery_company']}',
+                                        od_invoice          = '{$order_data['od_invoice']}',
+                                        od_invoice_time     = '{$order_data['od_invoice_time']}',
+                                        od_cash             = '{$order_data['od_cash']}',
+                                        od_cash_no          = '{$order_data['od_cash_no']}',
+                                        od_cash_info        = '{$order_data['od_cash_info']}',
+                                        od_time             = '".G5_TIME_YMDHIS."',
+                                        od_pwd              = '{$order_data['od_pwd']}',
+                                        od_ip               = '{$order_data['od_ip']}'
+                                        ";
+                        $result = sql_query($sql, false);
+                        @cookiepay_payment_log("[통지]주문정보 저장", $sql, 3);
+                    }
+                }
+                // e: cookiepay-plugin v1.2
+                
                 // 결제 검증 성공
-                @cookiepay_payment_log("[통지]결제검증 성공", $response, 3);
+                @cookiepay_payment_log("[통지]결제검증 성공4", $response, 3);
                 echo '<html>
                         <body>
                         <RESULT>SUCCESS</RESULT>
@@ -190,15 +297,15 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                       </html>';
             } else {
                 // 결제 검증 실패시 결제 취소 처리
-                @cookiepay_payment_log("[통지]결제검증 실패", $response, 3);
+                @cookiepay_payment_log("[통지]결제검증 실패4", $response, 3);
             
                 $ret = cookipay_cancel_payment($cookiepayApi['api_id'], $cookiepayApi['api_key'], $cookiepay['TID'], $cookiepay['CARDCODE'], $cookiepay['ACCOUNTNO'], $cookiepay['RECEIVERNAME']);
 
                 if ($ret['status'] === true) {
-                    @cookiepay_payment_log("[통지]결제취소 성공", $ret['data'], 3);
+                    @cookiepay_payment_log("[통지]결제취소 성공5", $ret['data'], 3);
                     $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
                 } else {
-                    @cookiepay_payment_log("[통지]결제취소 실패", $ret['data'], 3);
+                    @cookiepay_payment_log("[통지]결제취소 실패5", $ret['data'], 3);
                 }
 
                 $cancelArr = json_decode($ret['data'], true);
@@ -206,22 +313,22 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                 $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
                 $res = sql_query($sql, false);
                 if ($res) {
-                    @cookiepay_payment_log("[통지]결제취소결과 저장 성공", $sql, 3);
+                    @cookiepay_payment_log("[통지]결제취소결과 저장 성공6", $sql, 3);
                 } else {
-                    @cookiepay_payment_log("[통지]결제취소결과 저장 실패", $sql, 3);
+                    @cookiepay_payment_log("[통지]결제취소결과 저장 실패6", $sql, 3);
                 }
             }
         } else {
             // 결제 검증 토큰 발행 실패시 결제 취소 처리
-            @cookiepay_payment_log("[통지]결제 검증 토큰 발행 실패", $resultJson, 3);
+            @cookiepay_payment_log("[통지]결제 검증 토큰 발행 실패7", $resultJson, 3);
             
             $ret = cookipay_cancel_payment($cookiepayApi['api_id'], $cookiepayApi['api_key'], $cookiepay['TID'], $cookiepay['CARDCODE'], $cookiepay['ACCOUNTNO'], $cookiepay['RECEIVERNAME']);
 
             if ($ret['status'] === true) {
-                @cookiepay_payment_log("[통지]결제취소 성공", $ret['data'], 3);
+                @cookiepay_payment_log("[통지]결제취소 성공7", $ret['data'], 3);
                 $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
             } else {
-                @cookiepay_payment_log("[통지]결제취소 실패", $ret['data'], 3);
+                @cookiepay_payment_log("[통지]결제취소 실패7", $ret['data'], 3);
             }
 
             $cancelArr = json_decode($ret['data'], true);
@@ -229,9 +336,9 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
             $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
             $res = sql_query($sql, false);
             if ($res) {
-                @cookiepay_payment_log("[통지]결제취소결과 저장 성공", $sql, 3);
+                @cookiepay_payment_log("[통지]결제취소결과 저장 성공8", $sql, 3);
             } else {
-                @cookiepay_payment_log("[통지]결제취소결과 저장 실패", $sql, 3);
+                @cookiepay_payment_log("[통지]결제취소결과 저장 실패8", $sql, 3);
             }
         }
     }

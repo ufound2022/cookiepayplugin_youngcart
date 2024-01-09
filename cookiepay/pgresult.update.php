@@ -25,6 +25,14 @@ $cash_authno = '';
 $cash_tr_code = '';
 
 $postOrderno = isset($_POST['ORDERNO']) ? clean_xss_tags($_POST['ORDERNO'], 1, 1) : '';
+
+// s: cookiepay-plugin v1.2
+if (!$postOrderno && isset($_POST['od_id']))
+{
+    $postOrderno = isset($_POST['od_id']) ? clean_xss_tags($_POST['od_id'], 1, 1) : '';
+}
+// e: cookiepay-plugin v1.2
+
 $sql = " select * from ".COOKIEPAY_PG_RESULT." where ORDERNO='{$postOrderno}' ";
 $cookiepayPgResult = sql_fetch($sql);
 

@@ -20,7 +20,7 @@ $cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>쿠키페이 결제 ver.1.0.1</title>
+    <title>쿠키페이 결제 ver.1.2</title>
 </head>
 <body>
 
@@ -235,13 +235,27 @@ function payKeyin(){
                 return false;
             }
         }
-
+        
+        <?php
+        // s: cookiepay-plugin v1.2
+        if ($default['de_pg_service'] == 'COOKIEPAY_TS') {
+        ?>
+            if ($("#CARDAUTH").val().length < 6 || $("#CARDAUTH").val().length > 13) {
+                alert("생년월일 (사업자등록번호)를 확인해 주세요.");
+                $("#CARDAUTH").focus();
+                return false;
+            }
+        <?php
+        }
+        // e: cookiepay-plugin v1.2
+        ?>
+        
         if (!$("#agree").is(":checked")) {
             alert("[카드 소유주가 본 결제에 대해 동의하였음을 확인합니다]에 동의해 주세요.");
             $("#agree").focus();
             return false;
         }
-
+        
         $("#btn_pay_keyin").text("결제 진행 중···").attr("disabled", true).addClass("btn-disabled");
         // $("#btn_pay_keyin").text("결제하기").attr("disabled", false).removeClass("btn-disabled");
         
@@ -265,6 +279,11 @@ function payKeyin(){
         $("input[name='BUYERPHONE']").val(opener.document.getElementById("BUYERPHONE").value);
         $("input[name='CARDNO']").val(cardNumber);
         $("input[name='EXPIREDT']").val(cardExpireDt);
+        
+        <!-- // s: cookiepay-plugin v1.2 -->
+        $("input[name='CARDAUTH']").val($("#CARDAUTH").val());
+        <!-- // e: cookiepay-plugin v1.2 -->
+        
         $("input[name='ETC1']").val(opener.document.getElementById("ETC1").value);
         $("input[name='ETC2']").val(opener.document.getElementById("ETC2").value);
         $("input[name='ETC3']").val(opener.document.getElementById("ETC3").value);
@@ -410,7 +429,11 @@ table {
     <input type="hidden" name="BUYERPHONE">
     <input type="hidden" name="CARDNO">
     <input type="hidden" name="EXPIREDT">
-    <!-- <input type="hidden" name="CARDAUTH"> -->
+    
+    <!-- // s: cookiepay-plugin v1.2 -->
+    <input type="hidden" name="CARDAUTH">
+    <!-- // e: cookiepay-plugin v1.2 -->
+    
     <!-- <input type="hidden" name="CARDPWD"> -->
     <!-- <input type="hidden" name="QUOTA"> -->
     
@@ -477,7 +500,11 @@ table {
                     <label for="use_hanacard"> <strong>[하나카드]</strong>로 결제하시는 경우 체크해 주세요.</label>
                 </td>
             </tr>
-            <tr class="d-none" id="birthday_tr">
+            
+            <!-- // s: cookiepay-plugin v1.2 -->
+            <tr class="<?php if ($default['de_pg_service'] != 'COOKIEPAY_TS') { echo "d-none"; }?>" id="birthday_tr">
+            <!-- // e: cookiepay-plugin v1.2 -->
+            
                 <th>생년월일</th>
                 <td colspan="4">
                     <input class="frm_input w-100 text-center only-number" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDAUTH" id="CARDAUTH" maxlength="13" placeholder="- 없이 숫자만 입력" autocomplete="off">
