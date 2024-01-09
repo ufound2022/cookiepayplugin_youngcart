@@ -6,9 +6,9 @@ require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
 // 결제 결과 통지 수신 후 처리
 
 $cookiepay = json_decode(file_get_contents('php://input'), true);
-$cookiepay['ACCEPT_NO'] = $cookiepay['ACCEPT_NO'] ?? '';
-$cookiepay['TID'] = $cookiepay['TID'] ?? '';
-$cookiepay['ORDERNO'] = $cookiepay['ORDERNO'] ?? '';
+$cookiepay['ACCEPT_NO'] = isset($cookiepay['ACCEPT_NO']) && !empty($cookiepay['ACCEPT_NO']) ? $cookiepay['ACCEPT_NO'] : '';
+$cookiepay['TID'] = isset($cookiepay['TID']) && !empty($cookiepay['TID']) ? $cookiepay['TID'] : '';
+$cookiepay['ORDERNO'] = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : '';
 
 $resultMode = null;
 
@@ -141,7 +141,7 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
             $verify = json_decode($response, true);
 
             $pgVerify = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_VERIFY." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-            $verifyId = $pgVerify['id'] ?? null;
+            $verifyId = isset($pgVerify['id']) && !empty($pgVerify['id']) ? $pgVerify['id'] : null;
 
             // 결제 검증 결과 테이블에 저장
             if (is_null($verifyId)) {

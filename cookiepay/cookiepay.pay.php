@@ -23,12 +23,12 @@ unset($cookiepay['mode']);
 if ($mode == "try_pay") {
     @cookiepay_payment_log("결제 시도", json_encode($cookiepay), 3);
     
-    $orderno = $cookiepay['ORDERNO'] ?? '';
-
+    $orderno = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : '';
+    
     $pgResultId = '';
     if (!empty($orderno)) {
         $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderno}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
-        $pgResultId = $pgResult['id'] ?? '';
+        $pgResultId = isset($pgResult['id']) && !empty($pgResult['id']) ? $pgResult['id'] : '';
     }
     
     if (!empty($orderno) && empty($pgResultId)) {
@@ -44,7 +44,7 @@ if ($mode == "try_pay") {
         }
         $values['PGNAME'] = "'{$default['de_pg_service']}'"; // pg사 추가
         $values['ORDERNO'] = "'{$orderno}'";
-        $payType = $cookiepay['PAY_TYPE'] ?? 3;
+        $payType = isset($cookiepay['PAY_TYPE']) && !empty($cookiepay['PAY_TYPE']) ? $cookiepay['PAY_TYPE'] : 3;
         $values['pay_type'] = "'{$payType}'";
         $values['pay_status'] = "0";
         $valueStr = implode(",", $values);
@@ -68,12 +68,12 @@ if ($mode == "try_order")
 {
     @cookiepay_payment_log("주문정보 임시저장 시도", json_encode($cookiepay), 3);
     
-    $odId = $cookiepay['od_id'] ?? '';
+    $odId = isset($cookiepay['od_id']) && !empty($cookiepay['od_id']) ? $cookiepay['od_id'] : '';
     $odResultId = '';
     if (!empty($od_id))
     {
         $odResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_SHOP_ORDER." WHERE od_id='{$od_id}' LIMIT 1");
-        $odResultId = $odResult['od_id'] ?? '';
+        $odResultId = isset($odResult['od_id']) && !empty($odResult['od_id']) ? $odResult['od_id'] : '';
     }
     
     if (!empty($odId) && empty($odResultId))
@@ -151,7 +151,7 @@ if ($mode == "keyin_pay") {
         $pgResultId = '';
         if (!empty($cookiepay['ORDERNO'])) {
             $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
-            $pgResultId = $pgResult['id'] ?? '';
+            $pgResultId = isset($pgResult['id']) && !empty($pgResult['id']) ? $pgResult['id'] : '';
         }
 
         if (empty($pgResultId)) {

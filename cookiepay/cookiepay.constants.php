@@ -6,7 +6,7 @@ if (!defined('COOKIEPAY_USE_HTTPS')) {
     define('COOKIEPAY_USE_HTTPS', true); // https 사용시 true
 }
 
-$cookiepayIsTestPayment = $default['de_card_test'] ?? 0;
+$cookiepayIsTestPayment = isset($default['de_card_test']) && !empty($default['de_card_test']) ? $default['de_card_test'] : 0;
 
 // Tables
 define('COOKIEPAY_SESSION', 'cookiepay_session'); // 세션 임시 저장
