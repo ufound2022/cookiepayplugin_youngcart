@@ -37,9 +37,54 @@ if(!sql_query(" DESCRIBE ".COOKIEPAY_PG_RESULT." ", false)) {
     sql_query($sql, true);
 }
 
-@sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN IF NOT EXISTS `pay_type` VARCHAR(2) NOT NULL COMMENT '결제타입. 1:수기결제,3:신용카드인증,5:해외달러결제,7:해외원화결제' COLLATE 'utf8_general_ci' AFTER `PGNAME` ", true);
+//@sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN IF NOT EXISTS `pay_type` VARCHAR(2) NOT NULL COMMENT '결제타입. 1:수기결제,3:신용카드인증,5:해외달러결제,7:해외원화결제' COLLATE 'utf8_general_ci' AFTER `PGNAME` ", true);
+//@sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN IF NOT EXISTS `pay_status` TINYINT NOT NULL DEFAULT 0 COMMENT '결제상태. 0:결제시도,1:결제성공,2:결제취소,3:결제실패,4:가상계좌' AFTER `pay_type` ", true);
 
-@sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN IF NOT EXISTS `pay_status` TINYINT NOT NULL DEFAULT 0 COMMENT '결제상태. 0:결제시도,1:결제성공,2:결제취소,3:결제실패,4:가상계좌' AFTER `pay_type` ", true);
+
+// s: cookiepay-plugin v1.2
+$sql = "
+SELECT COLUMN_NAME
+FROM information_schema.`COLUMNS`
+WHERE information_schema.`COLUMNS`.TABLE_SCHEMA = '".G5_MYSQL_DB."'
+AND TABLE_NAME='".COOKIEPAY_PG_RESULT."'
+AND information_schema.`COLUMNS`.COLUMN_NAME = 'pay_type';
+";
+$res = sql_fetch($sql);
+if (!isset($res['COLUMN_NAME']))
+{
+    @sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN `pay_type` VARCHAR(2) NOT NULL COMMENT '결제타입. 1:수기결제,3:신용카드인증,5:해외달러결제,7:해외원화결제' COLLATE 'utf8mb4_general_ci' AFTER `PGNAME` ", true);
+}
+
+$sql = "
+SELECT COLUMN_NAME
+FROM information_schema.`COLUMNS`
+WHERE information_schema.`COLUMNS`.TABLE_SCHEMA = '".G5_MYSQL_DB."'
+AND TABLE_NAME='".COOKIEPAY_PG_RESULT."'
+AND information_schema.`COLUMNS`.COLUMN_NAME = 'pay_status';
+";
+$res = sql_fetch($sql);
+if (!isset($res['COLUMN_NAME']))
+{
+    @sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` ADD COLUMN `pay_status` TINYINT NOT NULL DEFAULT 0 COMMENT '결제상태. 0:결제시도,1:결제성공,2:결제취소,3:결제실패,4:가상계좌' AFTER `pay_type` ", true);
+}
+
+$sql = "
+SELECT COLUMN_TYPE
+FROM information_schema.`COLUMNS`
+WHERE information_schema.`COLUMNS`.TABLE_SCHEMA = '".G5_MYSQL_DB."'
+AND TABLE_NAME='".COOKIEPAY_PG_RESULT."'
+AND information_schema.`COLUMNS`.COLUMN_NAME = 'TID'
+";
+$res = sql_fetch($sql);
+if (isset($res))
+{
+    if ($res['COLUMN_TYPE'] != 'varchar(100)')
+    {
+        @sql_query(" ALTER TABLE `".COOKIEPAY_PG_RESULT."` CHANGE COLUMN `TID` `TID` VARCHAR(100) NOT NULL COMMENT '거래고유번호. pg사 결제 거래고유번호 (전표출력 및 결제취소에 사용됩니다)' COLLATE 'utf8mb4_general_ci' AFTER `AMOUNT` ", true);
+    }
+}
+// e: cookiepay-plugin v1.2
+
 
 $pgResultColumns = [
     'RESULTCODE',
@@ -151,3 +196,94 @@ $pgCancelColumns = [
     'cancel_date',
     'cancel_amt'
 ];
+
+// s: cookiepay-plugin v1.2
+// 주문정보 임시 저장 테이블 없으면 생성
+if(!sql_query(" DESCRIBE ".COOKIEPAY_SHOP_ORDER." ", false)) {
+    $sql = " CREATE TABLE `".COOKIEPAY_SHOP_ORDER."` (
+                `od_id` BIGINT(20) UNSIGNED NOT NULL,
+                `mb_id` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_name` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_email` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_tel` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_hp` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_zip1` CHAR(3) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_zip2` CHAR(3) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_addr1` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_addr2` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_addr3` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_addr_jibeon` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_deposit_name` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_name` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_tel` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_hp` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_zip1` CHAR(3) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_zip2` CHAR(3) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_addr1` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_addr2` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_addr3` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_b_addr_jibeon` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_memo` TEXT NOT NULL COLLATE 'utf8mb3_general_ci',
+                `od_cart_count` INT(11) NOT NULL DEFAULT '0',
+                `od_cart_price` INT(11) NOT NULL DEFAULT '0',
+                `od_cart_coupon` INT(11) NOT NULL DEFAULT '0',
+                `od_send_cost` INT(11) NOT NULL DEFAULT '0',
+                `od_send_cost2` INT(11) NOT NULL DEFAULT '0',
+                `od_send_coupon` INT(11) NOT NULL DEFAULT '0',
+                `od_receipt_price` INT(11) NOT NULL DEFAULT '0',
+                `od_cancel_price` INT(11) NOT NULL DEFAULT '0',
+                `od_receipt_point` INT(11) NOT NULL DEFAULT '0',
+                `od_refund_price` INT(11) NOT NULL DEFAULT '0',
+                `od_bank_account` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_receipt_time` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+                `od_coupon` INT(11) NOT NULL DEFAULT '0',
+                `od_misu` INT(11) NOT NULL DEFAULT '0',
+                `od_shop_memo` TEXT NOT NULL COLLATE 'utf8mb3_general_ci',
+                `od_mod_history` TEXT NOT NULL COLLATE 'utf8mb3_general_ci',
+                `od_status` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_hope_date` DATE NOT NULL DEFAULT '0000-00-00',
+                `od_settle_case` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_other_pay_type` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_test` TINYINT(4) NOT NULL DEFAULT '0',
+                `od_mobile` TINYINT(4) NOT NULL DEFAULT '0',
+                `od_pg` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_tno` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_app_no` VARCHAR(20) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_escrow` TINYINT(4) NOT NULL DEFAULT '0',
+                `od_casseqno` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_tax_flag` TINYINT(4) NOT NULL DEFAULT '0',
+                `od_tax_mny` INT(11) NOT NULL DEFAULT '0',
+                `od_vat_mny` INT(11) NOT NULL DEFAULT '0',
+                `od_free_mny` INT(11) NOT NULL DEFAULT '0',
+                `od_delivery_company` VARCHAR(255) NOT NULL DEFAULT '0' COLLATE 'utf8mb3_general_ci',
+                `od_invoice` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_invoice_time` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+                `od_cash` TINYINT(4) NOT NULL,
+                `od_cash_no` VARCHAR(255) NOT NULL COLLATE 'utf8mb3_general_ci',
+                `od_cash_info` TEXT NOT NULL COLLATE 'utf8mb3_general_ci',
+                `od_time` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+                `od_pwd` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_ip` VARCHAR(25) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_price` INT(11) NOT NULL DEFAULT '0',
+                `org_od_price` INT(11) NOT NULL DEFAULT '0',
+                `od_goods_name` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_temp_point` INT(11) NOT NULL DEFAULT '0',
+                `ad_default` INT(11) NOT NULL DEFAULT '0',
+                `it_id` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `cp_id` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `od_cp_id` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `sc_cp_id` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `comm_tax_mny` INT(11) NOT NULL DEFAULT '0',
+                `comm_vat_mny` INT(11) NOT NULL DEFAULT '0',
+                `comm_free_mny` INT(11) NOT NULL DEFAULT '0',
+                `ad_subject` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb3_general_ci',
+                `item_coupon` INT(11) NOT NULL DEFAULT '0',
+                PRIMARY KEY (`od_id`) USING BTREE,
+                INDEX `index2` (`mb_id`) USING BTREE
+            )
+            COMMENT='주문정보 임시 저장'
+            COLLATE='utf8mb4_general_ci'
+            ENGINE=InnoDB ";
+    sql_query($sql, true);
+}
+// e: cookiepay-plugin v1.2

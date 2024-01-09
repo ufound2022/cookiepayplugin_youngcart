@@ -7,24 +7,71 @@ require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
 $mode = isset($_GET['mode']) ? clean_xss_tags($_GET['mode'], 1, 1) : '';
 
+// s: cookiepay-plugin v1.2
+$type = isset($_GET['type']) ? clean_xss_tags($_GET['type'], 1, 1) : '';
+// e: cookiepay-plugin v1.2
+
 if ($mode == "after") {
     $resCode = isset($_GET['RESULTCODE']) ? clean_xss_tags($_GET['RESULTCODE'], 1, 1) : '';
-
     $resMsg = isset($_GET['RESULTMSG']) ? clean_xss_tags($_GET['RESULTMSG'], 1, 1) : '';
-
+    
+    // s: cookiepay-plugin v1.2
     if ($resCode == '0000') {
-        echo '<script>
-            alert("결제가 성공했습니다.");
-            opener.document.forderform.submit();
-            self.close();
-        </script>';
-    } else {
-        echo '<script>
-            alert("결제가 실패했습니다.\n오류코드: '.$resCode.'\n오류메시지: '.$resMsg.'");
-            opener.location.reload();
-            self.close();
-        </script>';
+        if ($type == 'keyin') {
+            echo "
+                <script>
+                    alert('결제가 성공했습니다.');
+                    opener.document.forderform.submit();
+                    self.close();
+                </script>
+                ";
+        }
+        else if ($default['de_pg_service'] == 'COOKIEPAY_KW' || $default['de_pg_service'] == 'COOKIEPAY_TS' || $default['de_pg_service'] == 'COOKIEPAY_AL') {
+            echo "
+                <form name='form' action='/shop/orderformupdate.php' method='POST' >
+                    <input type='hidden' name='od_id' value='".$_GET['od_id']."'>
+                </form>
+                <script>
+                    alert('결제가 성공했습니다.');
+                    document.form.submit();
+                </script>
+                ";
+        }
+        else {
+            echo "
+                <form name='form' action='/shop/orderformupdate.php' method='POST' >
+                    <input type='hidden' name='od_id' value='".$_GET['od_id']."'>
+                </form>
+                <script>
+                    alert('결제가 성공했습니다.');
+                    window.opener.name = 'cookiepay';
+                    document.form.target = 'cookiepay';
+                    document.form.submit();
+                    self.close();
+                </script>
+                ";
+        }
     }
+    else {
+        if ($type == 'keyin') {
+            echo '
+                <script>
+                    alert("결제가 실패했습니다.\n오류코드: '.$resCode.'\n오류메시지: '.$resMsg.'");
+                    opener.location.reload();
+                    self.close();
+                </script>
+                ';
+        }
+        else {
+            echo '
+                <script>
+                    alert("결제가 실패했습니다.\n오류코드: '.$resCode.'\n오류메시지: '.$resMsg.'");
+                    location.href = "/shop";
+                </script>
+                ';
+        }
+    }
+    // e: cookiepay-plugin v1.2
     
     exit;
 }
@@ -61,7 +108,7 @@ if ($cookiepay['RESULTCODE'] == '0000') {
     $payStatus = '';
     if (!empty($cookiepay['ORDERNO'])) {
         $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
-		$payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
+        $payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
     }
 
     // 결제 결과 테이블에 저장
@@ -87,9 +134,9 @@ if ($cookiepay['RESULTCODE'] == '0000') {
         $sql = " INSERT INTO ".COOKIEPAY_PG_RESULT." ({$columnStr}) VALUES ({$valueStr}) ";
         $res = sql_query($sql, false);
         if ($res) {
-            @cookiepay_payment_log("결제결과 저장 성공", $sql, 3);
+            @cookiepay_payment_log("결제결과 저장 성공1", $sql, 3);
         } else {
-            @cookiepay_payment_log("결제결과 저장 실패", $sql, 3);
+            @cookiepay_payment_log("결제결과 저장 실패1", $sql, 3);
         }
     } else if ($payStatus != 1) {
         // update
@@ -110,9 +157,9 @@ if ($cookiepay['RESULTCODE'] == '0000') {
 
         $res = sql_query($sql, false);
         if ($res) {
-            @cookiepay_payment_log("결제결과 저장 성공", $sql, 3);
+            @cookiepay_payment_log("결제결과 저장 성공2", $sql, 3);
         } else {
-            @cookiepay_payment_log("결제결과 저장 실패", $sql, 3);
+            @cookiepay_payment_log("결제결과 저장 실패2", $sql, 3);
         }
     }
 
@@ -206,25 +253,25 @@ if ($cookiepay['RESULTCODE'] == '0000') {
         }
 
         if ($res) {
-            @cookiepay_payment_log("결제검증결과 저장 성공", $sql, 3);
+            @cookiepay_payment_log("결제검증결과 저장 성공3", $sql, 3);
         } else {
-            @cookiepay_payment_log("결제검증결과 저장 실패", $sql, 3);
+            @cookiepay_payment_log("결제검증결과 저장 실패3", $sql, 3);
         }
 
         if($verify['RESULTCODE'] == '0000') {
             // 결제 검증 성공
-            @cookiepay_payment_log("결제검증 성공", $response, 3);
+            @cookiepay_payment_log("결제검증 성공4", $response, 3);
         } else {
             // 결제 검증 실패시 결제 취소 처리
-            @cookiepay_payment_log("결제검증 실패", $response, 3);
+            @cookiepay_payment_log("결제검증 실패4", $response, 3);
         
             $ret = cookipay_cancel_payment($cookiepayApi['api_id'], $cookiepayApi['api_key'], $cookiepay['TID'], $cookiepay['CARDCODE'], $cookiepay['ACCOUNTNO'], $cookiepay['RECEIVERNAME']);
 
             if ($ret['status'] === true) {
-                @cookiepay_payment_log("결제취소 성공", $ret['data'], 3);
+                @cookiepay_payment_log("결제취소 성공5", $ret['data'], 3);
                 $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
             } else {
-                @cookiepay_payment_log("결제취소 실패", $ret['data'], 3);
+                @cookiepay_payment_log("결제취소 실패5", $ret['data'], 3);
             }
 
             $cancelArr = json_decode($ret['data'], true);
@@ -232,22 +279,22 @@ if ($cookiepay['RESULTCODE'] == '0000') {
             $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
             $res = sql_query($sql, false);
             if ($res) {
-                @cookiepay_payment_log("결제취소결과 저장 성공", $sql, 3);
+                @cookiepay_payment_log("결제취소결과 저장 성공6", $sql, 3);
             } else {
-                @cookiepay_payment_log("결제취소결과 저장 실패", $sql, 3);
+                @cookiepay_payment_log("결제취소결과 저장 실패6", $sql, 3);
             }
         }
     } else {
         // 결제 검증 토큰 발행 실패시 결제 취소 처리
-        @cookiepay_payment_log("결제 검증 토큰 발행 실패", $resultJson, 3);
+        @cookiepay_payment_log("결제 검증 토큰 발행 실패7", $resultJson, 3);
         
         $ret = cookipay_cancel_payment($cookiepayApi['api_id'], $cookiepayApi['api_key'], $cookiepay['TID'], $cookiepay['CARDCODE'], $cookiepay['ACCOUNTNO'], $cookiepay['RECEIVERNAME']);
 
         if ($ret['status'] === true) {
-            @cookiepay_payment_log("결제취소 성공", $ret['data'], 3);
+            @cookiepay_payment_log("결제취소 성공8", $ret['data'], 3);
             $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
         } else {
-            @cookiepay_payment_log("결제취소 실패", $ret['data'], 3);
+            @cookiepay_payment_log("결제취소 실패8", $ret['data'], 3);
         }
 
         $cancelArr = json_decode($ret['data'], true);
@@ -255,9 +302,9 @@ if ($cookiepay['RESULTCODE'] == '0000') {
         $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
         $res = sql_query($sql, false);
         if ($res) {
-            @cookiepay_payment_log("결제취소결과 저장 성공", $sql, 3);
+            @cookiepay_payment_log("결제취소결과 저장 성공9", $sql, 3);
         } else {
-            @cookiepay_payment_log("결제취소결과 저장 실패", $sql, 3);
+            @cookiepay_payment_log("결제취소결과 저장 실패9", $sql, 3);
         }
     }
 
@@ -270,6 +317,8 @@ if ($cookiepay['RESULTCODE'] == '0000') {
     exit;
 }
 
-echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE='.$cookiepay['RESULTCODE'].'&RESULTMSG='.$cookiepay['RESULTMSG'].'";</script>';
+// s: cookiepay-plugin v1.2
+echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE='.$cookiepay['RESULTCODE'].'&RESULTMSG='.$cookiepay['RESULTMSG'].'&od_id='.$cookiepay['ORDERNO'].'";</script>';
+// e: cookiepay-plugin v1.2
 
 exit;
