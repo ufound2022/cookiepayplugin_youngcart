@@ -45,7 +45,7 @@ if ($default['de_pg_service'] == 'COOKIEPAY_PN') {
 }
 ?>
 <script>
-function pay(payType) {
+function pay_cookiepay(payType) {
     if (payType == "수기결제") {
         var tryOrderParams = {
             mode : 'try_order',
