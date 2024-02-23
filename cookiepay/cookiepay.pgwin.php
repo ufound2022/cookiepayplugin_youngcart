@@ -56,11 +56,11 @@ $(function(){
         selectAllText();
         payKeyin();
     } else {
-        pay();
+        pay_dist();
     }
 });
 
-function pay() {
+function pay_dist() {
     var payType = "<?php echo $payType; ?>";
     var payMethod = '';
     switch (payType) {

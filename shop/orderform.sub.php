@@ -1535,7 +1535,7 @@ function forderform_check(f)
 			$('#AMOUNT').val(f.good_mny.value);
 			$('#BUYERNAME').val(f.od_name.value);
 			$('#BUYEREMAIL').val(f.od_email.value);
-            pay(settle_method);
+            pay_cookiepay(settle_method);
             return false;
         } else {
             f.submit();
