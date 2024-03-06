@@ -128,6 +128,7 @@ function pay(payType) {
     else {
         <?php
         $cookiepayApi = cookiepay_get_api_account_info($default, 3);
+        $cookiepayApi_won = cookiepay_get_api_account_info($default, 7);
         ?>
         var payMethod = '';
         switch (payType) {
@@ -174,6 +175,7 @@ function pay(payType) {
         
         var params = {
             API_ID: "<?php echo $cookiepayApi['api_id']; ?>",
+            API_ID_WON: "<?php echo $cookiepayApi_won['api_id']; ?>",
             ORDERNO: document.getElementById("ORDERNO").value, //주문번호 (필수)
             PRODUCTNAME: document.getElementById("PRODUCTNAME").value, //상품명 (필수)
             AMOUNT: document.getElementById("AMOUNT").value, //결제 금액 (필수)
