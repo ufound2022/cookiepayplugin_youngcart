@@ -1115,7 +1115,11 @@ function form_submit(f)
         var cancel_pg = "PG사의 <?php echo $od['od_settle_case']; ?>";
         <?php } ?>
 
-        if(chk_cnt == chked_cnt) {
+        /* s: cookiepay-plugin > 240315 */
+        var cookiepay_pg_chk = "<?=array_key_exists($default['de_pg_service'], COOKIEPAY_PG)?>"; 
+        /* s: cookiepay-plugin > 240315 */
+
+        if(chk_cnt == chked_cnt || cookiepay_pg_chk) { /* u: cookiepay-plugin > 240315 */
             if(confirm(cancel_pg+" 결제를 함께 취소하시겠습니까?\n\n한번 취소한 결제는 다시 복구할 수 없습니다.")) {
                 f.pg_cancel.value = 1;
                 msg = cancel_pg+" 결제 취소와 함께 ";

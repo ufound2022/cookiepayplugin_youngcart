@@ -141,7 +141,9 @@ if (!empty($od_id))
         $_POST['ad_default'] = $order_data['ad_default'];
         $_POST['od_price'] = $order_data['od_price'];
         $_POST['od_send_cost'] = $order_data['od_send_cost'];
+        $od_send_cost = $_POST['od_send_cost']; // u: cookiepay-plugin > 240315
         $_POST['od_send_cost2'] = $order_data['od_send_cost2'];
+        $od_send_cost2 = $_POST['od_send_cost2']; // u: cookiepay-plugin > 240315
         $_POST['od_send_coupon'] = $order_data['od_send_coupon'];
         $_POST['cp_id'] = $order_data['cp_id'];
         $_POST['it_id'] = $order_data['it_id'];
