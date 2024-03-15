@@ -32,6 +32,17 @@ $mod_history = '';
 $cnt = (isset($_POST['ct_id']) && is_array($_POST['ct_id'])) ? count($_POST['ct_id']) : 0;
 $arr_it_id = array();
 
+// s: cookiepay-plugin > 230314
+$cookiepay_order_status_info = array();
+$cc = 0;
+
+$sql_c = " select count(*) as od_count1,
+SUM(IF(ct_status = '취소' OR ct_status = '반품' OR ct_status = '품절', 1, 0)) as od_count2
+from {$g5['g5_shop_cart_table']}
+where od_id = '$od_id' ";
+$row_c = sql_fetch($sql_c);
+// e: cookiepay-plugin > 230314
+
 for ($i=0; $i<$cnt; $i++)
 {
     $k = isset($_POST['ct_chk'][$i]) ? (int) $_POST['ct_chk'][$i] : '';
@@ -156,6 +167,11 @@ for ($i=0; $i<$cnt; $i++)
                 and ct_id  = '$ct_id' ";
     sql_query($sql);
 
+    // s: cookiepay-plugin > 230314
+    $cookiepay_order_status_info[$cc]['ct_price'] = $ct['ct_price'] * $ct['ct_qty'];
+    $cc++;
+    // e: cookiepay-plugin > 230314
+
     // it_id를 배열에 저장
     if($ct_status == '주문' || $ct_status == '취소' || $ct_status == '반품' || $ct_status == '품절' || $ct_status == '완료')
         $arr_it_id[] = $ct['it_id'];
@@ -183,7 +199,7 @@ if (in_array($_POST['ct_status'], $status_cancel)) {
                 where od_id = '$od_id' ";
     $row = sql_fetch($sql);
 
-    if($row['od_count1'] == $row['od_count2']) {
+    if( ($row['od_count1'] == $row['od_count2']) || ($row_c['od_count1'] > $row_c['od_count2']) ) {  // u: cookiepay-plugin > 240314
         $cancel_change = true;
 
         $pg_res_cd = '';
@@ -280,12 +296,21 @@ if (in_array($_POST['ct_status'], $status_cancel)) {
                         break;
                     default:
                         
-                        // s: cookiepay-plugin
+                        // s: cookiepay-plugin > 230314 add line
                         if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
-                            require_once G5_PATH."/adm/shop_admin/cookiepay.cancel.php";
-                            break;
+
+                            if( ($row['od_count1'] == $row['od_count2']) && ($row_c['od_count2'] == 0) ) { 
+                                $cookiepay_full_cancel = 1;
+                                require_once G5_PATH."/adm/shop_admin/cookiepay.cancel.php";
+                            } else
+                            if($row_c['od_count1'] > $row_c['od_count2']) {
+                                # 부분 취소 
+                                require_once G5_PATH."/adm/shop_admin/cookiepay.cancel.php";
+                            }
+                            
                         }
-                        // e: cookiepay-plugin
+                        break;
+                        // e: cookiepay-plugin > 230314
 
                         include_once(G5_SHOP_PATH.'/settle_kcp.inc.php');
                         require_once(G5_SHOP_PATH.'/kcp/pp_ax_hub_lib.php');
@@ -328,14 +353,28 @@ if (in_array($_POST['ct_status'], $status_cancel)) {
                         break;
                 }
 
+                // u: cookiepay-plugin > 240315
                 // PG 취소요청 성공했으면
-                if($pg_res_cd == '') {
-                    $pg_cancel_log = ' PG 신용카드 승인취소 처리';
-                    $sql = " update {$g5['g5_shop_order_table']}
-                                set od_refund_price = '{$od['od_receipt_price']}'
-                                where od_id = '$od_id' ";
-                    sql_query($sql);
+                if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) { 
+
+                    if($pg_res_cd == '' && $cookiepay_full_cancel == "1") {
+                        $pg_cancel_log = ' PG 신용카드 승인취소 처리';
+                        $sql = " update {$g5['g5_shop_order_table']}
+                                    set od_refund_price = '{$od['od_receipt_price']}'
+                                    where od_id = '$od_id' ";
+                        sql_query($sql);
+                    } 
+
+                } else { 
+                    if($pg_res_cd == '') {
+                        $pg_cancel_log = ' PG 신용카드 승인취소 처리';
+                        $sql = " update {$g5['g5_shop_order_table']}
+                                    set od_refund_price = '{$od['od_receipt_price']}'
+                                    where od_id = '$od_id' ";
+                        sql_query($sql);
+                    }
                 }
+                // u: cookiepay-plugin > 240315
             }
         }
 
