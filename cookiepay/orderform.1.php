@@ -192,7 +192,8 @@ function pay_cookiepay(payType) {
             ETC2 : document.getElementById("ETC2").value, //사용자 추가필드2 (선택)
             ETC3 : document.getElementById("ETC3").value, //사용자 추가필드3 (선택)
             ETC4 : document.getElementById("ETC4").value, //사용자 추가필드4 (선택)
-            ETC5 : document.getElementById("ETC5").value, //사용자 추가필드5 (선택)
+            //ETC5 : document.getElementById("ETC5").value, //사용자 추가필드5 (선택)
+            ETC5 : "<?=$tmp_cart_id?>", // u: cookiepay-plugin > 장바구니 업데이트 > v1.2.1
         };
         var tryPayParams = params;
         tryPayParams['mode'] = "try_pay";
