@@ -11,6 +11,12 @@ $mode = isset($_GET['mode']) ? clean_xss_tags($_GET['mode'], 1, 1) : '';
 $type = isset($_GET['type']) ? clean_xss_tags($_GET['type'], 1, 1) : '';
 // e: cookiepay-plugin v1.2
 
+// s: cookiepay-plugin v1.2 > 240322
+if($default['de_pg_service'] == 'COOKIEPAY_KW') { 
+    $pgResult_ = sql_fetch(" SELECT * FROM g5_shop_order WHERE od_id='".$_GET['od_id']."' ORDER BY `od_id` DESC LIMIT 1");
+}
+// e: cookiepay-plugin v1.2 > 240322
+
 if ($mode == "after") {
     $resCode = isset($_GET['RESULTCODE']) ? clean_xss_tags($_GET['RESULTCODE'], 1, 1) : '';
     $resMsg = isset($_GET['RESULTMSG']) ? clean_xss_tags($_GET['RESULTMSG'], 1, 1) : '';
@@ -27,6 +33,14 @@ if ($mode == "after") {
                 ";
         }
         else if ($default['de_pg_service'] == 'COOKIEPAY_KW' || $default['de_pg_service'] == 'COOKIEPAY_TS' || $default['de_pg_service'] == 'COOKIEPAY_AL') {
+
+            // s: cookiepay-plugin v1.2 > 240322
+            if($default['de_pg_service'] == 'COOKIEPAY_KW' && !empty($pgResult_['od_id'])) { 
+                echo "<script language='javascript'> alert('결제가 완료되었습니다!!'); location.href = '/shop/orderinquiryview.php?od_id=".$pgResult_['od_id']."'; </script>";
+                exit;
+            }
+            // e: cookiepay-plugin v1.2 > 240322
+
             echo "
                 <form name='form' action='/shop/orderformupdate.php' method='POST' >
                     <input type='hidden' name='od_id' value='".$_GET['od_id']."'>
