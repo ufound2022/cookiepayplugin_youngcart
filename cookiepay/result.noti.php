@@ -294,7 +294,7 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                                         ct_status = '{$cart_status}'
                                     where od_id = '{$cookiepay['ETC5']}'
                                     and ct_select = '1' ";
-                            $result_cart = sql_query($sql_cart, false);
+                            //$result_cart = sql_query($sql_cart, false);  # e: cookiepay-plugin > 장바구니 업데이트(임시주석처리) > v1.2.1 
                             @cookiepay_payment_log("[통지]카트정보 업데이트", $sql_cart, 3);
 
                         }
