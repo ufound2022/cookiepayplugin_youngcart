@@ -12,9 +12,7 @@ $type = isset($_GET['type']) ? clean_xss_tags($_GET['type'], 1, 1) : '';
 // e: cookiepay-plugin v1.2
 
 // s: cookiepay-plugin v1.2 > 240322
-if($default['de_pg_service'] == 'COOKIEPAY_KW') { 
-    $pgResult_ = sql_fetch(" SELECT * FROM g5_shop_order WHERE od_id='".$_GET['od_id']."' ORDER BY `od_id` DESC LIMIT 1");
-}
+$pgResult_ = sql_fetch(" SELECT * FROM g5_shop_order WHERE od_id='".$_GET['od_id']."' ORDER BY `od_id` DESC LIMIT 1");
 // e: cookiepay-plugin v1.2 > 240322
 
 if ($mode == "after") {
@@ -35,11 +33,13 @@ if ($mode == "after") {
         else if ($default['de_pg_service'] == 'COOKIEPAY_KW' || $default['de_pg_service'] == 'COOKIEPAY_TS' || $default['de_pg_service'] == 'COOKIEPAY_AL') {
 
             // s: cookiepay-plugin v1.2 > 240322
-            if($default['de_pg_service'] == 'COOKIEPAY_KW' && !empty($pgResult_['od_id'])) { 
+            // 노티우선 업데이트시 > 주문완료페이지로 이동
+            if(!empty($pgResult_['od_id'])) { 
                 echo "<script language='javascript'> alert('결제가 완료되었습니다!!'); location.href = '/shop/orderinquiryview.php?od_id=".$pgResult_['od_id']."'; </script>";
                 exit;
             }
             // e: cookiepay-plugin v1.2 > 240322
+
 
             echo "
                 <form name='form' action='/shop/orderformupdate.php' method='POST' >
@@ -52,6 +52,25 @@ if ($mode == "after") {
                 ";
         }
         else {
+
+            // 노티우선 업데이트시 > 주문완료페이지로 이동
+            if(!empty($pgResult_['od_id'])) { 
+
+                echo "
+                <form name='form' action='/shop/orderinquiryview.php' method='GET' >
+                    <input type='hidden' name='od_id' value='".$pgResult_['od_id']."'>
+                </form>
+                <script>
+                    alert('결제가 성공했습니다.');
+                    window.opener.name = 'cookiepay';
+                    document.form.target = 'cookiepay';
+                    document.form.submit();
+                    self.close();
+                </script>
+                ";
+
+            }
+                        
             echo "
                 <form name='form' action='/shop/orderformupdate.php' method='POST' >
                     <input type='hidden' name='od_id' value='".$_GET['od_id']."'>
