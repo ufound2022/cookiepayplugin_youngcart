@@ -15,6 +15,14 @@ $type = isset($_GET['type']) ? clean_xss_tags($_GET['type'], 1, 1) : '';
 $pgResult_ = sql_fetch(" SELECT * FROM g5_shop_order WHERE od_id='".$_GET['od_id']."' ORDER BY `od_id` DESC LIMIT 1");
 // e: cookiepay-plugin v1.2 > 240322
 
+// s: cookiepay-plugin v1.2 > 20240412
+if(!empty($_GET['ACCOUNTNO']) && !empty($_GET['RECEIVERNAME'])) {
+    $order_ok_alert_msg = "(가상계좌)주문 접수가 완료되었습니다.\\n\\n입금은행, 계좌번호를 확인후 입금하여 주시기 바랍니다.";
+} else { 
+    $order_ok_alert_msg = "결제가 완료되었습니다.";
+}
+// e: cookiepay-plugin v1.2 > 20240412
+
 if ($mode == "after") {
     $resCode = isset($_GET['RESULTCODE']) ? clean_xss_tags($_GET['RESULTCODE'], 1, 1) : '';
     $resMsg = isset($_GET['RESULTMSG']) ? clean_xss_tags($_GET['RESULTMSG'], 1, 1) : '';
@@ -24,7 +32,7 @@ if ($mode == "after") {
         if ($type == 'keyin') {
             echo "
                 <script>
-                    alert('결제가 성공했습니다.');
+                    alert('{$order_ok_alert_msg}');
                     opener.document.forderform.submit();
                     self.close();
                 </script>
@@ -35,7 +43,7 @@ if ($mode == "after") {
             // s: cookiepay-plugin v1.2 > 240322
             // 노티우선 업데이트시 > 주문완료페이지로 이동
             if(!empty($pgResult_['od_id'])) { 
-                echo "<script language='javascript'> alert('결제가 완료되었습니다!!'); location.href = '/shop/orderinquiryview.php?od_id=".$pgResult_['od_id']."'; </script>";
+                echo "<script language='javascript'> alert('{$order_ok_alert_msg}'); location.href = '/shop/orderinquiryview.php?od_id=".$pgResult_['od_id']."'; </script>";
                 exit;
             }
             // e: cookiepay-plugin v1.2 > 240322
@@ -46,7 +54,7 @@ if ($mode == "after") {
                     <input type='hidden' name='od_id' value='".$_GET['od_id']."'>
                 </form>
                 <script>
-                    alert('결제가 성공했습니다.');
+                    alert('{$order_ok_alert_msg}');
                     document.form.submit();
                 </script>
                 ";
@@ -184,6 +192,14 @@ if ($cookiepay['RESULTCODE'] == '0000') {
             $set['pay_type'] = "pay_type='{$cookiepay['ETC3']}'";
         }
         $set['pay_status'] = "pay_status=1";
+
+        // s: cookiepay-plugin v1.2.1 > 240412
+        # 가상계좌 결제요청이라면 > pay_status : 0 처리 
+        if(!empty($cookiepay['CARDNAME']) && !empty($cookiepay['ACCOUNTNO'])) { 
+            $set['pay_status'] = "pay_status=0";
+        }
+        // e: cookiepay-plugin v1.2.1 > 240412
+                
         $setStr = implode(",", $set);
 
         $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$cookiepay['ORDERNO']}'";
@@ -350,8 +366,8 @@ if ($cookiepay['RESULTCODE'] == '0000') {
     exit;
 }
 
-// s: cookiepay-plugin v1.2
-echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE='.$cookiepay['RESULTCODE'].'&RESULTMSG='.$cookiepay['RESULTMSG'].'&od_id='.$cookiepay['ORDERNO'].'";</script>';
-// e: cookiepay-plugin v1.2
+// s: cookiepay-plugin v1.2 > 20240412 update
+echo '<script>location.href = "./pgresult.php?mode=after&RESULTCODE='.$cookiepay['RESULTCODE'].'&RESULTMSG='.$cookiepay['RESULTMSG'].'&od_id='.$cookiepay['ORDERNO'].'&ACCOUNTNO='.$cookiepay['ACCOUNTNO'].'&RECEIVERNAME='.$cookiepay['RECEIVERNAME'].'";</script>';
+// e: cookiepay-plugin v1.2 > 20240412 update
 
 exit;
