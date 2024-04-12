@@ -12,6 +12,10 @@ $cookiepay['ORDERNO'] = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDER
 
 $resultMode = null;
 
+if($cookiepay['ACCEPT_NO'] == "00000000" || $cookiepay['PAY_METHOD'] == "VACCT") { 
+    $cookiepay['ACCEPT_NO'] = "11111111";
+}
+
 @cookiepay_payment_log("[통지]수신", json_encode($cookiepay), 3);
 
 if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cookiepay['ORDERNO'])) {
