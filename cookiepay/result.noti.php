@@ -301,7 +301,62 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                         # e: cookiepay-plugin > 장바구니 업데이트 > v1.2 > 240321
                                                 
                     }
+                } else {          
+                    // s: cookiepay-plugin v1.2.1 > 240412
+                    // 이곳에서 가상계좌라면 업데이트 처리한다. > Table name : g5_shop_order (S)
+                    // 무통장 관련 체크 > 쿠키페이 테이블 부터 조회
+                    # 1 : cookiepay_pg_result.pay_status : 1 처리
+                    # 2 : g5_shop_order.od_status : 입금처리
+
+                    /*
+                    {
+                        "RESULTCODE":"0000",
+                        "RESULTMSG":"\uc131\uacf5",
+                        "ORDERNO":"2024041117142479",
+                        "AMOUNT":"1050",
+                        "BUYERNAME":"\ucd5c\uace0\uad00\ub9ac\uc790",
+                        "BUYEREMAIL":"sales@cookiepayments.com",
+                        "PRODUCTNAME":"\ubca0\uc774\uc2a4 \ucee4\ubc84",
+                        "PRODUCTCODE":"145000",
+                        "PAYMETHOD":"VACCT",
+                        "BUYERID":"admin",
+                        "ACCEPTNO":"",
+                        "ACCEPTDATE":"20240411171624",
+                        "TID":"XEH24041117161416188",
+                        "CANCELDATE":"",
+                        "CANCELMSG":"",
+                        "ACCOUNTNO":"08201108797596",
+                        "RECEIVERNAME":"(\uc8fc)\uc774\ub85c\ud640\ub529\uc2a4",
+                        "DEPOSITENDDATE":"20240418235959",
+                        "CARDNAME":"\uc911\uc18c\uae30\uc5c5\uc740\ud589",
+                        "CARDCODE":"03"
+                    }
+                    */
+
+                    if(!empty($cookiepay['ETC5'])) { 
+                        $sql_shop_order = "update {$g5['g5_shop_order_table']} 
+                                set od_receipt_price='{$cookiepay['AMOUNT']}', od_status = '입금', od_misu=0, od_receipt_time=now()
+                                where od_id = '{$cookiepay['ETC5']}'
+                                limit 1 ";
+                        $result_shop_order = sql_query($sql_shop_order, false);
+
+                        //set od_receipt_price='{$cookiepay['AMOUNT']}', od_status = '입금', od_receipt_time=now() 
+                        $sql_shop_cart = "update {$g5['g5_shop_cart_table']}         
+                                set ct_status = '입금' 
+                                where od_id = '{$cookiepay['ETC5']}'
+                                limit 1 ";
+                        $result_shop_cart = sql_query($sql_shop_cart, false);
+
+                    }
+
+                    @cookiepay_payment_log("[통지]가상계좌 결제완료 처리 Order SQL :  ----------> :", $sql_shop_order, 3);
+                    @cookiepay_payment_log("[통지]가상계좌 결제완료 처리 Cart SQL :  ----------> :", $sql_shop_cart, 3);
+
+                    @cookiepay_payment_log("[통지]수신 res ----------> :", $response, 3);
+                    // 이곳에서 가상계좌라면 업데이트 처리한다. > Table name : g5_shop_order (E)
+                    // e: cookiepay-plugin v1.2.1 > 240412
                 }
+                
                 // e: cookiepay-plugin v1.2
                 
                 // 결제 검증 성공
