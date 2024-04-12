@@ -344,7 +344,7 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                         $sql_shop_cart = "update {$g5['g5_shop_cart_table']}         
                                 set ct_status = '입금' 
                                 where od_id = '{$cookiepay['ETC5']}'
-                                limit 1 ";
+                                ";
                         $result_shop_cart = sql_query($sql_shop_cart, false);
 
                     }
