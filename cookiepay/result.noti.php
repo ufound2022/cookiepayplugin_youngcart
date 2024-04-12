@@ -12,7 +12,7 @@ $cookiepay['ORDERNO'] = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDER
 
 $resultMode = null;
 
-if($cookiepay['ACCEPT_NO'] == "00000000" || $cookiepay['PAY_METHOD'] == "VACCT") { 
+if($cookiepay['ACCEPT_NO'] == "00000000" || $cookiepay['PAY_METHOD'] == "VACCOUNT") { 
     $cookiepay['ACCEPT_NO'] = "11111111";
 }
 
@@ -322,7 +322,7 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                         "BUYEREMAIL":"sales@cookiepayments.com",
                         "PRODUCTNAME":"\ubca0\uc774\uc2a4 \ucee4\ubc84",
                         "PRODUCTCODE":"145000",
-                        "PAYMETHOD":"VACCT",
+                        "PAYMETHOD":"VACCOUNT",
                         "BUYERID":"admin",
                         "ACCEPTNO":"",
                         "ACCEPTDATE":"20240411171624",
