@@ -16,7 +16,7 @@ if(!sql_query(" DESCRIBE ".COOKIEPAY_PG_RESULT." ", false)) {
                 `ACCEPTNO` VARCHAR(10) NULL DEFAULT NULL COMMENT '승인번호. pg사 결제 승인번호' COLLATE 'utf8mb4_general_ci',
                 `CASH_BILL_NO` VARCHAR(10) NULL DEFAULT NULL COMMENT '현금영수증일련번호. 가상계좌 및 계좌이체 시 현금영수증 일련번호' COLLATE 'utf8mb4_general_ci',
                 `CARDNAME` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 은행명. 가상계좌 및 계좌이체 시 입금할 은행명' COLLATE 'utf8mb4_general_ci',
-                `ACCOUNTNO` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 계좌번호. 가상계좌 시 입금할 계좌번호' COLLATE 'utf8mb4_general_ci',
+                `ACCOUNTNO` VARCHAR(50) NULL DEFAULT NULL COMMENT '입금할 계좌번호. 가상계좌 시 입금할 계좌번호' COLLATE 'utf8mb4_general_ci',
                 `RECEIVERNAME` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 예금주. 가상계좌 시 입금할 예금주' COLLATE 'utf8mb4_general_ci',
                 `DEPOSITENDDATE` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금마감일. 가상계좌 시 입금마감일' COLLATE 'utf8mb4_general_ci',
                 `CARDCODE` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 은행코드. 가상계좌 시 입금할 은행코드' COLLATE 'utf8mb4_general_ci',
