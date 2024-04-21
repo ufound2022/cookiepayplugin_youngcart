@@ -339,7 +339,7 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
 
                     if(!empty($cookiepay['ORDERNO'])) { 
                         $sql_shop_order = "update {$g5['g5_shop_order_table']} 
-                                set od_receipt_price='{$cookiepay['AMOUNT']}', od_status = '입금', od_tno='{$pg_data['TID']}', od_misu=0, od_receipt_time=now
+                                set od_receipt_price='{$cookiepay['AMOUNT']}', od_status = '입금', od_tno='{$pg_data['TID']}', od_misu=0, od_receipt_time=now() 
                                 where od_id = '{$cookiepay['ORDERNO']}'
                                 limit 1 ";
                         $result_shop_order = sql_query($sql_shop_order, false);
