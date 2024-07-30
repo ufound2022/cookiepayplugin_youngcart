@@ -207,6 +207,8 @@ if ($mode == "keyin_pay") {
             'BUYERPHONE'    => $cookiepay['BUYERPHONE'],
             'QUOTA'         => $cookiepay['QUOTA'],
             'CARDAUTH'      => $cookiepay['CARDAUTH'],
+            'CARDPWD'       => $cookiepay['CARDPWD'],
+            'HANACARD_USE'  => $cookiepay['HANACARD_USE'],
             'ETC1'          => $cookiepay['ETC1'],
             'ETC2'          => $cookiepay['ETC2'],
             'ETC3'          => $cookiepay['ETC3'],
