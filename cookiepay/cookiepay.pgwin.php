@@ -120,7 +120,8 @@ function pay_dist() {
         ETC3 : opener.document.getElementById("ETC3").value, //사용자 추가필드3 (선택)
         ETC4 : opener.document.getElementById("ETC4").value, //사용자 추가필드4 (선택)
         ETC5 : opener.document.getElementById("ETC5").value, //사용자 추가필드5 (선택)
-    };
+        ORDER_NO_CHECK : "N",
+	};
 
     var tryPayParams = params;
     tryPayParams['mode'] = "try_pay";
