@@ -316,6 +316,9 @@ foreach ($check_sanitize_keys as $column) {
 $cookiepayUpdateSetSql = implode(",", $cookiepayUpdateSet);
 // e: cookiepay-plugin
 
+#  README > 2025-01-14
+#  de_inicis_admin_key           = '{$de_inicis_admin_key}',  // 영카트 5.5.8.X 버전에서 이니시스 키 설정이 정상적으로 적용되지않을떄 460라인에 추가합니다.
+
 //
 // 영카트 default
 //
@@ -455,7 +458,7 @@ $sql = " update {$g5['g5_shop_default_table']}
                 de_kcp_mid                    = '{$de_kcp_mid}',
                 de_kcp_site_key               = '{$de_kcp_site_key}',
                 de_inicis_mid                 = '{$de_inicis_mid}',
-                de_inicis_admin_key           = '{$de_inicis_admin_key}',
+                
                 de_inicis_sign_key            = '{$de_inicis_sign_key}',
                 de_iche_use                   = '{$de_iche_use}',
                 de_sms_cont1                  = '{$_POST['de_sms_cont1']}',
