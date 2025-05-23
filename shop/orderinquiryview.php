@@ -237,7 +237,7 @@ if($od['od_pg'] == 'lg') {
         $disp_receipt = false;
         // s: cookiepay-plugin
         // if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == 'KAKAOPAY' || is_inicis_order_pay($od['od_settle_case']) ) {
-        if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || is_inicis_order_pay($od['od_settle_case']) ) {
+        if($od['od_settle_case'] == "정기(구독)" || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || is_inicis_order_pay($od['od_settle_case']) ) {
         // e: cookiepay-plugin
             $app_no_subj = '승인번호';
             $app_no = $od['od_app_no'];

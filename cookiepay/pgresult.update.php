@@ -55,4 +55,6 @@ if ($cookiepayPgResult) {
     $cash_yn = ''; // 현금영수증 등록여부
     $cash_authno = ''; // 현금 영수증 승인 번호
     $cash_tr_code = ''; // 현금영수증 등록구분
+
+    $reserve_id = $cookiepayPgResult['RESERVE_ID'];
 }

@@ -229,7 +229,12 @@ if(!isset($default['de_cookiepay_al_cookiepay_id'])) {
                 ADD `de_cookiepay_ki_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_key`, 
                 ADD `de_cookiepay_ki_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_id`, 
                 ADD `de_cookiepay_wp_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_key`, 
-                ADD `de_cookiepay_wp_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id` ";
+                ADD `de_cookiepay_wp_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id`,
+                ADD `de_cookiepay_subscription_use` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_use`, 
+                ADD `de_cookiepay_subscription_cancel_use` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_cancel_use` ";
+    echo "sql : ".$sql;
+    exit;
+    
     sql_query($sql, true);
 }
 

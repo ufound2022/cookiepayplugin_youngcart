@@ -41,6 +41,7 @@ SUM(IF(ct_status = '취소' OR ct_status = '반품' OR ct_status = '품절', 1, 
 from {$g5['g5_shop_cart_table']}
 where od_id = '$od_id' ";
 $row_c = sql_fetch($sql_c);
+
 // e: cookiepay-plugin > 230314
 
 for ($i=0; $i<$cnt; $i++)
@@ -213,7 +214,7 @@ if (in_array($_POST['ct_status'], $status_cancel)) {
 
             // s: cookiepay-plugin
             // if($od['od_tno'] && ($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '간편결제' || $od['od_settle_case'] == 'KAKAOPAY') || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
-            if($od['od_tno'] && ($od['od_settle_case'] == '계좌이체' || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == '간편결제' || $od['od_settle_case'] == 'KAKAOPAY') || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
+            if($od['od_tno'] && ($od['od_settle_case'] == "정기(구독)" || $od['od_settle_case'] == '계좌이체' || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == '간편결제' || $od['od_settle_case'] == 'KAKAOPAY') || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
             // e: cookiepay-plugin
                 switch($od['od_pg']) {
                     case 'lg':
@@ -295,7 +296,7 @@ if (in_array($_POST['ct_status'], $status_cancel)) {
                         include G5_SHOP_PATH.'/kakaopay/kakaopay_cancel.php';
                         break;
                     default:
-                        
+
                         // s: cookiepay-plugin > 230314 add line
                         if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
 

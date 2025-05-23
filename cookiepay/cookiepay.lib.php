@@ -70,6 +70,9 @@ function cookiepay_get_api_account_info($default, $pay_type=3) {
 	} else if ($pay_type == 7) {
 		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_global_won"];
     	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_global_won"];
+	} else if ($pay_type == 9) {
+		$ret['api_id'] = $default["de_{$pg}_subscription_cookiepay_id"];
+    	$ret['api_key'] = $default["de_{$pg}_subscription_cookiepay_key"]; 
 	} else {
 		$ret['api_id'] = $default["de_{$pg}_cookiepay_id"];
     	$ret['api_key'] = $default["de_{$pg}_cookiepay_key"];
@@ -91,6 +94,9 @@ function cookiepay_get_api_account_info_by_pg($default, $pg, $pay_type=3) {
 	if ($pay_type == 1) {
 		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
     	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
+	} else if ($pay_type == 9) { 
+		$ret['api_id'] = $default["de_{$pg}_subscription_cookiepay_id"];
+    	$ret['api_key'] = $default["de_{$pg}_subscription_cookiepay_key"];
 	} else if ($pay_type == 5) {
 		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_global_dollar"];
     	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_global_dollar"];

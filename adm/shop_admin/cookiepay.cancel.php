@@ -12,6 +12,9 @@ if (isset($cookiepayPgResultRes['PGNAME']) && !empty($cookiepayPgResultRes['PGNA
     
     if ($cookiepayPgResultRes['pay_method'] == "CARD_SUGI") {
         $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $cookiepayPgResultRes['PGNAME'], 1);
+    } else 
+    if ($cookiepayPgResultRes['pay_method'] == "CARD_BATCH") {
+        $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $cookiepayPgResultRes['PGNAME'], 9);
     } else {
         if ($cookiepayPgResultRes['pay_type']) {
             $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $cookiepayPgResultRes['PGNAME'], $cookiepayPgResultRes['pay_type']);

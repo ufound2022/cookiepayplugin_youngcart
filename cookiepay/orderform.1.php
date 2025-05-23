@@ -29,6 +29,9 @@ $sql = " select SUM(IF(io_type = 1, (io_price * ct_qty), ((ct_price + io_price) 
 $row = sql_fetch($sql);
 $tot_ct_price = $row['od_price'];
 $cart_count = $row['cart_count'];
+
+$sql2 = "select * from g5_shop_cart where od_id='".$tmp_cart_id."' limit 1 ";
+$row2 = sql_fetch($sql2);
 // e: cookiepay-plugin v1.2
 ?>
 
@@ -46,7 +49,16 @@ if ($default['de_pg_service'] == 'COOKIEPAY_PN') {
 ?>
 <script>
 function pay_cookiepay(payType) {
-    if (payType == "수기결제") {
+
+    var cookiepay_pay_url = "";
+    if(payType == "수기결제") { 
+        cookiepay_pay_url = "cookiepay.pgwin.php";
+    } else 
+    if(payType == "정기(구독)") {
+        cookiepay_pay_url = "cookiepay_subscribe.pgwin.php";
+    }
+
+    if (payType == "수기결제" || payType == "정기(구독)") {
         var tryOrderParams = {
             mode : 'try_order',
             od_id : $("input[name=ORDERNO]").val(),
@@ -117,7 +129,7 @@ function pay_cookiepay(payType) {
         
         var popupPos = "left=0, top=0, width=650, height=550";
         var pt = document.querySelector("#PAY_TYPE").value;
-        var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${payType}&pt=${pt}`, "pgWin1", popupPos);
+        var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/`+cookiepay_pay_url+`?pm=${payType}&pt=${pt}&it_id=<?=$row2['it_id']?>`, "pgWin1", popupPos);
         
         if(!pgWin1 || pgWin1.closed || typeof pgWin1.closed=='undefined') { 
             alert("팝업이 차단되어 있습니다.\n팝업 차단 해제 후 다시 시도해 주세요.");

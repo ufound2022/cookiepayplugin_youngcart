@@ -6,6 +6,50 @@ check_demo();
 
 auth_check_menu($auth, $sub_menu, "w");
 
+// s: cookiepay-plugin
+$ssql = "SHOW COLUMNS FROM g5_shop_default LIKE 'de_cookiepay_subscription_use' ";
+$sresult = sql_fetch($ssql);
+
+if($sresult['Field'] == "de_cookiepay_subscription_use") { 
+    echo "필드 있음";
+} else { 
+    // 필드 생성
+
+    // 쿠키페이 PG사 연동 정보 컬럼 추가
+    $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
+                ADD `de_cookiepay_subscription_use` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
+                ADD `de_cookiepay_subscription_cancel_use` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_use`,
+                
+                ADD `de_cookiepay_kw_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_cancel_use` ,
+                ADD `de_cookiepay_kw_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_ts_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_ts_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_ki_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_ki_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_al_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_al_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_wp_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_wp_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_subscription_cookiepay_id` ";
+    sql_query($sql, true);
+
+}
+
+$ssql2 = "SHOW COLUMNS FROM g5_shop_item LIKE 'it_type6' ";
+$sresult2 = sql_fetch($ssql2);
+
+if($sresult2['Field'] == "it_type6") { 
+    echo "필드 있음";
+} else { 
+
+    $sql2 = " ALTER TABLE `{$g5['g5_shop_item_table']}`
+                ADD `it_type6` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '정기(구동)상품 여부' COLLATE 'utf8_general_ci' AFTER `it_type5`, 
+                ADD `last_pay_cnt` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 납부횟수' COLLATE 'utf8_general_ci' AFTER `it_type6` ";
+
+    sql_query($sql2, true);
+
+}
+// e: cookiepay-plugin
+
 check_admin_token();
 
 // 대표전화번호 유효성 체크
@@ -236,6 +280,8 @@ $check_sanitize_keys = array(
 'cf_icode_server_ip',           // 아이코드 ip
 'cf_icode_server_port',         // 아이코드 port
 'cf_icode_token_key',           // 아이코드 토큰키 (JSON버전)
+'de_cookiepay_subscription_use', // 정기(구독)결제 사용여부
+'de_cookiepay_subscription_cancel_use', // 정기(구독)결제 해지기능 사용여부
 );
 
 foreach( $check_sanitize_keys as $key ){
@@ -295,6 +341,22 @@ $check_sanitize_keys = array(
     'de_cookiepay_kw_cookiepay_key_global_won',     //키움페이의 쿠키페이 해외원화 결제 연동 시크릿키
     'de_cookiepay_pn_cookiepay_pgid',               //페이누리의 쿠키페이 인증 결제 PG 아이디
     'de_cookiepay_pn_cookiepay_pgid_keyin',         //페이누리의 쿠키페이 수기 결제 PG 아이디
+    
+    'de_cookiepay_subscription_use',                // 정기(구독) 기능 사용여부
+    'de_cookiepay_subscription_cancel_use',         // 정기(구독) 해지기능 사용여부
+
+    'de_cookiepay_kw_subscription_cookiepay_id',    //키움 정기결제 연동아이디
+    'de_cookiepay_kw_subscription_cookiepay_key',   //키움 정기결제 연동키
+    'de_cookiepay_ts_subscription_cookiepay_id',    //토스 정기결제 연동아이디
+    'de_cookiepay_ts_subscription_cookiepay_key',   //토스 정기결제 연동키
+    'de_cookiepay_ki_subscription_cookiepay_id',    //이지페이 정기결제 연동아이디
+    'de_cookiepay_ki_subscription_cookiepay_key',   //이지페이 정기결제 연동키
+    'de_cookiepay_al_subscription_cookiepay_id',    //모빌 정기결제 연동아이디
+    'de_cookiepay_al_subscription_cookiepay_key',   //모빌 정기결제 연동키
+    'de_cookiepay_wp_subscription_cookiepay_id',    //웰컴1차 정기결제 연동아이디
+    'de_cookiepay_wp_subscription_cookiepay_key',   //웰컴1차 정기결제 연동키
+
+
 );
 
 foreach( $check_sanitize_keys as $key ){
@@ -314,6 +376,7 @@ foreach ($check_sanitize_keys as $column) {
 }
 
 $cookiepayUpdateSetSql = implode(",", $cookiepayUpdateSet);
+
 // e: cookiepay-plugin
 
 #  README > 2025-01-14
@@ -322,6 +385,8 @@ $cookiepayUpdateSetSql = implode(",", $cookiepayUpdateSet);
 //
 // 영카트 default
 //
+
+//de_subscription_use           = '{$de_subscription_use}', 
 $sql = " update {$g5['g5_shop_default_table']}
             set de_admin_company_owner        = '{$de_admin_company_owner}',
                 de_admin_company_name         = '{$de_admin_company_name}',
@@ -499,7 +564,9 @@ $sql = " update {$g5['g5_shop_default_table']}
                 de_member_reg_coupon_use      = '{$de_member_reg_coupon_use}',
                 de_member_reg_coupon_term     = '{$de_member_reg_coupon_term}',
                 de_member_reg_coupon_price    = '{$de_member_reg_coupon_price}',
-                de_member_reg_coupon_minimum  = '{$de_member_reg_coupon_minimum}'
+                de_member_reg_coupon_minimum  = '{$de_member_reg_coupon_minimum}',
+                de_cookiepay_subscription_use = '{$de_cookiepay_subscription_use}',
+                de_cookiepay_subscription_cancel_use = '{$de_cookiepay_subscription_cancel_use}'
                 ";
 
 // s: cookiepay-plugin
@@ -507,6 +574,9 @@ if (count($cookiepayUpdateSet) > 0) {
     $sql .= ",".$cookiepayUpdateSetSql;
 }
 // e: cookiepay-plugin
+
+#echo "sql : ".$sql;
+#exit;
 
 sql_query($sql);
 

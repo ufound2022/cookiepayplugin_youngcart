@@ -6,14 +6,17 @@ include_once('../shop/_common.php');
 require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 
 $payTypeCode = isset($_GET['pt']) ? clean_xss_tags($_GET['pt'], 1, 1) : 3;
-
 $payType = isset($_GET['pm']) ? clean_xss_tags($_GET['pm'], 1, 1) : '';
 
-if ($payType == "수기결제") {
+if ($payType == "수기결제" || $payType == "정기(구독)") {
     $payTypeCode = 1;
 }
 
 $cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
+
+$sql = "select * from g5_shop_item where it_id='".$_GET['it_id']."' limit 1 ";
+$row = sql_fetch($sql);
+
 ?>
 <html lang="ko">
 <head>
@@ -50,7 +53,7 @@ $(function(){
 
     var payType = "<?php echo $payType; ?>";
 
-    if (payType == "수기결제") {
+    if (payType == "수기결제" || payType == "정기(구독)") {
         onlyNumber();
         needPassword();
         selectAllText();
@@ -208,6 +211,17 @@ function payKeyin(){
     $("#btn_pay_keyin").on("click", function(e){
         e.preventDefault();
         var valid = true;
+
+        <?php
+        if(!empty($default['de_cookiepay_subscription_cancel_use'])) { 
+        ?>
+        if(!$("#LAST_PAY_CNT").val()) { 
+            alert('회차를 입력하여 주십시요.');
+            $("#LAST_PAY_CNT").focus();
+            return false;
+        }
+        <? } ?>
+
         $(".required").each(function(){
             var nextCount = $(this).data("nextcount");
             var thisId = $(this).attr("id");
@@ -328,7 +342,7 @@ function checkBrowser() {
 </script>
 
 <?php
-if ($payType == "수기결제") {
+if ($payType == "수기결제" || $payType == "정기(구독)") {
     $needPassword = false;
 
     $needPasswordPg = [
@@ -417,7 +431,7 @@ table {
     <div class="text-center title-bg">
         <span><?=$_GET['pm']?></span>
     </div>
-    <form name="payform" id="payform" method="post" action="<?php echo COOKIEPAY_URL; ?>/cookiepay.pay.php">
+    <form name="payform" id="payform" method="post" action="<?php echo COOKIEPAY_URL; ?>/cookiepay_subscribe.pay.php">
     <input type="hidden" name="mode" value="keyin_pay">
     <input type="hidden" name="ORDERNO">
     <input type="hidden" name="PRODUCTNAME">
@@ -452,6 +466,63 @@ table {
     <table>
         <tbody>
             <tr>
+                <th>정기결제일</th>
+                <td colspan="4">
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="01" required=""> 1일</label>
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="05" required=""> 5일</label>
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="10" required=""> 10일</label>
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="15" required="" checked=""> 15일</label>
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="20" required=""> 20일</label>
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="25" required=""> 25일</label>
+                    <label class="radio" style="margin-right: 0px;margin-top:5px;"><input type="radio" name="PAYMENTDATE" value="31" required=""> 말일</label>
+                </td>
+            </tr>
+            <tr>
+                <th>총 납부횟수</th>
+                <td colspan="4">
+                    
+
+                        <?php
+                        /*
+                        <select class="frm_input w-30 text-center only-number required" name='LAST_PAY_CNT' id="LAST_PAY_CNT">
+                        for($i = 2; $i <= 100; $i++) { 
+                        ?>
+                        <option value='<?=$i?>'><?=$i?>회</option>
+                        <? 
+                        } 
+                        </select>
+                        */
+
+                        ?>
+
+                        <?php
+
+                        if(!empty($default['de_cookiepay_subscription_cancel_use'])) { 
+                        ?>
+                            <input class="frm_input w-30 text-center only-number required" inputmode="numeric" name="LAST_PAY_CNT" id="LAST_PAY_CNT" maxlength="3" value='' style="width:60px" placeholder="약정횟수" autocomplete="off"> 회차
+                        <?
+                        } else { 
+
+                            if(empty($row['last_pay_cnt']) && $row['last_pay_cnt'] == 0) { 
+                            ?>
+                                <input class="frm_input w-30 text-center only-number required" inputmode="numeric" name="LAST_PAY_CNT" id="LAST_PAY_CNT" readonly maxlength="3" value='0' style="width:60px" placeholder="약정횟수" autocomplete="off">
+                                <label for="last_pay_cnt_check"> 약정없음(만기일이 지정되어 있지않음)</label>
+                            <? } else { ?>
+                                <input class="frm_input w-30 text-center only-number required" inputmode="numeric" name="LAST_PAY_CNT" id="LAST_PAY_CNT" readonly maxlength="3" value='<?=$row['last_pay_cnt']?>' style="width:60px" placeholder="약정횟수" autocomplete="off"> 회차
+                            <? } 
+
+                        }
+                        ?>
+
+                        <?php
+                        /*
+                        <input type="checkbox" name="last_pay_cnt_check" id="last_pay_cnt_check" value="1" <?php if(empty($row['last_pay_cnt']) && $row['last_pay_cnt'] == "0") { echo "checked"; } ?> onClick="set_quota(this, '<?=$row['last_pay_cnt']?>')"> 
+                        <label for="last_pay_cnt_check"> 약정없음</label>
+                        */
+                        ?>
+                </td>
+            </tr>
+            <tr>
                 <th>카드번호</th>
                 <td>
                     <input class="frm_input w-100 text-center only-number required" data-nextcount="4" data-nextid="CARDNO2" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDNO1" id="CARDNO1" maxlength="4" placeholder="●●●●" autocomplete="off">
@@ -478,7 +549,7 @@ table {
             <tr>
                 <th>할부개월</th>
                 <td colspan="4">
-                    <select class="frm_input w-100" name="QUOTA" id="QUOTA">
+                    <select class="frm_input w-100" name="QUOTA" id="QUOTA" style="width:100px">
                         <option value="00">일시불</option>
                         <option value="02">2개월</option>
                         <option value="03">3개월</option>
@@ -494,6 +565,9 @@ table {
                     </select>
                 </td>
             </tr>
+
+            <?php
+            /*
             <tr class="<?php echo $needPassword ? '' : 'd-none' ?>">
                 <th>결제카드</th>
                 <td colspan="4">
@@ -501,22 +575,28 @@ table {
                     <label for="use_hanacard"> <strong>[하나카드]</strong>로 결제하시는 경우 체크해 주세요.</label>
                 </td>
             </tr>
+            */
+            ?>
             
             <!-- // s: cookiepay-plugin v1.2 -->
+            <?php
+            /*
             <tr class="<?php if ($default['de_pg_service'] != 'COOKIEPAY_TS') { echo "d-none"; }?>" id="birthday_tr">
+            */
+            ?>
             <!-- // e: cookiepay-plugin v1.2 -->
-            
+            <tr id="birthday_tr">
                 <th>생년월일</th>
                 <td colspan="4">
-                    <input class="frm_input w-100 text-center only-number" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDAUTH" id="CARDAUTH" maxlength="13" placeholder="- 없이 숫자만 입력" autocomplete="off">
+                    <input class="frm_input w-100 text-center only-number" type="text" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" name="CARDAUTH" id="CARDAUTH" style="width:120px;" maxlength="13" placeholder="- 없이 숫자만 입력" autocomplete="off">
                     <br>
                     <small>개인(생년월일) : 761203 / 법인(사업자등록번호) : 1231212345</small>
                 </td>
             </tr>
-            <tr class="d-none" id="password_tr">
+            <tr <?php /* class="d-none" */ ?> id="password_tr">
                 <th>카드 비밀번호</th>
                 <td colspan="4">
-                    <input class="frm_input w-100 text-center only-number" type="text" name="CARDPWD" id="CARDPWD" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="-webkit-text-security: disc;" maxlength="2" placeholder="" autocomplete="new-password">
+                    <input class="frm_input w-100 text-center only-number" type="text" name="CARDPWD" id="CARDPWD" pattern="[0-9]*" inputmode="numeric" min="1111" max="9999" style="width:60px;-webkit-text-security: disc;" maxlength="2" placeholder="" autocomplete="new-password">
                     <br>
                     <small>카드비밀번호 앞 2자리</small>
                 </td>
@@ -561,5 +641,18 @@ else {
 }
 ?>
 
+<script language='javascript'>
+	function set_quota(f, count) {
+		var quota = document.payform.LAST_PAY_CNT;
+		if(f.checked)
+		{
+			quota.setAttribute('readonly',"");
+			quota.value = "0";
+		}else{
+			quota.removeAttribute('readonly');
+			quota.value = count;
+		}
+	}
+</script>    
 </body>
 </html>
