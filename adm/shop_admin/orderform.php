@@ -1102,7 +1102,7 @@ function form_submit(f)
     <?php 
     // s: cookiepay-plugin
     // if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == 'KAKAOPAY' || $od['od_settle_case'] == '간편결제' || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) {
-    if($od['od_settle_case'] == '계좌이체' || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || $od['od_settle_case'] == '간편결제' || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) { 
+    if($od['od_settle_case'] == "정기(구독)" || $od['od_settle_case'] == '계좌이체' || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || $od['od_settle_case'] == '간편결제' || ($od['od_pg'] == 'inicis' && is_inicis_order_pay($od['od_settle_case']) )) { 
     // e: cookiepay-plugin
     ?>
     if(status == "취소" || status == "반품" || status == "품절") {

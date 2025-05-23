@@ -111,6 +111,204 @@ $pgResultColumns = [
     'pay_status'
 ];
 
+## 영카트 플러그인 > 정기(구독) > S
+
+// 결제 결과 테이블 없으면 생성
+if(!sql_query(" DESCRIBE ".COOKIEPAY_PG_SUBSCRIBE_RESULT." ", false)) {
+    $sql = " CREATE TABLE `".COOKIEPAY_PG_SUBSCRIBE_RESULT."` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT COMMENT '고유번호',
+                `RESULTCODE` VARCHAR(4) NULL DEFAULT NULL COMMENT '결과코드. pg사 응답 코드 (성공시 0000, 그외 에러)' COLLATE 'utf8mb4_general_ci',
+                `RESULTMSG` VARCHAR(100) NULL DEFAULT NULL COMMENT '결과 메세지. pg사 응답 메시지 (성공 또는 오류 메세지)' COLLATE 'utf8mb4_general_ci',
+                `USERID` varchar(50) DEFAULT NULL COMMENT '회원아이디',
+                `ORDERNO` VARCHAR(50) NOT NULL COMMENT '주문번호' COLLATE 'utf8mb4_general_ci',
+                `AMOUNT` VARCHAR(10) NULL DEFAULT NULL COMMENT '결제된금액' COLLATE 'utf8mb4_general_ci',
+                `PRODUCT_NAME` VARCHAR(60) NULL DEFAULT NULL COMMENT '상품명' COLLATE 'utf8mb4_general_ci',
+                `TID` VARCHAR(20) NOT NULL COMMENT '거래고유번호. pg사 결제 거래고유번호 (전표출력 및 결제취소에 사용됩니다)' COLLATE 'utf8mb4_general_ci',
+                `ACCEPTDATE` VARCHAR(20) NULL DEFAULT NULL COMMENT '승인일시. pg사 결제 승인일시' COLLATE 'utf8mb4_general_ci',
+                `ACCEPTNO` VARCHAR(10) NULL DEFAULT NULL COMMENT '승인번호. pg사 결제 승인번호' COLLATE 'utf8mb4_general_ci',
+                `PAY_DATE` datetime DEFAULT NULL COMMENT '결제일시' COLLATE 'utf8mb4_general_ci',
+                `CASH_BILL_NO` VARCHAR(10) NULL DEFAULT NULL COMMENT '현금영수증일련번호. 가상계좌 및 계좌이체 시 현금영수증 일련번호' COLLATE 'utf8mb4_general_ci',
+                `CARDNAME` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 은행명. 가상계좌 및 계좌이체 시 입금할 은행명' COLLATE 'utf8mb4_general_ci',
+                `ACCOUNTNO` VARCHAR(50) NULL DEFAULT NULL COMMENT '입금할 계좌번호. 가상계좌 시 입금할 계좌번호' COLLATE 'utf8mb4_general_ci',
+                `RECEIVERNAME` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 예금주. 가상계좌 시 입금할 예금주' COLLATE 'utf8mb4_general_ci',
+                `DEPOSITENDDATE` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금마감일. 가상계좌 시 입금마감일' COLLATE 'utf8mb4_general_ci',
+                `CARDCODE` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 은행코드. 가상계좌 시 입금할 은행코드' COLLATE 'utf8mb4_general_ci',
+                `QUOTA` VARCHAR(2) NULL DEFAULT NULL COMMENT '카드 할부결제시 할부기간 (00:일시불, 01:1개월)' COLLATE 'utf8mb4_general_ci',
+                `BILLKEY` varchar(50) DEFAULT NULL COMMENT '정기결제 빌키',
+                `GENDATE` varchar(20) DEFAULT NULL COMMENT '빌키생성날짜',
+                `RESERVE_RESULTCODE` varchar(10) DEFAULT NULL COMMENT '빌키생성 결과코드',
+                `RESERVE_RESULTMSG` varchar(30) DEFAULT NULL COMMENT '빌키생성 결과메세지',
+                `RESERVE_ID` varchar(30) DEFAULT NULL COMMENT '빌키생성 고유 아이디',
+                `RESERVE_ORDERNO` varchar(50) DEFAULT NULL COMMENT '빌키생성 주문번호',
+                `RESERVE_RECURRENCE_TYPE` char(1) DEFAULT NULL COMMENT '반복부기 > M:원간, W:주간',
+                `RESERVE_PAY_DAY` char(2) DEFAULT NULL COMMENT '결제일, 결제요일',
+                `RESERVE_NOW_PAY_CNT` char(2) DEFAULT NULL,
+                `RESERVE_START_PAY_CNT` char(2) DEFAULT NULL,
+                `RESERVE_LAST_PAY_CNT` char(2) DEFAULT NULL COMMENT '반복결제 횟수',
+                `RESERVE_NEXT_PAY_DATE` date DEFAULT NULL COMMENT '다음결제일',
+                `RESERVE_RETURN_URL` varchar(15) DEFAULT NULL,
+                `ETC1` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드1. 결제 요청시 입력한 값',
+                `ETC2` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드2. 결제 요청시 입력한 값',
+                `ETC3` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드3. 결제 요청시 입력한 값',
+                `ETC4` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드4. 결제 요청시 입력한 값',
+                `ETC5` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드5. 결제 요청시 입력한 값',
+                `PGNAME` varchar(30) DEFAULT NULL COMMENT 'PG사',
+                `pay_type` varchar(2) NOT NULL COMMENT '결제타입. 1:수기결제,3:신용카드인증,5:해외달러결제,7:해외원화결제',
+                `pay_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '결제상태. 0:결제시도,1:결제성공,2:결제취소,3:결제실패,4:가상계좌',
+                `repay_check` char(1) DEFAULT 'Y' COMMENT '재결제 버튼 체크',
+                PRIMARY KEY (`id`) USING BTREE,
+                INDEX `ORDERNO` (`ORDERNO`) USING BTREE,
+                INDEX `TID` (`TID`) USING BTREE
+            )
+            COMMENT='쿠키페이 플러그인 결제 응답 결과'
+            COLLATE='utf8mb4_general_ci'
+            ENGINE=InnoDB ";
+    sql_query($sql, true);
+}
+
+$pgResultColumns_Subscribe = [
+    'RESULTCODE',
+    'RESULTMSG',
+    'USERID',
+    'ORDERNO',
+    'AMOUNT',
+    'PRODUCT_NAME',
+    'TID',
+    'ACCEPTDATE',
+    'ACCEPTNO',
+    'PAY_DATE',
+    'CASH_BILL_NO',
+    'CARDNAME',
+    'ACCOUNTNO',
+    'RECEIVERNAME',
+    'DEPOSITENDDATE',
+    'CARDCODE',
+    'QUOTA',
+    'BILLKEY',
+    'GENDATE',
+    'RESERVE_RESULTCODE',
+    'RESERVE_RESULTMSG',
+    'RESERVE_ID',
+    'RESERVE_ORDERNO',
+    'RESERVE_RECURRENCE_TYPE',
+    'RESERVE_PAY_DAY',
+    'RESERVE_NOW_PAY_CNT',
+    'RESERVE_START_PAY_CNT',
+    'RESERVE_LAST_PAY_CNT',
+    'RESERVE_NEXT_PAY_DATE',
+    'RESERVE_RETURN_URL',
+    'ETC1',
+    'ETC2',
+    'ETC3',
+    'ETC4',
+    'ETC5',
+    'PGNAME',
+    'pay_type',
+    'pay_status'
+];
+
+// 결제 결과 테이블 없으면 생성
+if(!sql_query(" DESCRIBE ".COOKIEPAY_PG_SUBSCRIBE_USERLIST." ", false)) {
+    $sql = " CREATE TABLE `".COOKIEPAY_PG_SUBSCRIBE_USERLIST."` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT COMMENT '고유번호',
+                `RESULTCODE` VARCHAR(4) NULL DEFAULT NULL COMMENT '결과코드. pg사 응답 코드 (성공시 0000, 그외 에러)' COLLATE 'utf8mb4_general_ci',
+                `RESULTMSG` VARCHAR(100) NULL DEFAULT NULL COMMENT '결과 메세지. pg사 응답 메시지 (성공 또는 오류 메세지)' COLLATE 'utf8mb4_general_ci',
+                `USERID` varchar(50) DEFAULT NULL COMMENT '회원아이디',
+                `ORDERNO` VARCHAR(50) NOT NULL COMMENT '주문번호' COLLATE 'utf8mb4_general_ci',
+                `AMOUNT` VARCHAR(10) NULL DEFAULT NULL COMMENT '결제된금액' COLLATE 'utf8mb4_general_ci',
+                `PRODUCT_NAME` VARCHAR(60) NULL DEFAULT NULL COMMENT '상품명' COLLATE 'utf8mb4_general_ci',
+                `TID` VARCHAR(20) NOT NULL COMMENT '거래고유번호. pg사 결제 거래고유번호 (전표출력 및 결제취소에 사용됩니다)' COLLATE 'utf8mb4_general_ci',
+                `ACCEPTDATE` VARCHAR(20) NULL DEFAULT NULL COMMENT '승인일시. pg사 결제 승인일시' COLLATE 'utf8mb4_general_ci',
+                `ACCEPTNO` VARCHAR(10) NULL DEFAULT NULL COMMENT '승인번호. pg사 결제 승인번호' COLLATE 'utf8mb4_general_ci',
+                `PAY_DATE` datetime DEFAULT NULL COMMENT '결제일시' COLLATE 'utf8mb4_general_ci',
+                `CASH_BILL_NO` VARCHAR(10) NULL DEFAULT NULL COMMENT '현금영수증일련번호. 가상계좌 및 계좌이체 시 현금영수증 일련번호' COLLATE 'utf8mb4_general_ci',
+                `CARDNAME` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 은행명. 가상계좌 및 계좌이체 시 입금할 은행명' COLLATE 'utf8mb4_general_ci',
+                `ACCOUNTNO` VARCHAR(50) NULL DEFAULT NULL COMMENT '입금할 계좌번호. 가상계좌 시 입금할 계좌번호' COLLATE 'utf8mb4_general_ci',
+                `RECEIVERNAME` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 예금주. 가상계좌 시 입금할 예금주' COLLATE 'utf8mb4_general_ci',
+                `DEPOSITENDDATE` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금마감일. 가상계좌 시 입금마감일' COLLATE 'utf8mb4_general_ci',
+                `CARDCODE` VARCHAR(10) NULL DEFAULT NULL COMMENT '입금할 은행코드. 가상계좌 시 입금할 은행코드' COLLATE 'utf8mb4_general_ci',
+                `QUOTA` VARCHAR(2) NULL DEFAULT NULL COMMENT '카드 할부결제시 할부기간 (00:일시불, 01:1개월)' COLLATE 'utf8mb4_general_ci',
+                `BILLKEY` varchar(50) DEFAULT NULL COMMENT '정기결제 빌키',
+                `GENDATE` varchar(20) DEFAULT NULL COMMENT '빌키생성날짜',
+                `RESERVE_RESULTCODE` varchar(10) DEFAULT NULL COMMENT '빌키생성 결과코드',
+                `RESERVE_RESULTMSG` varchar(30) DEFAULT NULL COMMENT '빌키생성 결과메세지',
+                `RESERVE_ID` varchar(30) DEFAULT NULL COMMENT '빌키생성 고유 아이디',
+                `RESERVE_ORDERNO` varchar(50) DEFAULT NULL COMMENT '빌키생성 주문번호',
+                `RESERVE_RECURRENCE_TYPE` char(1) DEFAULT NULL COMMENT '반복부기 > M:원간, W:주간',
+                `RESERVE_PAY_DAY` char(2) DEFAULT NULL COMMENT '결제일, 결제요일',
+                `RESERVE_NOW_PAY_CNT` char(2) DEFAULT NULL,
+                `RESERVE_START_PAY_CNT` char(2) DEFAULT NULL,
+                `RESERVE_LAST_PAY_CNT` char(2) DEFAULT NULL COMMENT '반복결제 횟수',
+                `RESERVE_NEXT_PAY_DATE` date DEFAULT NULL COMMENT '다음결제일',
+                `RESERVE_RETURN_URL` varchar(15) DEFAULT NULL,
+                `RESERVE_SCHEDULE_CANCEL_DATE` datetime DEFAULT NULL COMMENT '해지날짜',
+                `RESERVE_LAST_PAY_DATE` datetime DEFAULT NULL COMMENT '최근결제일',
+                `RESERVE_LAST_PAY_RESULTCODE` char(4) DEFAULT NULL COMMENT '최근결제상태 코드',
+                `RESERVE_LAST_PAY_RESULTMSG` varchar(50) DEFAULT NULL COMMENT '최근결제상태 메세지',                
+                `ETC1` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드1. 결제 요청시 입력한 값',
+                `ETC2` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드2. 결제 요청시 입력한 값',
+                `ETC3` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드3. 결제 요청시 입력한 값',
+                `ETC4` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드4. 결제 요청시 입력한 값',
+                `ETC5` varchar(100) DEFAULT NULL COMMENT '사용자 추가 필드5. 결제 요청시 입력한 값',
+                `PGNAME` varchar(30) DEFAULT NULL COMMENT 'PG사',
+                `pay_type` varchar(2) NOT NULL COMMENT '결제타입. 1:수기결제,3:신용카드인증,5:해외달러결제,7:해외원화결제',
+                `pay_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '결제상태. 0:결제시도,1:결제성공,2:결제취소,3:결제실패,4:가상계좌',
+                PRIMARY KEY (`id`) USING BTREE,
+                INDEX `ORDERNO` (`ORDERNO`) USING BTREE,
+                INDEX `TID` (`TID`) USING BTREE
+            )
+            COMMENT='쿠키페이 플러그인 결제 응답 결과'
+            COLLATE='utf8mb4_general_ci'
+            ENGINE=InnoDB ";
+    sql_query($sql, true);
+}
+
+$pgResultColumns_Subscribe_Userlist = [
+    'RESULTCODE',
+    'RESULTMSG',
+    'USERID',
+    'ORDERNO',
+    'AMOUNT',
+    'PRODUCT_NAME',
+    'TID',
+    'ACCEPTDATE',
+    'ACCEPTNO',
+    'PAY_DATE',
+    'CASH_BILL_NO',
+    'CARDNAME',
+    'ACCOUNTNO',
+    'RECEIVERNAME',
+    'DEPOSITENDDATE',
+    'CARDCODE',
+    'QUOTA',
+    'BILLKEY',
+    'GENDATE',
+    'RESERVE_RESULTCODE',
+    'RESERVE_RESULTMSG',
+    'RESERVE_ID',
+    'RESERVE_ORDERNO',
+    'RESERVE_RECURRENCE_TYPE',
+    'RESERVE_PAY_DAY',
+    'RESERVE_NOW_PAY_CNT',
+    'RESERVE_START_PAY_CNT',
+    'RESERVE_LAST_PAY_CNT',
+    'RESERVE_NEXT_PAY_DATE',
+    'RESERVE_RETURN_URL',
+    'RESERVE_LAST_PAY_DATE',
+    'RESERVE_LAST_PAY_RESULTCODE',
+    'RESERVE_LAST_PAY_RESULTMSG',
+    'ETC1',
+    'ETC2',
+    'ETC3',
+    'ETC4',
+    'ETC5',
+    'PGNAME',
+    'pay_type',
+    'pay_status'
+];
+
+## 영카트 플러그인 > 정기(구독) > E
+
 // 결제 검증 테이블 없으면 생성
 if(!sql_query(" DESCRIBE ".COOKIEPAY_PG_VERIFY." ", false)) {
     $sql = " CREATE TABLE `".COOKIEPAY_PG_VERIFY."` (

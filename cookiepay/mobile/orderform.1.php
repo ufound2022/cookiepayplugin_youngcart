@@ -50,7 +50,16 @@ if ($default['de_pg_service'] == 'COOKIEPAY_PN') {
 ?>
 <script>
 function pay(payType) {
-    if (payType == "수기결제") {
+
+    var cookiepay_pay_url = "";
+    if(payType == "수기결제") { 
+        cookiepay_pay_url = "cookiepay.pgwin.php";
+    } else 
+    if(payType == "정기(구독)") {
+        cookiepay_pay_url = "cookiepay_subscribe.pgwin.php";
+    }
+
+    if (payType == "수기결제" || payType == "정기(구독)") {
         var tryOrderParams = {
             mode : 'try_order',
             od_id : $("input[name=ORDERNO]").val(),
@@ -123,7 +132,7 @@ function pay(payType) {
         var w = screen.width;
         var popupPos = `left=0, top=0, width=${w}, height=${h}`;
         var pt = document.querySelector("#PAY_TYPE").value;
-        var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/cookiepay.pgwin.php?pm=${payType}&pt=${pt}`, "pgWin1", popupPos);
+        var pgWin1 = window.open(`<?php echo COOKIEPAY_URL; ?>/`+cookiepay_pay_url+`?pm=${payType}&pt=${pt}`, "pgWin1", popupPos);
     }
     else {
         <?php

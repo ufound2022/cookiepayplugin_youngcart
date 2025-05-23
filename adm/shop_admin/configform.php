@@ -714,6 +714,24 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
                 </select>
             </td>
         </tr>
+        <!-- 
+        ## 영카트 플러그인 > 정기(구독) > S
+        -->
+        <tr>
+            <th scope="row"><label for="de_cookiepay_subscription_use">정기(구독)결제사용</label></th>
+            <td>
+                <?php echo help("주문시 신용카드 결제를 가능하게 할것인지를 설정합니다.", 50); ?>
+                <select id="de_cookiepay_subscription_use" name="de_cookiepay_subscription_use">
+                    <option value="0" <?php echo get_selected($default['de_cookiepay_subscription_use'], 0); ?>>사용안함</option>
+                    <option value="1" <?php echo get_selected($default['de_cookiepay_subscription_use'], 1); ?>>사용</option>
+                </select>&nbsp;
+                <input type="checkbox" id="de_cookiepay_subscription_cancel_use" name="de_cookiepay_subscription_cancel_use" <?php if(stripos($default['de_cookiepay_subscription_cancel_use'], '1') !== false){ echo 'checked="checked"'; } ?> value="1">
+                <label for="de_cookiepay_subscription_cancel_use">고객해지</label>
+            </td>
+        </tr>
+        <!--
+        ## 영카트 플러그인 > 정기(구독) > E
+        -->  
         <tr>
             <th scope="row"><label for="de_card_noint_use">신용카드 무이자할부사용<br>( KCP 만 해당 )</label></th>
             <td>
@@ -933,6 +951,18 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
         </tr>
         <?php } ?>
 
+        <?php if ($cookiepayPgCodeLower == "cookiepay_kw" || $cookiepayPgCodeLower == "cookiepay_ts" || $cookiepayPgCodeLower == "cookiepay_ki") { ?>
+        <tr class="pg_info_fld cookiepay-pglist <?php echo $cookiepayPgCodeLower; ?>_info_fld">
+            <th scope="row"><label for="de_<?php echo $cookiepayPgCodeLower; ?>_cookiepay_subscription_key"><?php echo $cookiepayPgName; ?> 정기(구독)<br>연동아이디 &amp; 시크릿키</label></th>
+            <td>
+                <?php echo help("쿠키페이에서 발급 받으신 정기(구독) 연동 아이디 및 시크릿 키를 입력합니다."); ?>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_subscription_cookiepay_id" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_subscription_cookiepay_id"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_subscription_cookiepay_id" class="frm_input" size="50" maxlength="50" style="margin-bottom:10px;" placeholder="연동 아이디">
+                <br>
+                <input type="text" name="de_<?php echo $cookiepayPgCodeLower; ?>_subscription_cookiepay_key" value="<?php echo get_sanitize_input($default["de_{$cookiepayPgCodeLower}_subscription_cookiepay_key"]); ?>" id="de_<?php echo $cookiepayPgCodeLower; ?>_subscription_cookiepay_key" class="frm_input" size="67" maxlength="50" placeholder="시크릿 키">
+            </td>
+        </tr>
+        <? } ?>
+        
         <?php
             $i++;
         }
