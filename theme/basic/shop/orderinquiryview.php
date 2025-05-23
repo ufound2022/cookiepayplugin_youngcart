@@ -187,7 +187,9 @@ if($od['od_pg'] == 'lg') {
         $disp_receipt = false;
         // s: cookiepay-plugin
         // if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == 'KAKAOPAY' || is_inicis_order_pay($od['od_settle_case']) ) {
-        if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || is_inicis_order_pay($od['od_settle_case']) ) {
+        ## 영카트 플러그인 > 정기(구독) > S
+        if($od['od_settle_case'] == '정기(구독)' || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || $od['od_settle_case'] == 'KAKAOPAY' || is_inicis_order_pay($od['od_settle_case']) ) {
+        ## 영카트 플러그인 > 정기(구독) > E          
         // e: cookiepay-plugin
             $app_no_subj = '승인번호';
             $app_no = $od['od_app_no'];
@@ -475,7 +477,9 @@ if($od['od_pg'] == 'lg') {
 	
                         // s: cookiepay-plugin
                         // if($od['od_settle_case'] == '신용카드' || is_inicis_order_pay($od['od_settle_case']) || (shop_is_taxsave($od, true) && $misu_price == 0) )
-	                    if($od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || is_inicis_order_pay($od['od_settle_case']) || (shop_is_taxsave($od, true) && $misu_price == 0) )
+                        ## 영카트 플러그인 > 정기(구독) > S
+	                    if($od['od_settle_case'] == '정기(구독)' || $od['od_settle_case'] == '신용카드' || $od['od_settle_case'] == '수기결제' || is_inicis_order_pay($od['od_settle_case']) || (shop_is_taxsave($od, true) && $misu_price == 0) )
+                        ## 영카트 플러그인 > 정기(구독) > E
 	                    {
                         // e: cookiepay-plugin
 	                        if($od['od_pg'] == 'lg') {
