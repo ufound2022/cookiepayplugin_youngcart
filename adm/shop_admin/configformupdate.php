@@ -11,7 +11,7 @@ $ssql = "SHOW COLUMNS FROM g5_shop_default LIKE 'de_cookiepay_subscription_use' 
 $sresult = sql_fetch($ssql);
 
 if($sresult['Field'] == "de_cookiepay_subscription_use") { 
-    echo "필드 있음";
+    //echo "필드 있음";
 } else { 
     // 필드 생성
 
@@ -38,7 +38,7 @@ $ssql2 = "SHOW COLUMNS FROM g5_shop_item LIKE 'it_type6' ";
 $sresult2 = sql_fetch($ssql2);
 
 if($sresult2['Field'] == "it_type6") { 
-    echo "필드 있음";
+    //echo "필드 있음";
 } else { 
 
     $sql2 = " ALTER TABLE `{$g5['g5_shop_item_table']}`
@@ -305,6 +305,7 @@ if( $de_kakaopay_enckey && ($de_pg_service === 'inicis' || $de_inicis_lpay_use |
 // s: cookiepay-plugin
 $check_sanitize_keys = array(
     'cookiepay_de_pg_service',                      //쿠키페이 결제대행사
+    'de_keyin_card_customer_use',                   //신용카드 비인증(수기결제) 사용자 이용가능여부
     'de_cookiepay_al_cookiepay_id',                 //모빌페이의 쿠키페이 연동 아이디
     'de_cookiepay_al_cookiepay_key',                //모빌페이의 쿠키페이 연동 시크릿키
     'de_cookiepay_ts_cookiepay_id',                 //토스페이의 쿠키페이 연동 아이디
@@ -565,6 +566,7 @@ $sql = " update {$g5['g5_shop_default_table']}
                 de_member_reg_coupon_term     = '{$de_member_reg_coupon_term}',
                 de_member_reg_coupon_price    = '{$de_member_reg_coupon_price}',
                 de_member_reg_coupon_minimum  = '{$de_member_reg_coupon_minimum}',
+                de_keyin_card_customer_use    = '{$de_keyin_card_customer_use}',
                 de_cookiepay_subscription_use = '{$de_cookiepay_subscription_use}',
                 de_cookiepay_subscription_cancel_use = '{$de_cookiepay_subscription_cancel_use}'
                 ";
