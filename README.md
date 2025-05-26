@@ -117,4 +117,45 @@
         // e: cookiepay-plugin v1.2 -> "e:" 코드블록 종료를 의미
 
         (주의: 코드블록은 여러 개가 존재할 수 있습니다)
-        ```  
+        ```
+
+■ 부분 취소 기능 추가<br>
+- 240315 Git 추가 내용 안내<br><br>
+
+주문내역 > 상세보기 > 주문상품 2건 이상시 > 부분 상품취소(PG) 가능하도록 기능 업데이트 되었습니다.<br>
+- 업데이트 파일<br>
+adm/shop_admin/orderformcartupdate.php<br>
+adm/shop_admin/cookie.cancel.php<br>
+shop/orderformupdate.php<br>
+adm/shop_admin/orderform.php<br><br>
+
+
+■ 영카트 5.6.8(최신버전 지원 2025.01.14 기준)<br>
+ - 250104 Git 추가내용 안내<br><br>
+
+1. 쿠키페이 연동 아이디, 시크릿 키 > 영카트 5.6.8 버전(2025.01.14 기준) 에서 저장 안 되는 문제 수정<br>
+2. 최신버전 지원을 위해 > 기존 영카트 플러그인 파일 : common.php 파일 삭제.<br><br>
+
+■ 영카트 정기(구독) 기능추가 (2025.05.23)<br>
+정기(구독)기능이 추가되었습니다.<br>
+Git 에서 Update No 20250523 일자 > 업데이트 필요<br><br>
+
+정기(구독) 기능은 일부 기본 스킨, 테마 파일이 수정되었습니다.<br>
+아래 기본 스킨, 테마 파일을 미리 수정하신분은 바로 파일을 적용하시 마시고<br><br>
+
+정기(구독) 기능에 수정된 > 기본 스킨, 테마파일<br>
+theme/basic/shop/orderinquiryview.php <br>
+theme/basic/shop/mypage.php<br>
+mobile/skin/shop/basic/item.form.skin.php<br>
+skin/shop/basic/item.form.skin.php <br>
+skin/shop/basic/item.info.skin.php<br>
+skin/shop/basic/list.10.skin.php<br><br>
+
+## 영카트 플러그인 > 정기(구독) > S  ~ E <br>
+위 주석 내용을 확인하시어 부분 적용하여 주시기 바랍니다.<br><br>
+
+■ 영카트 신용카드(비인증) 수기결제 사용자 이용가능 설정 기능 추가 (2025.05.26)<br>
+Git 에서 Update No 20250526 #1 일자 > 업데이트 필요<br><br>
+
+감사합니다.<br>
+
