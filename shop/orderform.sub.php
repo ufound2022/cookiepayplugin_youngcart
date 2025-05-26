@@ -683,7 +683,8 @@ if($is_kakaopay_use) {
                         $easypay_prints = [];
                         
                         // 관리자일 경우 수기결제 표시(레벨 10)
-                        if ($member['mb_level'] >= 10) {
+                        //if ($member['mb_level'] >= 10) {
+                        if($member['mb_level'] >= 10 || (!empty($default['de_keyin_card_customer_use']) && $default['de_keyin_card_customer_use'] == "Y")) {
                             $multi_settle++;
                             echo '<input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제">';
                             echo '<label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label>';

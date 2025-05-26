@@ -215,6 +215,23 @@ if(!$default['de_kakaopay_cancelpwd']){
 }
 
 // s: cookiepay-plugin
+
+# 신용카드 비인증(수기결제) 사용자 이용가능여부 > 필드추가
+$ssql0 = "SHOW COLUMNS FROM g5_shop_default LIKE 'de_keyin_card_customer_use' ";
+$sresult0 = sql_fetch($ssql0);
+
+if($sresult0['Field'] == "de_keyin_card_customer_use") { 
+    #echo "필드 있음";
+} else { 
+    // 필드 생성
+
+    // 쿠키페이 PG사 연동 정보 컬럼 추가
+    $sql0 = " ALTER TABLE `{$g5['g5_shop_default_table']}`
+                ADD `de_keyin_card_customer_use` CHAR(1) NOT NULL DEFAULT 'N' COMMENT '신용카드 비인증(수기결제) 사용자 이용가능여부' COLLATE 'utf8_general_ci' AFTER `de_pg_service`";
+    sql_query($sql0, true);
+
+}
+
 if(!isset($default['de_cookiepay_al_cookiepay_id'])) {
     // 쿠키페이 PG사 연동 정보 컬럼 추가
     $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
@@ -712,6 +729,18 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
                     <option value="0" <?php echo get_selected($default['de_card_use'], 0); ?>>사용안함</option>
                     <option value="1" <?php echo get_selected($default['de_card_use'], 1); ?>>사용</option>
                 </select>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label for="de_keyin_card_customer_use">쿠키페이 신용카드 비인증(수기결제) 사용자 이용여부</label></th>
+            <td>
+                    <?php echo help("쿠키페이 신용카드 비인증(수기결제)를 사용자가 이용할수 있는지 설정합니다.<br>(관리자는 비인증 수기결제를 설정과 상관없이 이용 가능합니다.)", 50); ?>        
+                <ul>
+                    <label style="margin-right:15px;">
+                        <input type="radio" name="de_keyin_card_customer_use" id="de_keyin_card_customer_use_0" <?php if($default['de_keyin_card_customer_use'] == "N") { echo "checked"; } ?> value="N"> 사용자 이용불가</label>
+                    <label style="margin-right:15px;">
+                        <input type="radio" name="de_keyin_card_customer_use" id="de_keyin_card_customer_use_1" <?php if($default['de_keyin_card_customer_use'] == "Y") { echo "checked"; } ?> value="Y"> 사용자 이용가능</label>
+                </ul>
             </td>
         </tr>
         <!-- 
