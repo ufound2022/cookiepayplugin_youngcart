@@ -179,16 +179,29 @@ if($RES_ARR['RTN_CD'] == '0000'){
         # 재결제 버튼 중복 입력 방지(승인건)
         if($result_array['decryptData']['RESULTCODE'] == "0000") { 
 
+            sleep(1);
             @cookiepay_payment_log("[통지] 정기(구독) 중복체크 쿼리(승인) SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_RESULT." WHERE TID='{$result_array['decryptData']['TID']}' AND TID != '' ORDER BY `id` DESC LIMIT 1 ", 3);
             $od_tno = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_RESULT." WHERE TID='{$result_array['decryptData']['TID']}' AND TID != '' ORDER BY `id` DESC LIMIT 1 ");
+
+            #echo "중복체크 : <br>";
+            #print_r2($od_tno);
+            #exit;
 
             if($result_array['decryptData']['RESULTCODE'] == "0000" && !empty($od_tno['id'])) { 
 
 
                 # 재결제가 성공하였으므로 > 해당회차 실패건을 재결제 버튼을 노출하지 않는다.
+                /*
                 $sql_u2 = "update `cookiepay_pg_subscribe_result` 
                             set pay_status = '1', 
                                 repay_check = 'N' 
+                            where RESERVE_ID = '".$result_array['decryptData']['RESERVE_ID']."' 
+                                AND RESERVE_NOW_PAY_CNT = '".$result_array['decryptData']['PAY_CNT']."' 
+                                
+                        ";
+                */
+                $sql_u2 = "update `cookiepay_pg_subscribe_result` 
+                            set repay_check = 'N' 
                             where RESERVE_ID = '".$result_array['decryptData']['RESERVE_ID']."' 
                                 AND RESERVE_NOW_PAY_CNT = '".$result_array['decryptData']['PAY_CNT']."' 
                                 
@@ -282,6 +295,10 @@ if($RES_ARR['RTN_CD'] == '0000'){
         @cookiepay_payment_log("[통지] g5_shop_order insert Query : ", $sql, 3);
 
         if($result_array['decryptData']['RESULTCODE'] == "0000") { 
+
+            #echo "sql : ".$sql;
+            #exit;
+
             $result = sql_query($sql, false);
         }
 
@@ -337,20 +354,8 @@ if($RES_ARR['RTN_CD'] == '0000'){
     
         # 영카트 주문내역 테이블에 저장한다(E)
 
-        $od_id = date('YmdHis').rand(11,99);
+        #$od_id = date('YmdHis').rand(11,99); // 주문번호 생성 중복 주석처리 > 250527
         $cookiepay_pg_subscribe_result = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_RESULT." WHERE RESERVE_ID='{$result_array['decryptData']['RESERVE_ID']}' AND RESERVE_RECURRENCE_TYPE != '' AND RESERVE_START_PAY_CNT != '' AND RESERVE_LAST_PAY_CNT != '' ORDER BY `id` DESC LIMIT 1 ");
-
-        # 재결제가 성공하였으므로 > 해당회차 실패건을 재결제 버튼을 노출하지 않는다.
-        $sql_u2 = "update `cookiepay_pg_subscribe_result` 
-                      set pay_status = '1', 
-                          repay_check = 'N' 
-                    where RESERVE_ID = '".$_POST['reserveid']."' 
-                          AND RESERVE_NOW_PAY_CNT = '".$result_array['decryptData']['PAY_CNT']."' 
-                          
-                  ";
-                  //AND pay_status='3' 
-
-        $result_u2 = sql_query($sql_u2);
 
         if($result_array['decryptData']['RESULTCODE'] == "0000") { 
             $pay_status_str = "1";
@@ -361,6 +366,19 @@ if($RES_ARR['RTN_CD'] == '0000'){
             # 최종결제 결과메세지
             $RESERVE_LAST_PAY_RESULTMSG = $result_array['decryptData']['RESULTMSG'];
         }
+
+        # 재결제가 성공하였으므로 > 해당회차 실패건을 재결제 버튼을 노출하지 않는다.
+        $sql_u2 = "update `cookiepay_pg_subscribe_result` 
+                      set pay_status = '".$pay_status_str."', 
+                          repay_check = 'N' 
+                    where RESERVE_ID = '".$_POST['reserveid']."' 
+                          AND RESERVE_NOW_PAY_CNT = '".$result_array['decryptData']['PAY_CNT']."' 
+                          
+                  ";
+                  //AND pay_status='3' 
+
+        $result_u2 = sql_query($sql_u2);
+
 
         # 실패때 PAY_DATE 처리를 하기 위한 로직(S)
         $accept_date_str = "";
