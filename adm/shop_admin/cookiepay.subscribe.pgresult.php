@@ -26,21 +26,26 @@ $to_date = (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/"
 $from = date("Ymd", strtotime($fr_date))."00000000";
 $to = date("Ymd", strtotime($to_date))."99999999";
 
+$pay_status_str = "";
+if(!empty($_GET['t'])) {
+    $pay_status_str = " AND pay_status = '".$_GET['t']."' ";
+}
 
 if($_GET['fr_date'] && $_GET['to_date']) {
     $fr_data_s = date('Ymd', strtotime($_GET['fr_date']));
     $to_date_s = date('Ymd', strtotime($_GET['to_date']));
 
-    $date_sql = " AND A.ACCEPTDATE >= '".$fr_data_s."000000'";
-    $date_sql .= " AND A.ACCEPTDATE <= '".$to_date_s."235959' ";
-    
+    $date_sql = " AND A.PAY_DATE >= '".$fr_data_s."000000'";
+    $date_sql .= " AND A.PAY_DATE <= '".$to_date_s."235959' ";
+
+
     # 실패내역도 조회되야하기 때문에 g5_shop_order 테이블 조인을 하지 않는다.
     //$sql = "select * from cookiepay_pg_result A, g5_shop_order B where A.ORDERNO=B.od_id AND A.RESERVE_ORDERNO != '' AND A.TID != '' {$date_sql} order by A.id desc limit 1000";
-    $sql = "select * from cookiepay_pg_subscribe_result A where A.RESERVE_ORDERNO != '' {$date_sql} order by A.id desc limit 1000";
+    $sql = "select * from cookiepay_pg_subscribe_result A where A.RESERVE_ORDERNO != '' {$date_sql} {$pay_status_str} order by A.id desc limit 1000";
 } else { 
     # 실패내역도 조회되야하기 때문에 g5_shop_order 테이블 조인을 하지 않는다.
     //$sql = "select * from cookiepay_pg_result A, g5_shop_order B where A.ORDERNO=B.od_id AND A.RESERVE_ORDERNO != '' AND A.TID != '' order by A.id desc limit 1000";
-    $sql = "select * from cookiepay_pg_subscribe_result A where A.RESERVE_ORDERNO != '' order by A.id desc limit 1000";
+    $sql = "select * from cookiepay_pg_subscribe_result A where A.RESERVE_ORDERNO != '' {$pay_status_str} order by A.id desc limit 1000";
 }
 #echo "sql :".$sql."<br>";
 //$res = sql_query($sql);
@@ -63,13 +68,12 @@ $result = sql_query($sql);
 </div>
 <div>
     <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php" class="btn btn_02">전체내역</a>
-    <!--
-    <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=s" class="btn btn_03">결제성공</a>
-    <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=c" class="btn btn_01">결제취소</a>
-    -->
+    <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=1" class="btn btn_03">결제성공</a>
+    <!--<a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=2" class="btn btn_01">결제취소</a>-->
+    <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=3" class="btn btn_01">결제실패</a>
 </div>
 <form class="local_sch03 local_sch">
-    <input type="hidden" name="t" value="">
+    <input type="hidden" name="t" value="<?=$_GET['t']?>">
 <div class="sch_last">
     <strong>결제일</strong>
     <input type="text" id="fr_date"  name="fr_date" value="<?php echo $fr_date; ?>" class="frm_input" size="10" maxlength="10"> ~
@@ -90,7 +94,8 @@ $result = sql_query($sql);
     <thead>
         <tr>
             <th style="text-align:center">PG</th>
-            <th style="text-align:center;">결제일시</th>
+            <th style="text-align:center;width:80px">결제일시</th>
+            <th style="text-align:center;">결제예정일</th>
             <th style="text-align:center">주문번호</th>
             <th style="text-align:center">구독번호</th>
             <th style="text-align:center">고객명</th>
@@ -102,9 +107,19 @@ $result = sql_query($sql);
             <th style="text-align:center">카드</th>
             <th style="text-align:center">메모</th>
             <th style="text-align:center">결제여부</th>
+            <?php
+            if(!empty($_GET['t']) && $_GET['t'] == "3") { 
+            ?>
+            <th style="text-align:center">실패사유</th>
+            <? } ?>
             <th style="text-align:center">재결제</th>
+
+            <?php
+            if($_GET['t'] != "3") { 
+            ?>
             <th style="text-align:center">주문내역</th>
             <th style="text-align:center">전표출력</th>
+            <? } ?>
         </tr>
     </thead>
     <tbody>
@@ -134,6 +149,7 @@ $result = sql_query($sql);
             $success[$i]['RESERVE_PAY_DAY'] = $row['RESERVE_PAY_DAY'];
             $success[$i]['RESERVE_NOW_PAY_CNT'] = $row['RESERVE_NOW_PAY_CNT'];
             $success[$i]['RESERVE_LAST_PAY_CNT'] = $row['RESERVE_LAST_PAY_CNT'];
+            $success[$i]['RESERVE_NEXT_PAY_DATE'] = $row['RESERVE_NEXT_PAY_DATE'];
             $success[$i]['ORDERNO'] = $row['ORDERNO'];
             $success[$i]['RESERVE_ID'] = $row['RESERVE_ID'];
             $success[$i]['AMOUNT'] = $row['AMOUNT'];
@@ -149,7 +165,7 @@ $result = sql_query($sql);
         $data = $success;
 
         if (count($data) == 0) {
-            echo '<tr><td colspan="14">결제내역이 없습니다.</td></tr>';
+            echo '<tr><td colspan="16">결제내역이 없습니다.</td></tr>';
         } else {
             
             //echo "결제내역 리스트 출력(S) <br>";
@@ -181,6 +197,7 @@ $result = sql_query($sql);
                     <td>
                         <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?=$val['ORDERNO']?>&sel_field=od_id&search=<?=$val['ORDERNO']?>" target="_blank" style="color:blue;"><?=$val['PAY_DATE']?></a>
                     </td>
+                    <td><?=$val['RESERVE_NEXT_PAY_DATE']?></td>
                     <td><?=$val['ORDERNO']?></td>
                     <td><?=substr($val['RESERVE_ID'], 0, 10)."..."?></td>
                     <td><?=$val['od_name']?></td>
@@ -192,6 +209,11 @@ $result = sql_query($sql);
                     <td></td>
                     <td></td>
                     <td><?=$pay_status?></td>
+                    <?php
+                    if(!empty($_GET['t']) && $_GET['t'] == "3") { 
+                    ?>
+                    <td><?=$val['RESULTMSG']?></td>
+                    <? } ?>
                     <td>
                         <?php
                         if($pay_status == "결제실패" && $val['pay_status'] == "3" && $val['repay_check'] == "Y") { 
@@ -199,15 +221,29 @@ $result = sql_query($sql);
                         <button id="btn-modal-submit_<?=$i?>" class="btn_submit" onClick="subscribe_repay('<?=$i?>');" type="button" data-reserveid="<?=$val['RESERVE_ID']?>" data-billkey="<?=$val['BILLKEY']?>" style="padding:4px;border:none;margin-right:15px;width:60px;">재결제</button>
                         <? } ?>
                     </td>
+
+                    <?php
+                    if($_GET['t'] != "3") { 
+                    ?>
+
                     <td>
-                        <?php //echo $val['btnPgCancel']; ?>
+                        <?php
+                        if($pay_status != "결제실패" && $val['pay_status'] != "3") { 
+                        ?>
                         <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?=$val['ORDERNO']?>&sel_field=od_id&search=<?=$val['ORDERNO']?>" target="_blank" style="color:blue;">
                             <button type="button">&nbsp;보기&nbsp;</button>
                         </a>
+                        <? } ?>
                     </td>
                     <td>
+                        <?php
+                        if($pay_status != "결제실패" && $val['pay_status'] != "3") { 
+                        ?>
                         <button type="button" onclick="receipt('<?=$val['TID']?>')">전표출력</button>
+                        <? } ?>
                     </td>
+
+                    <? } ?>
                 </tr>
 
     <? 
