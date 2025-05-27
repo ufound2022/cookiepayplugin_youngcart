@@ -43,7 +43,7 @@ if($sresult2['Field'] == "it_type6") {
 
     $sql2 = " ALTER TABLE `{$g5['g5_shop_item_table']}`
                 ADD `it_type6` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '정기(구동)상품 여부' COLLATE 'utf8_general_ci' AFTER `it_type5`, 
-                ADD `last_pay_cnt` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 납부횟수' COLLATE 'utf8_general_ci' AFTER `it_type6` ";
+                ADD `last_pay_cnt` VARCHAR(3) NOT NULL DEFAULT '' COMMENT '정기(구독) 납부횟수' COLLATE 'utf8_general_ci' AFTER `it_type6` ";
 
     sql_query($sql2, true);
 
