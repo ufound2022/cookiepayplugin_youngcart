@@ -94,7 +94,7 @@ function cookiepay_get_api_account_info_by_pg($default, $pg, $pay_type=3) {
 	if ($pay_type == 1) {
 		$ret['api_id'] = $default["de_{$pg}_cookiepay_id_keyin"];
     	$ret['api_key'] = $default["de_{$pg}_cookiepay_key_keyin"];
-	} else if ($pay_type == 9) { 
+	} else if ($pay_type == 9) { # 정기(구독)
 		$ret['api_id'] = $default["de_{$pg}_subscription_cookiepay_id"];
     	$ret['api_key'] = $default["de_{$pg}_subscription_cookiepay_key"];
 	} else if ($pay_type == 5) {

@@ -11,7 +11,7 @@ require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
 
 $cookiepay = json_decode(file_get_contents('php://input'), true);
 
-# 정기(반복) 결제 통지 수신(S) 
+# 정기(구독) 결제 통지 수신(S) 
 /*
 ([통지]수신)
 {

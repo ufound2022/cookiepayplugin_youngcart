@@ -553,121 +553,130 @@ if($is_kakaopay_use) {
             echo '<div id="m_sod_frm_paysel"><ul>';
         }
 
-        // 카카오페이
-        if($is_kakaopay_use) {
+        // 정기(구독)
+        if(!empty($_GET['sw_direct'] && !empty($_GET['subscription']))) { 
             $multi_settle++;
-            echo '<li><input type="radio" id="od_settle_kakaopay" name="od_settle_case" value="KAKAOPAY" '.$checked.'> <label for="od_settle_kakaopay" class="kakaopay_icon lb_icon">KAKAOPAY</label></li>'.PHP_EOL;
+            echo '<input type="radio" id="de_cookiepay_subscription_use" name="od_settle_case" value="정기(구독)" '.$checked.'> <label for="de_cookiepay_subscription_use" class="lb_icon card_icon">정기(구독)</label>'.PHP_EOL;
             $checked = '';
-        }
+        } else { 
 
-        // 무통장입금 사용
-        if ($default['de_bank_use']) {
-            $multi_settle++;
-            echo '<li><input type="radio" id="od_settle_bank" name="od_settle_case" value="무통장" '.$checked.'> <label for="od_settle_bank" class="lb_icon  bank_icon">무통장입금</label></li>'.PHP_EOL;
-            $checked = '';
-        }
-
-        // 가상계좌 사용
-        if ($default['de_vbank_use']) {
-            $multi_settle++;
-            echo '<li><input type="radio" id="od_settle_vbank" name="od_settle_case" value="가상계좌" '.$checked.'> <label for="od_settle_vbank" class="lb_icon vbank_icon">'.$escrow_title.'가상계좌</label></li>'.PHP_EOL;
-            $checked = '';
-        }
-
-        // 계좌이체 사용
-        if ($default['de_iche_use']) {
-            $multi_settle++;
-            echo '<li><input type="radio" id="od_settle_iche" name="od_settle_case" value="계좌이체" '.$checked.'> <label for="od_settle_iche" class="lb_icon iche_icon">'.$escrow_title.'계좌이체</label></li>'.PHP_EOL;
-            $checked = '';
-        }
-
-        // 휴대폰 사용
-        if ($default['de_hp_use']) {
-            $multi_settle++;
-            echo '<li><input type="radio" id="od_settle_hp" name="od_settle_case" value="휴대폰" '.$checked.'> <label for="od_settle_hp" class="lb_icon hp_icon">휴대폰</label></li>'.PHP_EOL;
-            $checked = '';
-        }
-
-        // 신용카드 사용
-        if ($default['de_card_use']) {
-            $multi_settle++;
-            echo '<li><input type="radio" id="od_settle_card" name="od_settle_case" value="신용카드" '.$checked.'> <label for="od_settle_card" class="lb_icon card_icon">신용카드</label></li>'.PHP_EOL;
-            $checked = '';
-        }
-        
-        $easypay_prints = array();
-
-        // PG 간편결제
-        if($default['de_easy_pay_use']) {
-            switch($default['de_pg_service']) {
-                case 'lg':
-                    $pg_easy_pay_name = 'PAYNOW';
-                    break;
-                case 'inicis':
-                    $pg_easy_pay_name = 'KPAY';
-                    break;
-                default:
-                    $pg_easy_pay_name = 'PAYCO';
-                    break;
-            }
-
-            $multi_settle++;
-
-            if($default['de_pg_service'] === 'kcp' && isset($default['de_easy_pay_services']) && $default['de_easy_pay_services']){
-                $de_easy_pay_service_array = explode(',', $default['de_easy_pay_services']);
-                if( in_array('nhnkcp_payco', $de_easy_pay_service_array) ){
-                    $easypay_prints['nhnkcp_payco'] = '<li><input type="radio" id="od_settle_nhnkcp_payco" name="od_settle_case" data-pay="payco" value="간편결제"> <label for="od_settle_nhnkcp_payco" class="PAYCO nhnkcp_payco lb_icon" title="NHN_KCP - PAYCO">PAYCO</label></li>';
-                }
-                if( in_array('nhnkcp_naverpay', $de_easy_pay_service_array) ){
-                    $easypay_prints['nhnkcp_naverpay'] = '<li><input type="radio" id="od_settle_nhnkcp_naverpay" name="od_settle_case" data-pay="naverpay" value="간편결제" > <label for="od_settle_nhnkcp_naverpay" class="naverpay_icon nhnkcp_naverpay lb_icon" title="NHN_KCP - 네이버페이">네이버페이</label></li>';
-                }
-                if( in_array('nhnkcp_kakaopay', $de_easy_pay_service_array) ){
-                    $easypay_prints['nhnkcp_kakaopay'] = '<li><input type="radio" id="od_settle_nhnkcp_kakaopay" name="od_settle_case" data-pay="kakaopay" value="간편결제" > <label for="od_settle_nhnkcp_kakaopay" class="kakaopay_icon nhnkcp_kakaopay lb_icon" title="NHN_KCP - 카카오페이">카카오페이</label></li>';
-                }
-            } else {
-                $easypay_prints[strtolower($pg_easy_pay_name)] = '<li><input type="radio" id="od_settle_easy_pay" name="od_settle_case" value="간편결제" '.$checked.'> <label for="od_settle_easy_pay" class="'.$pg_easy_pay_name.' lb_icon">'.$pg_easy_pay_name.'</label></li>';
-            }
-        }
-
-        if( ! isset($easypay_prints['nhnkcp_naverpay']) && function_exists('is_use_easypay') && is_use_easypay('global_nhnkcp') ){
-            $easypay_prints['nhnkcp_naverpay'] = '<li><input type="radio" id="od_settle_nhnkcp_naverpay" name="od_settle_case" data-pay="naverpay" value="간편결제" > <label for="od_settle_nhnkcp_naverpay" class="naverpay_icon nhnkcp_naverpay lb_icon" title="NHN_KCP - 네이버페이">네이버페이</label></li>';
-        }
-
-        // s: cookiepay-plugin
-        $isCookiepay = strpos($default['de_pg_service'], "COOKIEPAY");
-        if($isCookiepay !== false) {
-            $easypay_prints = [];
-            
-            // 관리자일 경우 수기결제 표시(레벨 10)
-            if ($member['mb_level'] >= 10) {
+            // 카카오페이
+            if($is_kakaopay_use) {
                 $multi_settle++;
-                echo '<li><input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제" '.$checked.'> <label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label></li>'.PHP_EOL;
+                echo '<li><input type="radio" id="od_settle_kakaopay" name="od_settle_case" value="KAKAOPAY" '.$checked.'> <label for="od_settle_kakaopay" class="kakaopay_icon lb_icon">KAKAOPAY</label></li>'.PHP_EOL;
                 $checked = '';
             }
-        }
-        // e: cookiepay-plugin
 
-        if($easypay_prints) {
-            $multi_settle++;
-            echo run_replace('shop_orderform_easypay_buttons', implode(PHP_EOL, $easypay_prints), $easypay_prints, $multi_settle);
-        }
+            // 무통장입금 사용
+            if ($default['de_bank_use']) {
+                $multi_settle++;
+                echo '<li><input type="radio" id="od_settle_bank" name="od_settle_case" value="무통장" '.$checked.'> <label for="od_settle_bank" class="lb_icon  bank_icon">무통장입금</label></li>'.PHP_EOL;
+                $checked = '';
+            }
 
-        //이니시스 삼성페이
-        if($default['de_samsung_pay_use']) {
-            echo '<li><input type="radio" id="od_settle_samsungpay" data-case="samsungpay" name="od_settle_case" value="삼성페이" '.$checked.'> <label for="od_settle_samsungpay" class="samsung_pay lb_icon">삼성페이</label></li>'.PHP_EOL;
-            $checked = '';
-        }
+            // 가상계좌 사용
+            if ($default['de_vbank_use']) {
+                $multi_settle++;
+                echo '<li><input type="radio" id="od_settle_vbank" name="od_settle_case" value="가상계좌" '.$checked.'> <label for="od_settle_vbank" class="lb_icon vbank_icon">'.$escrow_title.'가상계좌</label></li>'.PHP_EOL;
+                $checked = '';
+            }
 
-        //이니시스 Lpay
-        if($default['de_inicis_lpay_use']) {
-            echo '<li><input type="radio" id="od_settle_inicislpay" data-case="lpay" name="od_settle_case" value="lpay" '.$checked.'> <label for="od_settle_inicislpay" class="inicis_lpay">L.pay</label></li>'.PHP_EOL;
-            $checked = '';
-        }
+            // 계좌이체 사용
+            if ($default['de_iche_use']) {
+                $multi_settle++;
+                echo '<li><input type="radio" id="od_settle_iche" name="od_settle_case" value="계좌이체" '.$checked.'> <label for="od_settle_iche" class="lb_icon iche_icon">'.$escrow_title.'계좌이체</label></li>'.PHP_EOL;
+                $checked = '';
+            }
 
-        //이니시스 카카오페이
-        if($default['de_inicis_kakaopay_use']) {
-            echo '<li><input type="radio" id="od_settle_inicis_kakaopay" data-case="inicis_kakaopay" name="od_settle_case" value="inicis_kakaopay" '.$checked.'> <label for="od_settle_inicis_kakaopay" title="KG 이니시스 카카오페이" class="inicis_kakaopay">KG 이니시스 카카오페이</label></li>'.PHP_EOL;
-            $checked = '';
+            // 휴대폰 사용
+            if ($default['de_hp_use']) {
+                $multi_settle++;
+                echo '<li><input type="radio" id="od_settle_hp" name="od_settle_case" value="휴대폰" '.$checked.'> <label for="od_settle_hp" class="lb_icon hp_icon">휴대폰</label></li>'.PHP_EOL;
+                $checked = '';
+            }
+
+            // 신용카드 사용
+            if ($default['de_card_use']) {
+                $multi_settle++;
+                echo '<li><input type="radio" id="od_settle_card" name="od_settle_case" value="신용카드" '.$checked.'> <label for="od_settle_card" class="lb_icon card_icon">신용카드</label></li>'.PHP_EOL;
+                $checked = '';
+            }
+            
+            $easypay_prints = array();
+
+            // PG 간편결제
+            if($default['de_easy_pay_use']) {
+                switch($default['de_pg_service']) {
+                    case 'lg':
+                        $pg_easy_pay_name = 'PAYNOW';
+                        break;
+                    case 'inicis':
+                        $pg_easy_pay_name = 'KPAY';
+                        break;
+                    default:
+                        $pg_easy_pay_name = 'PAYCO';
+                        break;
+                }
+
+                $multi_settle++;
+
+                if($default['de_pg_service'] === 'kcp' && isset($default['de_easy_pay_services']) && $default['de_easy_pay_services']){
+                    $de_easy_pay_service_array = explode(',', $default['de_easy_pay_services']);
+                    if( in_array('nhnkcp_payco', $de_easy_pay_service_array) ){
+                        $easypay_prints['nhnkcp_payco'] = '<li><input type="radio" id="od_settle_nhnkcp_payco" name="od_settle_case" data-pay="payco" value="간편결제"> <label for="od_settle_nhnkcp_payco" class="PAYCO nhnkcp_payco lb_icon" title="NHN_KCP - PAYCO">PAYCO</label></li>';
+                    }
+                    if( in_array('nhnkcp_naverpay', $de_easy_pay_service_array) ){
+                        $easypay_prints['nhnkcp_naverpay'] = '<li><input type="radio" id="od_settle_nhnkcp_naverpay" name="od_settle_case" data-pay="naverpay" value="간편결제" > <label for="od_settle_nhnkcp_naverpay" class="naverpay_icon nhnkcp_naverpay lb_icon" title="NHN_KCP - 네이버페이">네이버페이</label></li>';
+                    }
+                    if( in_array('nhnkcp_kakaopay', $de_easy_pay_service_array) ){
+                        $easypay_prints['nhnkcp_kakaopay'] = '<li><input type="radio" id="od_settle_nhnkcp_kakaopay" name="od_settle_case" data-pay="kakaopay" value="간편결제" > <label for="od_settle_nhnkcp_kakaopay" class="kakaopay_icon nhnkcp_kakaopay lb_icon" title="NHN_KCP - 카카오페이">카카오페이</label></li>';
+                    }
+                } else {
+                    $easypay_prints[strtolower($pg_easy_pay_name)] = '<li><input type="radio" id="od_settle_easy_pay" name="od_settle_case" value="간편결제" '.$checked.'> <label for="od_settle_easy_pay" class="'.$pg_easy_pay_name.' lb_icon">'.$pg_easy_pay_name.'</label></li>';
+                }
+            }
+
+            if( ! isset($easypay_prints['nhnkcp_naverpay']) && function_exists('is_use_easypay') && is_use_easypay('global_nhnkcp') ){
+                $easypay_prints['nhnkcp_naverpay'] = '<li><input type="radio" id="od_settle_nhnkcp_naverpay" name="od_settle_case" data-pay="naverpay" value="간편결제" > <label for="od_settle_nhnkcp_naverpay" class="naverpay_icon nhnkcp_naverpay lb_icon" title="NHN_KCP - 네이버페이">네이버페이</label></li>';
+            }
+
+            // s: cookiepay-plugin
+            $isCookiepay = strpos($default['de_pg_service'], "COOKIEPAY");
+            if($isCookiepay !== false) {
+                $easypay_prints = [];
+                
+                // 관리자일 경우 수기결제 표시(레벨 10)
+                if ($member['mb_level'] >= 10) {
+                    $multi_settle++;
+                    echo '<li><input type="radio" id="od_settle_keyin" name="od_settle_case" value="수기결제" '.$checked.'> <label for="od_settle_keyin" class="lb_icon card_icon">수기결제</label></li>'.PHP_EOL;
+                    $checked = '';
+                }
+            }
+            // e: cookiepay-plugin
+
+            if($easypay_prints) {
+                $multi_settle++;
+                echo run_replace('shop_orderform_easypay_buttons', implode(PHP_EOL, $easypay_prints), $easypay_prints, $multi_settle);
+            }
+
+            //이니시스 삼성페이
+            if($default['de_samsung_pay_use']) {
+                echo '<li><input type="radio" id="od_settle_samsungpay" data-case="samsungpay" name="od_settle_case" value="삼성페이" '.$checked.'> <label for="od_settle_samsungpay" class="samsung_pay lb_icon">삼성페이</label></li>'.PHP_EOL;
+                $checked = '';
+            }
+
+            //이니시스 Lpay
+            if($default['de_inicis_lpay_use']) {
+                echo '<li><input type="radio" id="od_settle_inicislpay" data-case="lpay" name="od_settle_case" value="lpay" '.$checked.'> <label for="od_settle_inicislpay" class="inicis_lpay">L.pay</label></li>'.PHP_EOL;
+                $checked = '';
+            }
+
+            //이니시스 카카오페이
+            if($default['de_inicis_kakaopay_use']) {
+                echo '<li><input type="radio" id="od_settle_inicis_kakaopay" data-case="inicis_kakaopay" name="od_settle_case" value="inicis_kakaopay" '.$checked.'> <label for="od_settle_inicis_kakaopay" title="KG 이니시스 카카오페이" class="inicis_kakaopay">KG 이니시스 카카오페이</label></li>'.PHP_EOL;
+                $checked = '';
+            }
+
         }
 
         echo '</ul>';

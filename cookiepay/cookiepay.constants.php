@@ -14,7 +14,7 @@ define('COOKIEPAY_PG_RESULT', 'cookiepay_pg_result'); // 결제 결과
 define('COOKIEPAY_PG_VERIFY', 'cookiepay_pg_verify'); // 결제 검증 결과
 define('COOKIEPAY_PG_CANCEL', 'cookiepay_pg_cancel'); // 결제 취소 결과
 
-define('COOKIEPAY_PG_SUBSCRIBE_RESULT', 'cookiepay_pg_subscribe_result'); // 결제 결과
+define('COOKIEPAY_PG_SUBSCRIBE_RESULT', 'cookiepay_pg_subscribe_result'); // 정기(구독)결제관리
 define('COOKIEPAY_PG_SUBSCRIBE_USERLIST', 'cookiepay_pg_subscribe_userlist'); // 정기(구독)등록고객
 
 // s: cookiepay-plugin v1.2
@@ -82,6 +82,11 @@ define('COOKIEPAY_RECEIPT_URL', "{$cookiepayPaymentsUrl}/api/receipt");
 // 쿠키페이 결제 내역 url
 define('COOKIEPAY_SEARCH_URL', "{$cookiepayPaymentsUrl}/api/paysearch");
 
+// 쿠키페이 정기(구독) 반복결제 재결제
+define('COOKIEPAY_SCHEDULE_REQUEST_PAYMENT', "{$cookiepayPaymentsUrl}/Subscribe/recurrence_request_payment");
+
+## 영카트 플러그인 > 정기(구독) > S
+
 // 쿠키페이 비인증정기 실결제 url
 define('COOKIEPAY_SUBSCRIBE_URL', "{$cookiepayPaymentsUrl}/Subscribe/billkeygen");
 
@@ -91,9 +96,8 @@ define('COOKIEPAY_TESTSUBSCRIBE_URL', "{$cookiepayPaymentsUrl}/Subscribe/billkey
 // 쿠키페이 정기(구독) 반복결제 해지
 define('COOKIEPAY_SCHEDULE_CANCEL_URL', "{$cookiepayPaymentsUrl}/Subscribe/recurrence_schedule_cancel");
 
-// 쿠키페이 정기(구독) 반복결제 재결제
-define('COOKIEPAY_SCHEDULE_REQUEST_PAYMENT', "{$cookiepayPaymentsUrl}/Subscribe/recurrence_request_payment");
-
-// 암호화 전문 복호화 하
+// 암호화 전문 복호화 하기
 define('COOKIEPAY_EDI_DECRYPT_URL', "{$cookiepayPaymentsUrl}/EdiAuth/cookiepay_edi_decrypt");
+
+## 영카트 플러그인 > 정기(구독) > E
 
