@@ -100,21 +100,8 @@ Git 에서 Update No 20250526 #1 일자 > 업데이트 필요<br><br>
 
 ■ 영카트 정기(구독) 기능추가 (2025.05.23)<br>
 정기(구독)기능이 추가되었습니다.<br>
-Git 에서 Update No 20250523 일자 > 업데이트 필요<br><br>
-
-정기(구독) 기능은 일부 기본 스킨, 테마 파일이 수정되었습니다.<br>
-아래 기본 스킨, 테마 파일을 미리 수정하신분은 바로 파일을 적용하시 마시고<br><br>
-
-정기(구독) 기능에 수정된 > 기본 스킨, 테마파일<br>
-theme/basic/shop/orderinquiryview.php <br>
-theme/basic/shop/mypage.php<br>
-mobile/skin/shop/basic/item.form.skin.php<br>
-skin/shop/basic/item.form.skin.php <br>
-skin/shop/basic/item.info.skin.php<br>
-skin/shop/basic/list.10.skin.php<br><br>
-
-영카트 플러그인 > 정기(구독) > S  ~ E <br>
-위 주석 내용을 확인하시어 부분 적용하여 주시기 바랍니다.<br><br>
+Git 에서 Update No 20250523 일자 > 업데이트 필요<br>
+기능 추가 방법 : https://www.cookiepayments.com/iroboard/view?bId=API_Devolper&wr_id=4668<br><br>
 
 ■ 영카트 5.6.8(최신버전 지원 2025.01.14 기준)<br>
  - 250104 Git 추가내용 안내<br><br>
