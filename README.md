@@ -65,22 +65,32 @@
         - /mobile/shop/COOKIEPAY_KW
         - /mobile/shop/COOKIEPAY_TS
         - /mobile/shop/COOKIEPAY_WP
+        - /lib/shop.lib.php
             
     - 코드 추가  
         - /adm/admin.menu400.shop_1of2.php
+        - /adm/admin.menu990.cookiepay.php
         - /adm/shop_admin/configform.php
         - /adm/shop_admin/configformupdate.php
         - /adm/shop_admin/orderform.php
         - /adm/shop_admin/orderformcartupdate.php
         - /adm/shop_admin/orderlist.php
+        - /adm/shop_admin/itemform.php
+        - /adm/shop_admin/itemformupdate.php
         - /shop/orderform.sub.php
         - /shop/orderformupdate.php
         - /shop/orderinquiryview.php
+        - /shop/cartupdate.php
         - /mobile/shop/orderform.sub.php
         - /mobile/shop/orderformupdate.php
         - /mobile/shop/orderinquiryview.php
         - /theme/basic/shop/orderinquiryview.php
+        - /theme/basic/shop/mypage.php
         - /lib/shop.lib.php
+        - /mobile/skin/shop/basic/item.form.skin.php
+        - /skin/shop/basic/item.form.skin.php
+        - /skin/shop/basic/item.info.skin.php
+        - /skin/shop/basic/list.10.skin.php
         ```  
         ❗ 코드 추가는 영카트 원본파일이 수정된 경우이므로 아래와 같은 주석 구문을 검색해  
          해당 코드블록을 복사해 붙여넣어 주시기 바랍니다.
