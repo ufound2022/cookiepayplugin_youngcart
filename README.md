@@ -100,7 +100,7 @@
 Git 에서 Update No 20250526 #1 일자 > 업데이트 필요<br><br>
 
 ■ 2025.05.23<br>
-- 영카트 정기(구독) 기능추가
+- 영카트 정기(구독) 기능추가<br>
 Git 에서 Update No 20250523 일자 > 업데이트 필요<br>
 기능 추가 방법 : https://www.cookiepayments.com/iroboard/view?bId=API_Devolper&wr_id=4668<br><br>
 
