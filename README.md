@@ -1,6 +1,7 @@
 # 쿠키페이 플러그인 (쿠키페이 영카트 결제 연동 플러그인)
 
-- 영카트 5.5.8.2.3 기반 제작 
+- 영카트 5.5.8.2.3 기반 제작
+- 영카트 5.6.8 > 2025.01.14 기준 최신버전 지원
 
 - 결제 로그 기록  
     - DOCUMENT ROOT의 상위 디렉토리에 logs 디렉토리 생성  
@@ -10,9 +11,8 @@
     - 자동으로 생성되며 "cookiepay_"와 같은 Prefix로 시작합니다.  
 
 - https 설정 안내  
-      - /common.php  
       - /cookiepay/cookiepay.constants.php  
-      - 위 두 파일에서 아래 코드를 찾아 변경 (https 사용시: true, 미사용시: false)  
+      - 위 파일에서 아래 코드를 찾아 변경 (https 사용시: true, 미사용시: false)  
       ```  
       define('COOKIEPAY_USE_HTTPS', true);
       ```  
@@ -23,7 +23,6 @@
       https://[플러그인설치도메인]/cookiepay/result.noti.php  
       ```  
 
-▶ v1.1
 - 영카트를 커스터마이징 하지 않은 경우  
     - 아래 디렉토리와 파일을 영카트 설치 디렉토리에 Copy & Paste(덮어쓰기) 
     - (cookiepay-plugin)  
@@ -35,53 +34,54 @@
         - /common.php  
 
 - 영카트를 커스터마이징한 경우  
-    - Copy & Paste(붙여넣기)  
-        - /cookiepay  
-        - /adm/shop_admin/cookiepay.ajax.php  
-        - /adm/shop_admin/cookiepay.cancel.php  
-        - /adm/shop_admin/cookiepay.configformupdate.php  
-        - /adm/shop_admin/cookiepay.pgconfig.php  
-        - /adm/shop_admin/cookiepay.pgresult.php  
-        - /shop/SETTLE_COOKIEPAY_AL.inc.php  
-        - /shop/SETTLE_COOKIEPAY_DN.inc.php  
-        - /shop/SETTLE_COOKIEPAY_KI.inc.php  
-        - /shop/SETTLE_COOKIEPAY_KW.inc.php  
-        - /shop/SETTLE_COOKIEPAY_TS.inc.php  
-        - /shop/SETTLE_COOKIEPAY_WP.inc.php  
-        - /shop/COOKIEPAY_AL  
-        - /shop/COOKIEPAY_DN  
-        - /shop/COOKIEPAY_KI  
-        - /shop/COOKIEPAY_KW  
-        - /shop/COOKIEPAY_TS  
-        - /shop/COOKIEPAY_WP  
-        - /mobile/shop/SETTLE_COOKIEPAY_AL.inc.php  
-        - /mobile/shop/SETTLE_COOKIEPAY_DN.inc.php  
-        - /mobile/shop/SETTLE_COOKIEPAY_KI.inc.php  
-        - /mobile/shop/SETTLE_COOKIEPAY_KW.inc.php  
-        - /mobile/shop/SETTLE_COOKIEPAY_TS.inc.php  
-        - /mobile/shop/SETTLE_COOKIEPAY_WP.inc.php  
-        - /mobile/shop/COOKIEPAY_AL  
-        - /mobile/shop/COOKIEPAY_DN  
-        - /mobile/shop/COOKIEPAY_KI  
-        - /mobile/shop/COOKIEPAY_KW  
-        - /mobile/shop/COOKIEPAY_TS  
-        - /mobile/shop/COOKIEPAY_WP  
-        
+        - Copy & Paste(붙여넣기)
+
+        - /cookiepay 
+        - /adm/shop_admin/cookiepay.ajax.php
+        - /adm/shop_admin/cookiepay.cancel.php 
+        - /adm/shop_admin/cookiepay.configformupdate.php
+        - /adm/shop_admin/cookiepay.pgconfig.php
+        - /adm/shop_admin/cookiepay.pgresult.php
+        - /shop/SETTLE_COOKIEPAY_AL.inc.php
+        - /shop/SETTLE_COOKIEPAY_DN.inc.php
+        - /shop/SETTLE_COOKIEPAY_KI.inc.php
+        - /shop/SETTLE_COOKIEPAY_KW.inc.php
+        - /shop/SETTLE_COOKIEPAY_TS.inc.php
+        - /shop/SETTLE_COOKIEPAY_WP.inc.php
+        - /shop/COOKIEPAY_AL
+        - /shop/COOKIEPAY_DN
+        - /shop/COOKIEPAY_KI
+        - /shop/COOKIEPAY_KW
+        - /shop/COOKIEPAY_TS
+        - /shop/COOKIEPAY_WP
+        - /mobile/shop/SETTLE_COOKIEPAY_AL.inc.php
+        - /mobile/shop/SETTLE_COOKIEPAY_DN.inc.php
+        - /mobile/shop/SETTLE_COOKIEPAY_KI.inc.php
+        - /mobile/shop/SETTLE_COOKIEPAY_KW.inc.php
+        - /mobile/shop/SETTLE_COOKIEPAY_TS.inc.php
+        - /mobile/shop/SETTLE_COOKIEPAY_WP.inc.php
+        - /mobile/shop/COOKIEPAY_AL
+        - /mobile/shop/COOKIEPAY_DN
+        - /mobile/shop/COOKIEPAY_KI
+        - /mobile/shop/COOKIEPAY_KW
+        - /mobile/shop/COOKIEPAY_TS
+        - /mobile/shop/COOKIEPAY_WP
+            
     - 코드 추가  
-        - /common.php  
-        - /adm/admin.menu400.shop_1of2.php  
-        - /adm/shop_admin/configform.php  
-        - /adm/shop_admin/configformupdate.php  
-        - /adm/shop_admin/orderform.php  
-        - /adm/shop_admin/orderformcartupdate.php  
-        - /adm/shop_admin/orderlist.php  
-        - /shop/orderform.sub.php  
-        - /shop/orderformupdate.php  
-        - /shop/orderinquiryview.php  
-        - /mobile/shop/orderform.sub.php  
-        - /mobile/shop/orderformupdate.php  
-        - /mobile/shop/orderinquiryview.php  
-        - /theme/basic/shop/orderinquiryview.php  
+        - /adm/admin.menu400.shop_1of2.php
+        - /adm/shop_admin/configform.php
+        - /adm/shop_admin/configformupdate.php
+        - /adm/shop_admin/orderform.php
+        - /adm/shop_admin/orderformcartupdate.php
+        - /adm/shop_admin/orderlist.php
+        - /shop/orderform.sub.php
+        - /shop/orderformupdate.php
+        - /shop/orderinquiryview.php
+        - /mobile/shop/orderform.sub.php
+        - /mobile/shop/orderformupdate.php
+        - /mobile/shop/orderinquiryview.php
+        - /theme/basic/shop/orderinquiryview.php
+        - /lib/shop.lib.php
         ```  
         ❗ 코드 추가는 영카트 원본파일이 수정된 경우이므로 아래와 같은 주석 구문을 검색해  
          해당 코드블록을 복사해 붙여넣어 주시기 바랍니다.
@@ -119,22 +119,12 @@
         (주의: 코드블록은 여러 개가 존재할 수 있습니다)
         ```
 
-■ 부분 취소 기능 추가<br>
-- 240315 Git 추가 내용 안내<br><br>
 
-주문내역 > 상세보기 > 주문상품 2건 이상시 > 부분 상품취소(PG) 가능하도록 기능 업데이트 되었습니다.<br>
-- 업데이트 파일<br>
-adm/shop_admin/orderformcartupdate.php<br>
-adm/shop_admin/cookie.cancel.php<br>
-shop/orderformupdate.php<br>
-adm/shop_admin/orderform.php<br><br>
+<br><br>
+## 업데이트 히스토리
 
-
-■ 영카트 5.6.8(최신버전 지원 2025.01.14 기준)<br>
- - 250104 Git 추가내용 안내<br><br>
-
-1. 쿠키페이 연동 아이디, 시크릿 키 > 영카트 5.6.8 버전(2025.01.14 기준) 에서 저장 안 되는 문제 수정<br>
-2. 최신버전 지원을 위해 > 기존 영카트 플러그인 파일 : common.php 파일 삭제.<br><br>
+■ 영카트 신용카드(비인증) 수기결제 사용자 이용가능 설정 기능 추가 (2025.05.26)<br>
+Git 에서 Update No 20250526 #1 일자 > 업데이트 필요<br><br>
 
 ■ 영카트 정기(구독) 기능추가 (2025.05.23)<br>
 정기(구독)기능이 추가되었습니다.<br>
@@ -151,11 +141,24 @@ skin/shop/basic/item.form.skin.php <br>
 skin/shop/basic/item.info.skin.php<br>
 skin/shop/basic/list.10.skin.php<br><br>
 
-## 영카트 플러그인 > 정기(구독) > S  ~ E <br>
+영카트 플러그인 > 정기(구독) > S  ~ E <br>
 위 주석 내용을 확인하시어 부분 적용하여 주시기 바랍니다.<br><br>
 
-■ 영카트 신용카드(비인증) 수기결제 사용자 이용가능 설정 기능 추가 (2025.05.26)<br>
-Git 에서 Update No 20250526 #1 일자 > 업데이트 필요<br><br>
+■ 영카트 5.6.8(최신버전 지원 2025.01.14 기준)<br>
+ - 250104 Git 추가내용 안내<br><br>
+
+1. 쿠키페이 연동 아이디, 시크릿 키 > 영카트 5.6.8 버전(2025.01.14 기준) 에서 저장 안 되는 문제 수정<br>
+2. 최신버전 지원을 위해 > 기존 영카트 플러그인 파일 : common.php 파일 삭제.<br><br>
+
+■ 부분 취소 기능 추가<br>
+- 240315 Git 추가 내용 안내<br><br>
+
+주문내역 > 상세보기 > 주문상품 2건 이상시 > 부분 상품취소(PG) 가능하도록 기능 업데이트 되었습니다.<br>
+- 업데이트 파일<br>
+adm/shop_admin/orderformcartupdate.php<br>
+adm/shop_admin/cookie.cancel.php<br>
+shop/orderformupdate.php<br>
+adm/shop_admin/orderform.php<br><br>
 
 감사합니다.<br>
 
