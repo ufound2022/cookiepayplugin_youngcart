@@ -27,20 +27,26 @@
     - (cookiepay-plugin)  
         - /adm  
         - /cookiepay  
-        - /shop  
+        - /shop
         - /mobile  
         - /theme  
-        - /common.php  
+        - /lib
 
 - 영카트를 커스터마이징한 경우  
         - Copy & Paste(붙여넣기)
 
         - /cookiepay 
         - /adm/shop_admin/cookiepay.ajax.php
+        - /adm/shop_admin/cookiepay.ajax_subscribe.php
+        - /adm/shop_admin/cookiepay.subscribe.customer.php
+        - /adm/shop_admin/cookiepay.subscribe.pgresult.php
+        - /adm/shop_admin/cookiepay.subscribe.ajax.php
         - /adm/shop_admin/cookiepay.cancel.php 
         - /adm/shop_admin/cookiepay.configformupdate.php
         - /adm/shop_admin/cookiepay.pgconfig.php
         - /adm/shop_admin/cookiepay.pgresult.php
+        - /adm/shop_admin/orderform.php
+        - /adm/shop_admin/orderformcartupdate.php
         - /shop/SETTLE_COOKIEPAY_AL.inc.php
         - /shop/SETTLE_COOKIEPAY_DN.inc.php
         - /shop/SETTLE_COOKIEPAY_KI.inc.php
@@ -65,7 +71,6 @@
         - /mobile/shop/COOKIEPAY_KW
         - /mobile/shop/COOKIEPAY_TS
         - /mobile/shop/COOKIEPAY_WP
-        - /lib/shop.lib.php
             
     - 코드 추가  
         - /adm/admin.menu400.shop_1of2.php
@@ -86,11 +91,11 @@
         - /mobile/shop/orderinquiryview.php
         - /theme/basic/shop/orderinquiryview.php
         - /theme/basic/shop/mypage.php
-        - /lib/shop.lib.php
         - /mobile/skin/shop/basic/item.form.skin.php
         - /skin/shop/basic/item.form.skin.php
         - /skin/shop/basic/item.info.skin.php
         - /skin/shop/basic/list.10.skin.php
+        - /lib/shop.lib.php
         ```  
         ❗ 코드 추가는 영카트 원본파일이 수정된 경우이므로 아래와 같은 주석 구문을 검색해  
          해당 코드블록을 복사해 붙여넣어 주시기 바랍니다.
@@ -98,6 +103,9 @@
         // s: cookiepay-plugin -> "s:" 코드블록 시작을 의미
         // e: cookiepay-plugin -> "e:" 코드블록 종료를 의미
 
+        // ## 정기(구독) > S -> "S:" 코드블록 시작을 의미
+        // ## 정기(구독) > E -> "E:" 코드블록 종류를 의미
+        
         (주의: 코드블록은 여러 개가 존재할 수 있습니다)
         ```  
 
