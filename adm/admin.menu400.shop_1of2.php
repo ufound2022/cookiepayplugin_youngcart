@@ -22,7 +22,7 @@ if(!empty($default['de_cookiepay_subscription_use'])) {
         array('400410', '미완료주문', G5_ADMIN_URL.'/shop_admin/inorderlist.php', 'scf_inorder', 1),
 
         // s: cookiepay-plugin
-        array('400900', '결제내역', G5_ADMIN_URL.'/shop_admin/cookiepay.pgresult.php', 'scf_cookiepay_pgresult', 1),
+        array('400900', '쿠키페이 결제내역', G5_ADMIN_URL.'/shop_admin/cookiepay.pgresult.php', 'scf_cookiepay_pgresult', 1),
         array('400950', '정기(구독)결제관리', G5_ADMIN_URL.'/shop_admin/cookiepay.subscribe.pgresult.php', 'scf_cookiepay_subscribe_pgresult', 1),
         array('400951', '정기(구독)등록고객', G5_ADMIN_URL.'/shop_admin/cookiepay.subscribe.customer.php', 'scf_cookiepay_subscribe_customer', 1),
         // e: cookiepay-plugin
