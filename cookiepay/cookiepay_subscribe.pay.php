@@ -409,7 +409,7 @@ if ($mode == "keyin_pay") {
 
 
                 $sql2 = " INSERT INTO ".COOKIEPAY_PG_SUBSCRIBE_USERLIST." ({$columnStr}) VALUES ({$valueStr}) ";
-                echo "sql2 : ".$sql2;
+                //echo "sql2 : ".$sql2;
                 # 정기(구독)관련 테이블 (E)            
 
                 $res2 = sql_query($sql2, false);
@@ -423,7 +423,7 @@ if ($mode == "keyin_pay") {
             } else if ($payStatus != 1) {
                 // update
 
-                echo "which<br>";
+                //echo "which<br>";
 
                 # 최초 기초데이터 저장된후 이곳에서 업데이트함
                 $set = [];
