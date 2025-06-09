@@ -69,7 +69,7 @@ $result = sql_query($sql);
 <div>
     <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php" class="btn btn_02">전체내역</a>
     <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=1" class="btn btn_03">결제성공</a>
-    <!--<a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=2" class="btn btn_01">결제취소</a>-->
+    <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=2" class="btn btn_01">결제취소</a>
     <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=3" class="btn btn_01">결제실패</a>
 </div>
 <form class="local_sch03 local_sch">
@@ -174,7 +174,11 @@ $result = sql_query($sql);
 
                 $pay_status = "";
                 if($val['RESULTCODE'] == "0000") { 
-                    $pay_status = "결제완료";
+                    if($val['pay_status'] == "2") { 
+                        $pay_status = "<span style='color:red'>".$val['RESULTMSG']."</span>";
+                    } else {
+                        $pay_status = "결제완료";
+                    }
                 } else {
                     $pay_status = "결제실패";
                 }

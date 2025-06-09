@@ -17,7 +17,7 @@ $ssql = "SHOW COLUMNS FROM g5_shop_default LIKE 'de_cookiepay_subscription_use' 
 $sresult = sql_fetch($ssql);
 
 if($sresult['Field'] == "de_cookiepay_subscription_use") { 
-    echo "필드 있음";
+    #echo "필드 있음";
 } else { 
     // 필드 생성
 

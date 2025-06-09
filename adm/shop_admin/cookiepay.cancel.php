@@ -125,6 +125,48 @@ if (isset($cookiepayPgResultRes['PGNAME']) && !empty($cookiepayPgResultRes['PGNA
                 $data['result'] = $result_array['cancel_code'];
                 @cookiepay_payment_log("결제 취소 성공", $response, 3);
 
+                /*
+INSERT INTO `cookiepay_pg_subscribe_result` (`id`, `RESULTCODE`, `RESULTMSG`, `USERID`, `ORDERNO`, `AMOUNT`, `PRODUCT_NAME`, `TID`, `ACCEPTDATE`, 
+`ACCEPTNO`, `PAY_DATE`, `CASH_BILL_NO`, `CARDNAME`, `ACCOUNTNO`, `RECEIVERNAME`, `DEPOSITENDDATE`, `CARDCODE`, `QUOTA`, `BILLKEY`, `GENDATE`, 
+`RESERVE_RESULTCODE`, `RESERVE_RESULTMSG`, `RESERVE_ID`, `RESERVE_ORDERNO`, `RESERVE_RECURRENCE_TYPE`, `RESERVE_PAY_DAY`, `RESERVE_NOW_PAY_CNT`, 
+`RESERVE_START_PAY_CNT`, `RESERVE_LAST_PAY_CNT`, `RESERVE_NEXT_PAY_DATE`, `RESERVE_RETURN_URL`, `ETC1`, `ETC2`, `ETC3`, `ETC4`, `ETC5`, `PGNAME`, 
+`pay_type`, `pay_status`, `repay_check`)
+VALUES
+	(3, '0000', '성공', 'admin', '2025060913282783', '100', '파인애플', 'cTS25060913291199691', '20250609132911', '59260054', '2025-06-09 13:29:11', '', '', '', '', '', '', '', 'psxdocp90eso4ssc3btm', '20250609132911', '0000', '성공', 'b1w2ikaobncwowk4cs4scun5oho', '2025060913282783', 'M', '15', '1', '1', '50', '2025-06-15', '', '17', '', '', '', '', 'COOKIEPAY_KW', '9', 1, 'Y');
+
+*/
+                # 정기결제건의 취소(S)
+                if ($cookiepayPgResultRes['pay_method'] == "CARD_BATCH") {
+                    $sql_r_subscribe = "select * from ".COOKIEPAY_PG_SUBSCRIBE_RESULT." where pay_status='1' AND ORDERNO='".$orderno."' AND TID != '' limit 1 ";
+                    $row_s = sql_fetch($sql_r_subscribe);
+
+                    $cancel_acceptdate = date('YmdHis');
+                    $cancel_pay_date = date('Y-m-d H:i:s');
+
+                    $cancel_resultmsg = "전체취소";
+                    if($row_s['AMOUNT'] > $result_array['cancel_amt']) { 
+                        $cancel_resultmsg = "부분취소";
+                    }
+                    $sql_subscribe = "insert into ".COOKIEPAY_PG_SUBSCRIBE_RESULT." 
+                    set RESULTCODE='".$result_array['cancel_code']."', RESULTMSG='".$cancel_resultmsg."', 
+                        USERID='".$row_s['USERID']."', ORDERNO='".$orderno."', AMOUNT='".$result_array['cancel_amt']."', PRODUCT_NAME='".$row_s['PRODUCT_NAME']."',
+                        TID='".$row_s['TID']."', ACCEPTDATE='".$cancel_acceptdate."', ACCEPTNO='".$row_s['ACCEPTNO']."', PAY_DATE='".$cancel_pay_date."', 
+                        CARDNAME='".$row_s['CARDNAME']."', CARDCODE='".$row_s['CARDCODE']."', QUOTA='".$row_s['QUOTA']."', BILLKEY='".$row_s['BILLKEY']."', 
+                        GENDATE='".$row_s['GENDATE']."', RESERVE_RESULTCODE='".$row_s['RESERVE_RESULTCODE']."', RESERVE_RESULTMSG='".$row_s['RESERVE_RESULTMSG']."', 
+                        RESERVE_ID='".$row_s['RESERVE_ID']."', RESERVE_ORDERNO='".$row_s['RESERVE_ORDERNO']."', RESERVE_RECURRENCE_TYPE='".$row_s['RESERVE_RECURRENCE_TYPE']."', 
+                        RESERVE_PAY_DAY='".$row_s['RESERVE_PAY_DAY']."', RESERVE_NOW_PAY_CNT='".$row_s['RESERVE_NOW_PAY_CNT']."', RESERVE_START_PAY_CNT='".$row_s['RESERVE_START_PAY_CNT']."',
+                        RESERVE_LAST_PAY_CNT='".$row_s['RESERVE_LAST_PAY_CNT']."', RESERVE_NEXT_PAY_DATE='".$row_s['RESERVE_NEXT_PAY_DATE']."', RESERVE_RETURN_URL='".$row_s['RESERVE_RETURN_URL']."', 
+                        ETC1='".$row_s['ETC1']."', ETC2='".$row_s['ETC2']."', ETC3='".$row_s['ETC3']."', ETC4='".$row_s['ETC4']."', ETC5='".$row_s['ETC5']."', PGNAME='".$row_s['PGNAME']."', 
+                        pay_type='9', pay_status='2'
+                    ";
+
+                    #echo "sql_subscribe : ".$sql_subscribe;
+                    #exit;
+
+                    sql_query($sql_subscribe);
+                }
+                # 정기결제건의 취소(E)
+
                 $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$orderno}', '{$result_array['cancel_tid']}', '{$result_array['cancel_code']}', '{$result_array['cancel_msg']}', '{$result_array['cancel_date']}', '{$result_array['cancel_amt']}') ";
                 
                 $res = sql_query($sql, false);
