@@ -20,16 +20,16 @@ if($sresult['Field'] == "de_cookiepay_subscription_use") {
                 ADD `de_cookiepay_subscription_use` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
                 ADD `de_cookiepay_subscription_cancel_use` VARCHAR(1) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_use`,
                 
-                ADD `de_cookiepay_kw_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_cancel_use` ,
-                ADD `de_cookiepay_kw_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_subscription_cookiepay_id`, 
-                ADD `de_cookiepay_ts_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_subscription_cookiepay_key` ,
-                ADD `de_cookiepay_ts_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_subscription_cookiepay_id`, 
-                ADD `de_cookiepay_ki_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_subscription_cookiepay_key` ,
-                ADD `de_cookiepay_ki_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_subscription_cookiepay_id`, 
-                ADD `de_cookiepay_al_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_subscription_cookiepay_key` ,
-                ADD `de_cookiepay_al_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_subscription_cookiepay_id`, 
-                ADD `de_cookiepay_wp_subscription_cookiepay_id` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_subscription_cookiepay_key` ,
-                ADD `de_cookiepay_wp_subscription_cookiepay_key` VARCHAR(60) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_subscription_cookiepay_id` ";
+                ADD `de_cookiepay_kw_subscription_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_subscription_cancel_use` ,
+                ADD `de_cookiepay_kw_subscription_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_ts_subscription_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_ts_subscription_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_ki_subscription_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_ki_subscription_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_al_subscription_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_al_subscription_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_subscription_cookiepay_id`, 
+                ADD `de_cookiepay_wp_subscription_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_subscription_cookiepay_key` ,
+                ADD `de_cookiepay_wp_subscription_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '정기(구독) 해지기능 사용여부' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_subscription_cookiepay_id` ";
     sql_query($sql, true);
 
 }
