@@ -235,59 +235,59 @@ if($sresult0['Field'] == "de_keyin_card_customer_use") {
 if(!isset($default['de_cookiepay_al_cookiepay_id'])) {
     // 쿠키페이 PG사 연동 정보 컬럼 추가
     $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
-                ADD `de_cookiepay_al_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_pg_service`, 
-                ADD `de_cookiepay_al_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id`, 
-                ADD `de_cookiepay_ts_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key`, 
-                ADD `de_cookiepay_ts_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_id`, 
-                ADD `de_cookiepay_kw_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_key`, 
-                ADD `de_cookiepay_kw_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id`, 
-                ADD `de_cookiepay_dn_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_key`, 
-                ADD `de_cookiepay_dn_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_id`, 
-                ADD `de_cookiepay_ki_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_key`, 
-                ADD `de_cookiepay_ki_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_id`, 
-                ADD `de_cookiepay_wp_cookiepay_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_key`, 
-                ADD `de_cookiepay_wp_cookiepay_key` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id` ";
+                ADD `de_cookiepay_al_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_pg_service`, 
+                ADD `de_cookiepay_al_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id`, 
+                ADD `de_cookiepay_ts_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key`, 
+                ADD `de_cookiepay_ts_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_id`, 
+                ADD `de_cookiepay_kw_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_key`, 
+                ADD `de_cookiepay_kw_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id`, 
+                ADD `de_cookiepay_dn_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_key`, 
+                ADD `de_cookiepay_dn_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_id`, 
+                ADD `de_cookiepay_ki_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_key`, 
+                ADD `de_cookiepay_ki_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_id`, 
+                ADD `de_cookiepay_wp_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_key`, 
+                ADD `de_cookiepay_wp_cookiepay_key` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id` ";
     sql_query($sql, true);
 }
 
 if(!isset($default['de_cookiepay_al_cookiepay_id_keyin'])) {
     // 쿠키페이 PG사 Keyin 결제 연동 정보 컬럼 추가
     $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
-                ADD `de_cookiepay_al_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
-                ADD `de_cookiepay_al_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_keyin`, 
-                ADD `de_cookiepay_ts_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_keyin`, 
-                ADD `de_cookiepay_ts_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_id_keyin`, 
-                ADD `de_cookiepay_kw_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_key_keyin`, 
-                ADD `de_cookiepay_kw_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_keyin`, 
-                ADD `de_cookiepay_dn_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_key_keyin`, 
-                ADD `de_cookiepay_dn_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_id_keyin`, 
-                ADD `de_cookiepay_ki_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_key_keyin`, 
-                ADD `de_cookiepay_ki_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_id_keyin`, 
-                ADD `de_cookiepay_wp_cookiepay_id_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_key_keyin`, 
-                ADD `de_cookiepay_wp_cookiepay_key_keyin` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id_keyin` ";
+                ADD `de_cookiepay_al_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
+                ADD `de_cookiepay_al_cookiepay_key_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_ts_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_ts_cookiepay_key_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '토스페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_kw_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ts_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_kw_cookiepay_key_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_dn_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_dn_cookiepay_key_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '다날의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_ki_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_dn_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_ki_cookiepay_key_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '이지페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_id_keyin`, 
+                ADD `de_cookiepay_wp_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_ki_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_wp_cookiepay_key_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '웰컴페이의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_id_keyin` ";
     sql_query($sql, true);
 }
 
 if(!isset($default['de_cookiepay_al_cookiepay_id_global_won'])) {
     // 쿠키페이 모빌/키움 PG사 해외원화/해외달러 결제 연동 정보 컬럼 추가
     $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}`
-                ADD `de_cookiepay_al_cookiepay_id_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외원화 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
-                ADD `de_cookiepay_al_cookiepay_key_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_global_won`, 
-                ADD `de_cookiepay_al_cookiepay_id_global_dollar` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외달러 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_global_won`, 
-                ADD `de_cookiepay_al_cookiepay_key_global_dollar` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외달러 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_global_dollar`, 
-                ADD `de_cookiepay_kw_cookiepay_id_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_global_dollar`, 
-                ADD `de_cookiepay_kw_cookiepay_key_global_won` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_global_won` ";
+                ADD `de_cookiepay_al_cookiepay_id_global_won` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외원화 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
+                ADD `de_cookiepay_al_cookiepay_key_global_won` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_global_won`, 
+                ADD `de_cookiepay_al_cookiepay_id_global_dollar` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외달러 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_global_won`, 
+                ADD `de_cookiepay_al_cookiepay_key_global_dollar` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '모빌페이의 쿠키페이 해외달러 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_id_global_dollar`, 
+                ADD `de_cookiepay_kw_cookiepay_id_global_won` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_al_cookiepay_key_global_dollar`, 
+                ADD `de_cookiepay_kw_cookiepay_key_global_won` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '키움페이의 쿠키페이 해외원화 결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_kw_cookiepay_id_global_won` ";
     sql_query($sql, true);
 }
 
 if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
     // 쿠키페이 PG사 연동 정보 컬럼 추가
     $sql = " ALTER TABLE `{$g5['g5_shop_default_table']}` 
-                ADD COLUMN `de_cookiepay_pn_cookiepay_id` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_id` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key`, 
                 ADD COLUMN `de_cookiepay_pn_cookiepay_key` text NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_pn_cookiepay_id`, 
-                ADD COLUMN `de_cookiepay_pn_cookiepay_id_keyin` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
+                ADD COLUMN `de_cookiepay_pn_cookiepay_id_keyin` VARCHAR(18) NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 아이디' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_wp_cookiepay_key_keyin`, 
                 ADD COLUMN `de_cookiepay_pn_cookiepay_key_keyin` text NOT NULL DEFAULT '' COMMENT '페이누리의 쿠키페이 수기결제 연동 시크릿키' COLLATE 'utf8_general_ci' AFTER `de_cookiepay_pn_cookiepay_id_keyin`,
-                ADD COLUMN `de_cookiepay_pn_cookiepay_pgid` VARCHAR(50) NOT NULL DEFAULT '' AFTER `de_cookiepay_kw_cookiepay_key_global_won`,
+                ADD COLUMN `de_cookiepay_pn_cookiepay_pgid` VARCHAR(18) NOT NULL DEFAULT '' AFTER `de_cookiepay_kw_cookiepay_key_global_won`,
 	            ADD COLUMN `de_cookiepay_pn_cookiepay_pgid_keyin` VARCHAR(50) NOT NULL DEFAULT '' AFTER `de_cookiepay_pn_cookiepay_pgid` ";
     sql_query($sql, true);
 }
@@ -749,7 +749,7 @@ if(!isset($default['de_cookiepay_pn_cookiepay_id'])) {
         <tr>
             <th scope="row"><label for="de_cookiepay_subscription_use">정기(구독)결제사용</label></th>
             <td>
-                <?php echo help("주문시 신용카드 결제를 가능하게 할것인지를 설정합니다.", 50); ?>
+                <?php echo help("주문시 정기(구독) 결제를 가능하게 할것인지를 설정합니다.<br>고객해지 체크시 정기(구독)회차는 고객이 입력해야합니다.", 50); ?>
                 <select id="de_cookiepay_subscription_use" name="de_cookiepay_subscription_use">
                     <option value="0" <?php echo get_selected($default['de_cookiepay_subscription_use'], 0); ?>>사용안함</option>
                     <option value="1" <?php echo get_selected($default['de_cookiepay_subscription_use'], 1); ?>>사용</option>

@@ -130,11 +130,14 @@ $result = sql_query($sql);
         
         for($i=0; $row=sql_fetch_array($result); $i++) {
 
-            $sql_m = " select mb_name
+            $sql_m = " select mb_name  
             from {$g5['member_table']}
             where mb_id = '".$row['USERID']."' limit 1 ";
 	        $row_m = sql_fetch($sql_m);
             
+            $sql_s = " select od_hp from {$g5['g5_shop_order_table']} where od_id = '".$row['ORDERNO']."' limit 1 ";
+            $row_s = sql_fetch($sql_s);
+
             $success[$i]['RESULTCODE']  = $row['RESULTCODE'];
             $success[$i]['RESULTMSG']   = $row['RESULTMSG'];
             $success[$i]['od_name'] = $row_m['mb_name']; // 고객명 필드 추가 필요
@@ -143,7 +146,7 @@ $result = sql_query($sql);
             $success[$i]['ACCEPTDATE'] = $row['ACCEPTDATE'];
             $success[$i]['PAY_DATE'] = $row['PAY_DATE'];
             $success[$i]['od_name'] = $row_m['mb_name'];
-            $success[$i]['od_hp'] = $row['od_hp'];
+            $success[$i]['od_hp'] = $row_s['od_hp'];
             $success[$i]['RESERVE_ID'] = $row['RESERVE_ID'];
             $success[$i]['BILLKEY'] = $row['BILLKEY'];
             $success[$i]['RESERVE_PAY_DAY'] = $row['RESERVE_PAY_DAY'];

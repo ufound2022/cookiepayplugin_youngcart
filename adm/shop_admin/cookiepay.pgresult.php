@@ -219,7 +219,7 @@ if ($tab == 's') {
             <th>상품명</th>
             <th>결제수단</th>
             <th>전표출력</th>
-            <th>승인취소</th>
+            <!--<th>승인취소</th>-->
         </tr>
     </thead>
     <tbody>
@@ -255,7 +255,11 @@ if (count($data) == 0) {
                 <button type="button" onclick="receipt('<?php echo $val['TID']; ?>')">전표출력</button>
             <?php } ?>
             </td>
+            <?php
+            /*
             <td><?php echo $val['btnPgCancel']; ?></td>
+            */
+            ?>
         </tr>
 <?php
     }
