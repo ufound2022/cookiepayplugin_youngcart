@@ -55,6 +55,32 @@ if($RES_ARR['RTN_CD'] == '0000'){
     array_push($headers, "ApiKey: ".$cookiepayApi['api_key']);
     array_push($headers, "TOKEN: ".$RES_ARR['TOKEN']);
 
+   # 빌링키 폐기(S)
+    $cookiepayments_url_dispose = COOKIEPAY_BILLKEY_DISPOSE_URL;
+
+    $request_data_array_dispose = array(
+                        'API_ID' => "{$cookiepayApi['api_id']}",
+                        'BILLKEY' => "{$billkey}",
+    );
+
+    $cookiepayments_json_dispose = json_encode($request_data_array_dispose, TRUE);
+
+    $ch = curl_init(); // curl 초기화
+
+    curl_setopt($ch,CURLOPT_URL, $cookiepayments_url_dispose);
+    curl_setopt($ch,CURLOPT_POST, false);
+    curl_setopt($ch,CURLOPT_POSTFIELDS, $cookiepayments_json_dispose);
+    curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,3);
+    curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    $response_dispose = curl_exec($ch);
+    curl_close($ch);
+
+
+    $result_dispose_decode_array = json_decode($response_dispose, true);
+    # 빌링키 폐기(E)
+
     $cookiepayments_url = COOKIEPAY_SCHEDULE_CANCEL_URL;
     
     $request_data_array = array(
