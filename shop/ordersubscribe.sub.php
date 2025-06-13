@@ -30,14 +30,15 @@ if(defined('G5_THEME_SHOP_PATH')) {
     <thead>
     <tr>
         <th scope="col" style="width:160px">구독번호</th>
-        <th scope="col" style="width:160px">신청일자</th>
-        <th scope="col" style="width:160px">해지일자</th>
-        <th scope="col" style="width:140px">주문번호</th>
+        <th scope="col" style="width:140px">신청일자</th>
+        <th scope="col" style="width:140px">해지일자</th>
+        <th scope="col" style="width:150px">주문번호</th>
         <th scope="col" style="width:140px">주문일시</th>
         <th scope="col" style="width:160px">상품명</th>
         <th scope="col" style="width:140px">결제금액(1회)</th>
         <th scope="col" style="width:100px">회차/약정회차</th>
-        <th scope="col" style="width:80px">상태</th>
+        <th scope="col" style="width:80px">결제상태</th>
+        <th scope="col" style="width:80px">구독상태</th>
     </tr>
     </thead>
     <tbody>
@@ -55,11 +56,18 @@ if(defined('G5_THEME_SHOP_PATH')) {
         $psu = sql_fetch(" SELECT * FROM cookiepay_pg_subscribe_userlist WHERE RESERVE_ID='{$row['RESERVE_ID']}' ORDER BY `id` DESC LIMIT 1 ");
         $od = sql_fetch(" SELECT * FROM g5_shop_order WHERE RESERVE_ID='{$row['ORDERNO']}' ORDER BY `od_id` DESC LIMIT 1 ");
 
-        $pay_status_str = "정상";
+        $pay_substribe_status_str = "정상";
         if($psu['pay_status'] == "2") { 
-            $pay_status_str = "<span style='color:red'>해지</span>";
+            $pay_substribe_status_str = "<span style='color:red'>해지</span>";
         }
 
+        $pay_status_str = "";
+        if($row['pay_status'] == "1") { 
+            $pay_status_str = "결제성공";
+        } else 
+        if($row['pay_status'] == "2") { 
+            $pay_status_str = "<span style='color:red'>결제취소</font>";
+        }
         //$uid = md5($row['od_id'].$row['od_time'].$row['od_ip']);
 
         switch($row['od_status']) {
@@ -96,6 +104,7 @@ if(defined('G5_THEME_SHOP_PATH')) {
         <td class="td_numbig text_right"><?php echo number_format($row['AMOUNT']); ?></td>
         <td><?php echo $row['RESERVE_NOW_PAY_CNT'];?> / <?php echo $row['RESERVE_LAST_PAY_CNT'];?></td>
         <td><?=$pay_status_str?></td>
+        <td><?=$pay_substribe_status_str?></td>
     </tr>
 
     <?php
