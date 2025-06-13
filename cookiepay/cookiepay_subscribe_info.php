@@ -184,6 +184,7 @@ table {
             url: "./cookiepay.subscribe.ajax.php",
             data : {
                 reserveid: "<?=$pss['RESERVE_ID']?>",
+                billkey : "<?=$pss['BILLKEY']?>",
             },
             cache: false,
             beforeSend : function(xhr) {

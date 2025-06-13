@@ -96,6 +96,9 @@ define('COOKIEPAY_TESTSUBSCRIBE_URL', "{$cookiepayPaymentsUrl}/Subscribe/billkey
 // 쿠키페이 정기(구독) 반복결제 해지
 define('COOKIEPAY_SCHEDULE_CANCEL_URL', "{$cookiepayPaymentsUrl}/Subscribe/recurrence_schedule_cancel");
 
+// 쿠키페이 정기(구독) 빌링키 폐기
+define('COOKIEPAY_BILLKEY_DISPOSE_URL', "{$cookiepayPaymentsUrl}/Subscribe/billingkeycancel");
+
 // 암호화 전문 복호화 하기
 define('COOKIEPAY_EDI_DECRYPT_URL', "{$cookiepayPaymentsUrl}/EdiAuth/cookiepay_edi_decrypt");
 
