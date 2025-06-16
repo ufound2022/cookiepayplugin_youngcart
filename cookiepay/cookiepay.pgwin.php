@@ -494,6 +494,10 @@ table {
                     </select>
                 </td>
             </tr>
+
+            <?php
+            if($default['de_pg_service'] != "TS") { 
+            ?>
             <tr class="<?php echo $needPassword ? '' : 'd-none' ?>">
                 <th>결제카드</th>
                 <td colspan="4">
@@ -501,6 +505,7 @@ table {
                     <label for="use_hanacard"> <strong>[하나카드]</strong>로 결제하시는 경우 체크해 주세요.</label>
                 </td>
             </tr>
+            <? } ?>
             
             <!-- // s: cookiepay-plugin v1.2 -->
             <tr class="<?php if ($default['de_pg_service'] != 'COOKIEPAY_TS') { echo "d-none"; }?>" id="birthday_tr">
@@ -560,6 +565,16 @@ else {
     }
 }
 ?>
+
+<?php
+if($default['de_pg_service'] == "COOKIEPAY_TS") { 
+?>
+    <script language='javascript'>
+        $("#birthday_tr").removeClass("d-none");
+        $("#password_tr").removeClass("d-none");
+    </script>
+<? } ?>
+
 
 </body>
 </html>
