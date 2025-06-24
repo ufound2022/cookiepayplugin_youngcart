@@ -16,7 +16,10 @@ $od_id = isset($_POST['od_id']) ? safe_replace_regex($_POST['od_id'], 'od_id') :
 // 회원인 경우
 if ($is_member)
 {
-    $sql_common = " from {$g5['g5_shop_order_table']} where mb_id = '{$member['mb_id']}' ";
+    //$sql_common = " from {$g5['g5_shop_order_table']} where mb_id = '{$member['mb_id']}' ";
+    ## 정기(구독) (S)
+    $sql_common = " from ".COOKIEPAY_PG_SUBSCRIBE_RESULT." where USERID = '{$member['mb_id']}' ";
+    ## 정기(구독) (E)
 }
 else if ($od_id && $od_pwd) // 비회원인 경우 주문서번호와 비밀번호가 넘어왔다면
 {
