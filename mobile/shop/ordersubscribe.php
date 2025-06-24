@@ -2,11 +2,6 @@
 include_once('./_common.php');
 include_once(G5_PATH."/cookiepay/cookiepay.lib.php");
 
-if (G5_IS_MOBILE) {
-    include_once(G5_MSHOP_PATH.'/ordersubscribe.php');
-    return;
-}
-
 define("_ORDERINQUIRY_", true);
 
 $order_info = array();
@@ -58,7 +53,7 @@ if ($total_count == 0)
         alert('주문이 존재하지 않습니다.');
 }
 
-$rows = $config['cf_page_rows'];
+$rows = $config['cf_mobile_page_rows'];
 $total_page  = ceil($total_count / $rows);  // 전체 페이지 계산
 if ($page < 1) { $page = 1; } // 페이지가 없으면 첫 페이지 (1 페이지)
 $from_record = ($page - 1) * $rows; // 시작 열을 구함
@@ -84,19 +79,19 @@ if (!$is_member)
 }
 
 $g5['title'] = '정기(구독)결제 관리';
-include_once('./_head.php');
+include_once(G5_MSHOP_PATH.'/_head.php');
 ?>
 
-<!-- 주문 내역 시작 { -->
 <div id="sod_v">
+    <p id="sod_v_info">주문서번호 링크를 누르시면 주문상세내역을 조회하실 수 있습니다.</p>
+
     <?php
     $limit = " limit $from_record, $rows ";
-    include "./ordersubscribe.sub.php";
+    include G5_MSHOP_PATH.'/ordersubscribe.sub.php';
     ?>
 
-    <?php echo get_paging($config['cf_write_pages'], $page, $total_page, "{$_SERVER['SCRIPT_NAME']}?$qstr&amp;page="); ?>
+    <?php echo get_paging($config['cf_mobile_pages'], $page, $total_page, "{$_SERVER['SCRIPT_NAME']}?$qstr&amp;page="); ?>
 </div>
-<!-- } 주문 내역 끝 -->
 
 <?php
-include_once('./_tail.php');
+include_once(G5_MSHOP_PATH.'/_tail.php');
