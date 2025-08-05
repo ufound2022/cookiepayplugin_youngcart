@@ -600,7 +600,7 @@ else if ($od_settle_case == "신용카드")
         $od_status      = '입금';
 }
 // s: cookiepay-plugin - 수기결제
-else if ($od_settle_case == "수기결제") 
+else if ($od_settle_case == "수기결제" || $od_settle_case == "정기(구독)") 
 {
     if (array_key_exists($default['de_pg_service'], COOKIEPAY_PG)) {
         require_once G5_PATH."/cookiepay/pgresult.update.php";
@@ -615,6 +615,10 @@ else if ($od_settle_case == "수기결제")
     $od_misu            = $i_price - $od_receipt_price;
     if($od_misu == 0)
         $od_status      = '입금';
+
+    ## 영카트 플러그인 > 정기(구독) > S 
+    $od_reserve_id      = $reserve_id ? $reserve_id : '';
+    ## 영카트 플러그인 > 정기(구독) > E    
 }
 // e: cookiepay-plugin
 else if ($od_settle_case == "간편결제")
@@ -840,8 +844,14 @@ $sql = " insert {$g5['g5_shop_order_table']}
                 od_ip             = '$REMOTE_ADDR',
                 od_settle_case    = '$od_settle_case',
                 od_other_pay_type = '$od_other_pay_type',
-                od_test           = '{$default['de_card_test']}'
+                od_test           = '{$default['de_card_test']}',
+                od_casseqno       = '$od_reserve_id'  
                 ";
+
+                // ## 영카트 플러그인 > 정기(구독) > S
+                // od_casseqno = '$od_reserve_id' 추가
+                // ## 영카트 플러그인 > 정기(구독) > E
+
 $result = sql_query($sql, false);
 
 // 정말로 insert 가 되었는지 한번더 체크한다.

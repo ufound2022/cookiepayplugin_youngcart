@@ -222,6 +222,14 @@ function payKeyin(){
         }
         <? } ?>
 
+        if($("#LAST_PAY_CNT").val()) {
+            if($("#LAST_PAY_CNT").val() == 1 || $("#LAST_PAY_CNT").val() < 1) {
+                alert('총 납부횟수 2회차 이상 입력하여 주십시요.');
+                $("#LAST_PAY_CNT").focus();
+                return false;
+            }
+        }
+
         $(".required").each(function(){
             var nextCount = $(this).data("nextcount");
             var thisId = $(this).attr("id");
