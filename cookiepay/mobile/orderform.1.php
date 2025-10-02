@@ -195,7 +195,11 @@ function pay(payType) {
             BUYERID: document.getElementById("BUYERID").value, //고객 아이디 (선택)
             BUYERADDRESS: document.getElementById("BUYERADDRESS").value, //고객 주소 (선택)
             BUYERPHONE : buyerphone, //고객 휴대폰번호 (선택, 웰컴페이는 필수)
-            RETURNURL: document.getElementById("RETURNURL").value, //결제 완료 후 리다이렉트 url (필수)
+		<?php if($default['de_pg_service'] == "COOKIEPAY_KW") { // 키움 페이지내 결제창 ?>
+			HOMEURL: document.getElementById("HOMEURL").value, //결제 완료 후 리다이렉트 url
+		<?php } else { ?>
+			RETURNURL: document.getElementById("RETURNURL").value, //결제 완료 후 리다이렉트 url (필수)
+		<?php } ?>
             CANCELURL : document.getElementById("CANCELURL").value,
             PAY_TYPE : document.getElementById("PAY_TYPE").value,
             ENG_FLAG : document.getElementById("ENG_FLAG").value,

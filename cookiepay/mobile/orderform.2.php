@@ -38,7 +38,8 @@ if ($result) {
     <input type="hidden" name="BUYERADDRESS" id="BUYERADDRESS" placeholder="고객 주소" value="">
     <input type="hidden" name="BUYERPHONE" id="BUYERPHONE" placeholder="고객 휴대폰번호" value="<?php echo str_replace("-", "", get_text($member['mb_hp'])); ?>">
     <input type="hidden" name="RETURNURL" id="RETURNURL" placeholder="결제 완료 후 리다이렉트 url" value="<?php echo COOKIEPAY_RETURN_URL; ?>?od_id=<?php echo $od_id; ?>">
-    <input type="hidden" name="CANCELURL" id="CANCELURL" value="">
+    <input type="hidden" name="HOMEURL" id="HOMEURL" placeholder="결제 완료 후 리다이렉트 url" value="<?php echo COOKIEPAY_RETURN_URL; ?>?od_id=<?php echo $od_id; ?>">
+    <input type="hidden" name="CANCELURL" id="CANCELURL" value="<?php echo G5_URL;?>/shop/orderform.php?sw_direct=1&subscription=">
     <input type="hidden" name="PAY_TYPE" id="PAY_TYPE" value="">
     <input type="hidden" name="ENG_FLAG" id="ENG_FLAG" value="">
     <input type="hidden" name="ETC1" id="ETC1" placeholder="사용자 추가필드 1" value="<?php echo $insertId; ?>">
