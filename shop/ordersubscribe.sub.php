@@ -54,7 +54,7 @@ if(defined('G5_THEME_SHOP_PATH')) {
 
         #echo "SELECT * FROM cookiepay_pg_subscribe_userlist WHERE RESERVE_ID='{$row['RESERVE_ID']}' ORDER BY `id` DESC LIMIT 1 ";
         $psu = sql_fetch(" SELECT * FROM cookiepay_pg_subscribe_userlist WHERE RESERVE_ID='{$row['RESERVE_ID']}' ORDER BY `id` DESC LIMIT 1 ");
-        $od = sql_fetch(" SELECT * FROM g5_shop_order WHERE RESERVE_ID='{$row['ORDERNO']}' ORDER BY `od_id` DESC LIMIT 1 ");
+        $od = sql_fetch(" SELECT * FROM g5_shop_order WHERE od_id='{$row['ORDERNO']}' ORDER BY `od_id` DESC LIMIT 1 ");
 
         $pay_substribe_status_str = "정상";
         if($psu['pay_status'] == "2") { 

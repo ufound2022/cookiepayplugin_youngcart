@@ -126,6 +126,11 @@ if($RES_ARR['RTN_CD'] == '0000'){
         echo $result_json;
         exit;
     }
+    if(!isset($result_decode_array['ENC_DATA']) && $result_decode_array['RESULTCODE'] != '0000') { 
+        $result_json = $response;
+        echo $result_json;
+        exit;
+	}
 
     $headers = array(); 
     array_push($headers, "content-type: application/json; charset=utf-8");
