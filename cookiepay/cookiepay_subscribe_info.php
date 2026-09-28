@@ -30,7 +30,7 @@ if($psu['pay_status'] == "2") {
 </head>
 <body>
 
-<script src="https://asp.iroholdings.co.kr/js/jquery-1.12.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script src="https://js.tosspayments.com/v1"></script>
 
 <style>
