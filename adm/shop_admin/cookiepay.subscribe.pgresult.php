@@ -207,19 +207,25 @@ $result = sql_query($sql);
                     <td><?=$val['RESERVE_NEXT_PAY_DATE']?></td>
                     <td><?=$val['ORDERNO']?></td>
                     <td><?=substr($val['RESERVE_ID'], 0, 10)."..."?></td>
-                    <td><?=$val['od_name']?></td>
-                    <td><?=$val['od_hp']?></td>
-                    <td><?=$val['PRODUCT_NAME']?></td>
-                    <td><?=number_format($val['AMOUNT'])?></td>
-                    <td><?=$val['ACCEPTNO']?></td>
-                    <td><span style="color:black;"><?=$val['RESERVE_PAY_DAY']?>일 / <?=$val['RESERVE_NOW_PAY_CNT']?> (<?=$val['RESERVE_LAST_PAY_CNT']?>)</span></td>
+                    <td><?= htmlspecialchars((string) $val['od_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string) $val['od_hp'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string) $val['PRODUCT_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= number_format($val['AMOUNT']) ?></td>
+                    <td><?= htmlspecialchars((string) $val['ACCEPTNO'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td>
+                        <span style="color:black;">
+                            <?= htmlspecialchars((string) $val['RESERVE_PAY_DAY'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>일 /
+                            <?= htmlspecialchars((string) $val['RESERVE_NOW_PAY_CNT'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                            (<?= htmlspecialchars((string) $val['RESERVE_LAST_PAY_CNT'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>)
+                        </span>
+                    </td>
                     <td></td>
                     <td></td>
-                    <td><?=$pay_status?></td>
+                    <td><?= htmlspecialchars((string) $pay_status, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <?php
-                    if(!empty($_GET['t']) && $_GET['t'] == "3") { 
+                    if (!empty($_GET['t']) && $_GET['t'] == "3") {
                     ?>
-                    <td><?=$val['RESULTMSG']?></td>
+                        <td><?= htmlspecialchars((string) $val['RESULTMSG'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <? } ?>
                     <td>
                         <?php

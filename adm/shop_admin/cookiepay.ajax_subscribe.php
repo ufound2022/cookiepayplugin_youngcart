@@ -133,7 +133,11 @@ if ($mode == "cancel") {
             $res = sql_query($sql, false);
 
             // s: 영카트 주문 정보 업데이트
-            $updateSql = " update {$g5['g5_shop_order_table']} od_refund_price='{$result_array['cancel_amt']}' where od_id = '$orderno' ";
+            $updateSql = "
+                UPDATE {$g5['g5_shop_order_table']}
+                SET od_refund_price = '{$result_array['cancel_amt']}'
+                WHERE od_id = '{$orderno}'
+            ";
             sql_query($updateSql);
             // e: 영카트 주문 정보 업데이트
 

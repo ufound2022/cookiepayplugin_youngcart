@@ -8,7 +8,16 @@ require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 // 세션 생성
 $postEtc1 = isset($_POST['ETC1']) ? clean_xss_tags($_POST['ETC1'], 1, 1) : '';
 if (!empty($postEtc1)) {
-    $sql = " select * from ".COOKIEPAY_SESSION." where id={$postEtc1} ";
+    $tokenHash = hash('sha256', $postEtc1);
+
+    $sql = "
+        SELECT id, json_sess
+        FROM " . COOKIEPAY_SESSION . "
+        WHERE token_hash = '{$tokenHash}'
+        AND expires_at > NOW()
+        LIMIT 1
+    ";
+
     $res = sql_fetch($sql);
     if ($res) {
         $arrSess = json_decode($res['json_sess'], true);
@@ -122,7 +131,14 @@ if (!empty($od_id))
     $res = sql_fetch($sql);
     if ($res)
     {
-        $sql = " select * from ".COOKIEPAY_SESSION." where id={$res['ETC1']} ";
+        $sql = "
+            SELECT *
+            FROM " . COOKIEPAY_SESSION . "
+            WHERE orderno = '{$od_id}'
+            AND expires_at > NOW()
+            ORDER BY id DESC
+            LIMIT 1
+        ";
         $res = sql_fetch($sql);
         if ($res) {
             $arrSess = json_decode($res['json_sess'], true);
