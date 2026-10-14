@@ -11,6 +11,45 @@ if (empty($is_member)) {
 
 //$cookiepay = json_decode(file_get_contents('php://input'), true);
 $reserveid = $_POST['reserveid'];
+
+// s: cookiepay-plugin > 보안검토 항목8 > v1.3 > 261014
+// 위쪽 로그인 체크는 "로그인했는가"만 본다. reserveid 만 바꿔 보내면 다른 고객의
+// 정기결제를 해지할 수 있다. 해지 전에 본인의 정기결제인지 확인한다.
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+$guardSubscribe = sql_fetch("
+    SELECT *
+    FROM ".COOKIEPAY_PG_SUBSCRIBE_USERLIST."
+    WHERE RESERVE_ID = '" . sql_real_escape_string((string) $reserveid) . "'
+    ORDER BY `id` DESC
+    LIMIT 1
+");
+
+// 소유자는 정기결제의 USERID 를 쓰되, 비어 있으면 원 주문의 회원 아이디로 본다.
+$guardOwner = isset($guardSubscribe['USERID']) ? $guardSubscribe['USERID'] : '';
+if (empty($guardOwner) && !empty($guardSubscribe['RESERVE_ORDERNO'])) {
+    $guardOd = sql_fetch("
+        SELECT mb_id
+        FROM {$g5['g5_shop_order_table']}
+        WHERE od_id = '" . sql_real_escape_string((string) $guardSubscribe['RESERVE_ORDERNO']) . "'
+        LIMIT 1
+    ");
+    $guardOwner = isset($guardOd['mb_id']) ? $guardOd['mb_id'] : '';
+}
+
+$guardRet = cookiepay_guard_subscribe_owner(array('mb_id' => $guardOwner), $member['mb_id']);
+
+if (!$guardRet['ok']) {
+    @cookiepay_payment_log("정기(구독) 해지 차단 ({$guardRet['code']})", "요청자 {$member['mb_id']} / RESERVE_ID {$reserveid}", 3);
+    echo json_encode(array('RESULTCODE' => '9999', 'RESULTMSG' => '잘못된 접근입니다.'));
+    exit;
+}
+
+// 빌링키는 요청에서 받지 않고 서버에서 조회한 값을 쓴다.
+// (기존 코드의 $billkey 는 이 파일에서 대입된 적이 없어 빈 값으로 전송되고 있었다)
+$billkey = $guardSubscribe['BILLKEY'];
+// e: cookiepay-plugin > 보안검토 항목8 > v1.3 > 261014
+
 $cookiepayApi = cookiepay_get_api_account_info($default, 9);
 
 $tokenheaders = array(); 

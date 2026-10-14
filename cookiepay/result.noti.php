@@ -135,8 +135,39 @@ if($params_sb['RESULTCODE'] == "0000" && !empty($od_tno['id'])) {
     exit;
 }
 
+// s: cookiepay-plugin > 보안검토 항목6 > v1.3 > 261014
+// 정기(구독) 통지는 외부에서 위조할 수 있다. 통지 본문의 RESULTCODE 만 보고
+// 주문을 복사해 '입금' 상태로 만들면, 실제 주문을 한 번 한 사람이 그 주문번호로
+// 가짜 통지를 반복 전송해 무료 주문을 계속 만들 수 있다.
+// 주문을 만들기 전에 쿠키페이에 거래를 다시 확인하고 약정 금액과 대조한다.
+if(!empty($params_sb['RESERVE_ORDERNO']) && $params_sb['PAY_CNT'] >= 2) {
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+    require_once G5_PATH."/cookiepay/cookiepay.verify.php";
+
+    $guardSubscribe = sql_fetch("
+        SELECT *
+        FROM " . COOKIEPAY_PG_SUBSCRIBE_USERLIST . "
+        WHERE RESERVE_ID = '{$params_sb_sql['RESERVE_ID']}'
+        ORDER BY `id` DESC
+        LIMIT 1
+    ");
+
+    $guardApi = cookiepay_get_api_account_info($default, 9);
+    $guardVerify = cookiepay_verify_tid($guardApi['api_id'], $guardApi['api_key'], $params_sb['TID']);
+
+    $guardRet = cookiepay_guard_subscribe_noti($params_sb, $guardVerify, $guardSubscribe);
+
+    if (!$guardRet['ok']) {
+        @cookiepay_payment_log("[통지] 정기(구독) 검증 차단 ({$guardRet['code']})", $guardRet['msg'], 3);
+        exit;
+    }
+
+    @cookiepay_payment_log("[통지] 정기(구독) 검증 통과", "금액 {$guardRet['amount']}", 3);
+}
+// e: cookiepay-plugin > 보안검토 항목6 > v1.3 > 261014
+
 # 정기(구독) 반복결제 결제내역 입력(S)
-if(!empty($params_sb['RESERVE_ORDERNO']) && $params_sb['PAY_CNT'] >= 2) { 
+if(!empty($params_sb['RESERVE_ORDERNO']) && $params_sb['PAY_CNT'] >= 2) {
 
     # 반복결제 성공하였으므로 > 해당회차 실패건을 재결제 버튼을 노출하지 않는다.
     $sql_u22 = "
@@ -765,9 +796,37 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
                     }
                     */
 
-                    if(!empty($cookiepay['ORDERNO'])) { 
-                        $sql_shop_order = "update {$g5['g5_shop_order_table']} 
-                                set od_receipt_price='" . sql_real_escape_string((string) $cookiepay['AMOUNT']) . "', od_status = '입금', od_tno='{$pg_data['TID']}', od_misu=0, od_receipt_time=now() 
+                    // s: cookiepay-plugin > 보안검토 항목10 > v1.3 > 261014
+                    // 거래번호의 실재 여부만 확인하고 금액은 통지 본문에서 가져오면,
+                    // 싼 상품을 실제로 결제해 얻은 거래번호를 더 비싼 주문의 통지에
+                    // 재사용해 차액만큼 덜 내고 상품을 받을 수 있다.
+                    // 결제완료로 기록할 금액은 검증 응답(paycert)의 값을 쓰고, 주문 금액과 대조한다.
+                    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+                    $guardOrder = sql_fetch("
+                        SELECT od_id, od_misu, od_receipt_price
+                        FROM {$g5['g5_shop_order_table']}
+                        WHERE od_id = '" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "'
+                        LIMIT 1
+                    ");
+
+                    // 주문이 받아야 할 총액 = 미수금 + 이미 받은 금액
+                    $guardOrderPrice = (int) $guardOrder['od_misu'] + (int) $guardOrder['od_receipt_price'];
+
+                    $guardRet = cookiepay_guard_verified_amount($verify, $cookiepay, $cookiepay['ORDERNO'], $guardOrderPrice);
+
+                    if (!$guardRet['ok']) {
+                        @cookiepay_payment_log("[통지] 결제금액 검증 차단 ({$guardRet['code']})", $guardRet['msg']." / 주문금액 {$guardOrderPrice}", 3);
+                        exit;
+                    }
+
+                    $guardAmount = $guardRet['amount'];
+                    $guardTid    = isset($verify['TID']) ? $verify['TID'] : '';
+                    // e: cookiepay-plugin > 보안검토 항목10 > v1.3 > 261014
+
+                    if(!empty($cookiepay['ORDERNO'])) {
+                        $sql_shop_order = "update {$g5['g5_shop_order_table']}
+                                set od_receipt_price='" . sql_real_escape_string((string) $guardAmount) . "', od_status = '입금', od_tno='" . sql_real_escape_string((string) $guardTid) . "', od_misu=0, od_receipt_time=now()
                                 where od_id = '" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "'
                                 limit 1 ";
                         $result_shop_order = sql_query($sql_shop_order, false);

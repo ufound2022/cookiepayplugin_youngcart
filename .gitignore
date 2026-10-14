@@ -1,0 +1,10 @@
+.git/
+.idea/
+vendor/
+vendor-*/
+
+# Markdown 파일은 제외하되, 아래 두 이름은 허용
+*.md
+!README.md
+!CLAUDE.md
+
