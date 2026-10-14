@@ -234,6 +234,90 @@ function cookiepay_guard_keyin_request($member_id, $session_orderno, $pending_or
 }
 
 /**
+ * [항목 1] 외부 입력을 DB 컬럼 이름으로 쓰기 전에 걸러낸다.
+ *
+ * cookiepay.pay.php 의 try_order 모드는 전송된 필드의 이름을 그대로 컬럼 이름으로
+ * 써서 INSERT 문을 만든다($keys[$key] = "{$key}"). 로그인도 필요 없으므로
+ * 누구나 임의의 컬럼 이름이나 SQL 조각을 컬럼 자리에 넣을 수 있다.
+ * 값은 이스케이프로 막을 수 있지만 컬럼 이름은 따옴표로 감쌀 수 없다.
+ * 그래서 허용 목록에 있는 이름만 통과시킨다.
+ *
+ * @param array $data    외부에서 들어온 연관배열
+ * @param array $allowed 허용할 키 목록(실제 테이블 컬럼명 + 가공용 가상 키)
+ */
+function cookiepay_guard_filter_columns($data, $allowed)
+{
+    if (empty($allowed) || !is_array($allowed)) {
+        // 허용 목록을 못 구했으면 통과시키지 않는다. 열어 두는 쪽이 더 위험하다.
+        return cookiepay_guard_result(false, 'NO_ALLOWLIST', '허용 컬럼 목록이 없습니다.', array(
+            'data'     => array(),
+            'rejected' => is_array($data) ? array_keys($data) : array(),
+        ));
+    }
+
+    $allowedMap = array_flip($allowed);
+
+    $filtered = array();
+    $rejected = array();
+
+    foreach ((array) $data as $key => $val) {
+        if (isset($allowedMap[$key])) {
+            $filtered[$key] = $val;
+        } else {
+            $rejected[] = $key;
+        }
+    }
+
+    if (empty($filtered)) {
+        return cookiepay_guard_result(false, 'NO_VALID_COLUMN', '저장할 수 있는 항목이 없습니다.', array(
+            'data'     => array(),
+            'rejected' => $rejected,
+        ));
+    }
+
+    return cookiepay_guard_result(true, 'OK', '컬럼 허용 목록 통과', array(
+        'data'     => $filtered,
+        'rejected' => $rejected,
+    ));
+}
+
+/**
+ * [항목 11] 관리자 재결제 요청을 받아도 되는지 검증한다.
+ *
+ * cookiepay.subscribe.repay.ajax.php 는 권한 확인도 위조 방지 토큰 확인도 없이
+ * 요청에 담긴 BILLKEY 로 고객의 저장된 카드를 결제한다. 관리자가 속아서 링크를
+ * 열거나, 관리자 화면에 주입된 스크립트가 실행되면 그대로 결제가 일어난다.
+ *
+ * 빌링키는 요청에서 받지 않고 서버 조회 값을 돌려준다.
+ *
+ * @param string $auth_error auth_check_menu() 결과(빈 문자열이면 권한 있음)
+ * @param bool   $token_ok   관리자 위조 방지 토큰이 유효한가
+ * @param array  $subscribe  정기결제 행(BILLKEY, RESERVE_ID 포함)
+ */
+function cookiepay_guard_admin_repay($auth_error, $token_ok, $subscribe)
+{
+    if (!empty($auth_error)) {
+        return cookiepay_guard_result(false, 'NO_PERMISSION', '권한이 없습니다.');
+    }
+
+    if ($token_ok !== true) {
+        return cookiepay_guard_result(false, 'BAD_TOKEN', '토큰값이 올바르지 않습니다.');
+    }
+
+    if (empty($subscribe) || empty($subscribe['RESERVE_ID'])) {
+        return cookiepay_guard_result(false, 'NO_SUBSCRIBE', '정기결제 정보가 없습니다.');
+    }
+
+    if (empty($subscribe['BILLKEY'])) {
+        return cookiepay_guard_result(false, 'NO_BILLKEY', '등록된 빌링키가 없습니다.');
+    }
+
+    return cookiepay_guard_result(true, 'OK', '관리자 재결제 검증 통과', array(
+        'billkey' => (string) $subscribe['BILLKEY'],
+    ));
+}
+
+/**
  * [항목 10] 결제 검증 후 주문에 기록할 금액을 결정한다.
  *
  * 현재 result.noti.php 는 /api/paycert 로 거래번호의 실재 여부는 확인하지만,

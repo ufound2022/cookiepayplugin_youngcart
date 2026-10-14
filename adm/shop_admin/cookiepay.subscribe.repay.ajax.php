@@ -7,6 +7,43 @@ include_once(G5_PATH."/cookiepay/cookiepay.lib.php");
 //$cookiepay = json_decode(file_get_contents('php://input'), true);
 $reserveid = $_POST['reserveid'];
 $billkey = $_POST['billkey'];
+
+// s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+// 이 파일은 권한 확인도 위조 방지 토큰 확인도 없이 요청에 담긴 BILLKEY 로
+// 고객의 저장된 카드를 결제한다. 관리자가 속아서 링크를 열거나, 관리자 화면에
+// 주입된 스크립트가 실행되면 그대로 결제가 일어난다.
+// 권한과 토큰을 확인하고, 빌링키는 요청이 아니라 서버에서 조회한다.
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
+
+$guardAuthError = auth_check_menu($auth, $sub_menu, 'w', true);
+
+// check_admin_token() 은 실패 시 자체적으로 alert 후 종료하므로 직접 비교한다.
+$guardToken = isset($_POST['token']) ? $_POST['token'] : '';
+$guardTokenOk = (!empty($guardToken)
+    && isset($_SESSION['ss_admin_token'])
+    && $guardToken === $_SESSION['ss_admin_token']);
+
+$guardSubscribe = sql_fetch("
+    SELECT RESERVE_ID, BILLKEY
+    FROM ".COOKIEPAY_PG_SUBSCRIBE_USERLIST."
+    WHERE RESERVE_ID = '" . sql_real_escape_string((string) $reserveid) . "'
+    ORDER BY `id` DESC
+    LIMIT 1
+");
+
+$guardRet = cookiepay_guard_admin_repay($guardAuthError, $guardTokenOk, $guardSubscribe);
+
+if (!$guardRet['ok']) {
+    @cookiepay_payment_log("관리자 재결제 차단 ({$guardRet['code']})", $guardRet['msg']." / RESERVE_ID ".$reserveid, 3);
+    echo json_encode(array('RESULTCODE' => '9999', 'RESULTMSG' => $guardRet['msg']));
+    exit;
+}
+
+// 빌링키는 요청값을 버리고 서버 조회 값을 쓴다.
+$billkey = $guardRet['billkey'];
+// e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+
 $cookiepayApi = cookiepay_get_api_account_info($default, 9);
 
 $tokenheaders = array(); 

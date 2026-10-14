@@ -41,7 +41,11 @@ $cookiepayApiKeyin = cookiepay_get_api_account_info($default, 1);
 
 // 결제 취소
 function cookiepay_cancel($tno) {
-    global $cookiepayApi;
+    // s: cookiepay-plugin > 보안검토 항목12 > v1.4 > 261014
+    // $default 가 전역 선언되어 있지 않아 아래 cookiepay_get_api_account_info($default, ...)
+    // 가 빈 값을 받았다. 연동 정보가 비면 취소가 실패하고 고객은 결제된 채로 남는다.
+    global $cookiepayApi, $default;
+    // e: cookiepay-plugin > 보안검토 항목12 > v1.4 > 261014
     
     $return = false;
 

@@ -78,6 +78,38 @@ if ($mode == "try_order")
     
     if (!empty($odId) && empty($odResultId))
     {
+        // s: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
+        // 아래 반복문은 전송된 필드의 이름을 그대로 컬럼 이름으로 쓴다. 값은
+        // 이스케이프할 수 있지만 컬럼 이름은 따옴표로 감쌀 수 없으므로, 실제
+        // 테이블에 있는 컬럼 이름만 통과시킨다. 허용 목록은 테이블에서 직접 읽는다.
+        require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+        $guardAllowed = array();
+        $guardDesc = sql_query(" DESCRIBE ".COOKIEPAY_SHOP_ORDER." ", false);
+        if ($guardDesc) {
+            while ($guardCol = sql_fetch_array($guardDesc)) {
+                $guardAllowed[] = $guardCol['Field'];
+            }
+        }
+        // od_zip / od_b_zip 은 컬럼이 아니라 od_zip1·od_zip2 로 쪼개 넣는 가공용 키다.
+        $guardAllowed[] = 'od_zip';
+        $guardAllowed[] = 'od_b_zip';
+
+        $guardRet = cookiepay_guard_filter_columns($cookiepay, $guardAllowed);
+
+        if (!empty($guardRet['rejected'])) {
+            @cookiepay_payment_log("주문정보 임시저장 허용되지 않은 항목 제외", implode(",", $guardRet['rejected']), 3);
+        }
+
+        if (!$guardRet['ok']) {
+            @cookiepay_payment_log("주문정보 임시저장 차단 ({$guardRet['code']})", $guardRet['msg'], 3);
+            echo json_encode($ret);
+            exit;
+        }
+
+        $cookiepay = $guardRet['data'];
+        // e: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
+
         foreach ($cookiepay as $key => $val)
         {
             if ($key == 'od_zip')
@@ -103,7 +135,9 @@ if ($mode == "try_order")
             else
             {
                 $keys[$key] = "{$key}";
-                $vals[$key] = "'{$val}'";
+                // s: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
+                $vals[$key] = "'" . sql_real_escape_string((string) $val) . "'";
+                // e: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
             }
         }
         

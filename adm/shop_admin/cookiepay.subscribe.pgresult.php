@@ -18,6 +18,15 @@ if ($tab == 's') {
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 include_once(G5_PLUGIN_PATH.'/jquery-ui/datepicker.php');
 
+// s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+// 재결제 AJAX 가 관리자 위조 방지 토큰을 보낼 수 있도록 토큰 입력칸을 둔다.
+// 값은 admin.head.php 가 넣어 주며, 이 저장소의 다른 관리자 폼과 같은 방식이다
+// (configform.php 298행 참고).
+?>
+<input type="hidden" name="token" value="">
+<?php
+// e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+
 $fr_date = isset($_GET['fr_date']) ? clean_xss_tags($_GET['fr_date'], 1, 1) : '';
 $fr_date = (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $fr_date)) ? $fr_date : date("Y-m-01", strtotime("-1 month"));
 $to_date = isset($_GET['to_date']) ? clean_xss_tags($_GET['to_date'], 1, 1) : '';
@@ -492,6 +501,9 @@ $(document).on("click", "#btn-modal-submit", function(event) {
 		data : {
 			reserveid: reserveid,
             billkey: billkey,
+            // s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+            token: $("input[name=token]").val(),
+            // e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
 		},
 		cache: false,
 		beforeSend : function(xhr) {
@@ -540,6 +552,9 @@ function subscribe_repay(id) {
 		data : {
 			reserveid: reserveid,
             billkey: billkey,
+            // s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+            token: $("input[name=token]").val(),
+            // e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
 		},
 		cache: false,
 		beforeSend : function(xhr) {
