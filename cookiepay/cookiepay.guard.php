@@ -84,12 +84,19 @@ function cookiepay_guard_subscribe_noti($noti, $verify, $subscribe)
  * 상태에서 브라우저가 보낸 금액·거래번호로 pay_status=0 기록을 만들 수 있으므로,
  * 결제 없이 만든 기록이 그대로 결제 내용으로 쓰인다. 거래번호 재사용도 막지 않는다.
  *
+ * 가상계좌 발급은 예외다. 발급 시점에는 아직 입금 전이라 결제가 일어나지 않았고
+ * pgresult.php 가 pay_status 를 0 으로 남긴다. 이때 주문은 '주문'(미결제) 상태로
+ * 만들어져야 하며, 막으면 정상 가상계좌 주문이 전부 실패한다.
+ * 위조된 발급 기록으로 미결제 주문이 생기는 것은 무통장 주문과 같은 수준이라
+ * 실질적 피해가 없고, 실제 입금 통지는 항목 10 검증이 따로 막는다.
+ *
  * @param array      $pg_result       cookiepay_pg_result 한 행
  * @param int        $order_price     서버가 계산한 주문 총액
  * @param string     $session_orderno 방문자 세션의 주문번호(브라우저 입력값 아님)
  * @param int        $tid_used_count  이 TID 로 이미 완료된 주문 수
+ * @param bool       $vaccount_issue  가상계좌 발급 단계인가(입금 전)
  */
-function cookiepay_guard_pay_record($pg_result, $order_price, $session_orderno, $tid_used_count)
+function cookiepay_guard_pay_record($pg_result, $order_price, $session_orderno, $tid_used_count, $vaccount_issue = false)
 {
     if (empty($pg_result)) {
         return cookiepay_guard_result(false, 'NO_RECORD', '결제 기록이 없습니다.');
@@ -105,11 +112,13 @@ function cookiepay_guard_pay_record($pg_result, $order_price, $session_orderno, 
     }
 
     // 핵심: 검증까지 끝난(pay_status=1) 기록만 인정한다. 0=시도 는 결제가 아니다.
-    if ((int) $pg_result['pay_status'] !== 1) {
+    // 가상계좌 발급은 아직 입금 전이므로 이 조건에서 제외한다.
+    if (!$vaccount_issue && (int) $pg_result['pay_status'] !== 1) {
         return cookiepay_guard_result(false, 'NOT_VERIFIED', '결제완료로 확인되지 않은 기록입니다.');
     }
 
-    if (empty($pg_result['TID'])) {
+    // 가상계좌 발급 단계에는 거래번호가 아직 없을 수 있다.
+    if (!$vaccount_issue && empty($pg_result['TID'])) {
         return cookiepay_guard_result(false, 'NO_TID', '거래번호가 없습니다.');
     }
 

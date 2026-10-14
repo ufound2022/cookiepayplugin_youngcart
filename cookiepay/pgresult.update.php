@@ -45,14 +45,17 @@ require_once G5_PATH."/cookiepay/cookiepay.guard.php";
 
 $guardSessionOrderno = isset($_SESSION['ss_order_id']) ? $_SESSION['ss_order_id'] : get_session('ss_order_id');
 
-// 가상계좌는 발급 시점에 아직 입금 전이라 pgresult.php 가 pay_status 를 0 으로 남긴다.
-// 이 경우는 쿠키페이 검증(cookiepay_pg_verify) 성공 기록이 있는지로 진짜 발급건을 가린다.
-// 검증 기록은 서버에서 paycert 를 호출해야만 생기므로 외부에서 위조할 수 없다.
-if (is_array($cookiepayPgResult)
+// 가상계좌 발급은 아직 입금 전이라 pgresult.php 가 pay_status 를 0 으로 남긴다.
+// 여기서 막으면 정상 가상계좌 주문이 전부 실패하므로 '주문'(미결제) 상태로 통과시킨다.
+// 위조된 발급 기록으로 미결제 주문이 생기는 것은 무통장 주문과 같은 수준이라 피해가 없고,
+// 실제 입금 통지는 result.noti.php 의 항목 10 검증이 따로 막는다.
+$guardVaccount = (is_array($cookiepayPgResult)
     && (int) $cookiepayPgResult['pay_status'] === 0
     && !empty($cookiepayPgResult['ACCOUNTNO'])
-    && !empty($cookiepayPgResult['CARDNAME'])) {
+    && !empty($cookiepayPgResult['CARDNAME']));
 
+if ($guardVaccount) {
+    // 진단용 기록. 발급 시점의 paycert 응답코드가 무엇인지 로그로 남긴다.
     $guardVerifyRow = sql_fetch("
         select RESULTCODE
         from ".COOKIEPAY_PG_VERIFY."
@@ -60,12 +63,8 @@ if (is_array($cookiepayPgResult)
         order by `id` desc
         limit 1
     ");
-
-    if (isset($guardVerifyRow['RESULTCODE']) && (string) $guardVerifyRow['RESULTCODE'] === '0000') {
-        // 검증을 통과한 가상계좌 발급건이므로 검증 완료로 본다.
-        $cookiepayPgResult['pay_status'] = 1;
-        @cookiepay_payment_log("결제기록 검증", "가상계좌 발급건 검증 통과 / ORDERNO ".$postOrderno, 3);
-    }
+    $guardVerifyCode = isset($guardVerifyRow['RESULTCODE']) ? $guardVerifyRow['RESULTCODE'] : '(없음)';
+    @cookiepay_payment_log("결제기록 검증", "가상계좌 발급건 통과 / ORDERNO ".$postOrderno." / paycert RESULTCODE ".$guardVerifyCode, 3);
 }
 
 // 이 거래번호가 다른 주문에 이미 쓰였는지 확인한다(거래번호 재사용 차단).
@@ -84,12 +83,16 @@ if (is_array($cookiepayPgResult) && !empty($cookiepayPgResult['TID'])) {
 // 주문 총액은 호출부(orderformupdate.php)가 계산해 둔 값을 쓴다.
 $guardOrderPrice = isset($order_price) ? (int) $order_price : 0;
 
-$guardRet = cookiepay_guard_pay_record($cookiepayPgResult, $guardOrderPrice, $guardSessionOrderno, $guardTidUsed);
+$guardRet = cookiepay_guard_pay_record($cookiepayPgResult, $guardOrderPrice, $guardSessionOrderno, $guardTidUsed, $guardVaccount);
 
 if (!$guardRet['ok']) {
     @cookiepay_payment_log("결제기록 검증 차단 ({$guardRet['code']})", $guardRet['msg']." / ORDERNO ".$postOrderno, 3);
     if(function_exists('add_order_post_log')) add_order_post_log($guardRet['msg']);
-    alert($guardRet['msg']);
+
+    // alert() 를 URL 없이 부르면 history.go(-1) 로 돌아가는데, 돌아간 pgresult.php?mode=after
+    // 가 주문서를 자동 제출해 다시 이곳으로 들어온다. 무한 알림 루프가 되므로 갈 곳을 지정한다.
+    alert($guardRet['msg'], G5_SHOP_URL.'/cart.php');
+    exit;
 }
 // e: cookiepay-plugin > 보안검토 항목7 > v1.3 > 261014
 
