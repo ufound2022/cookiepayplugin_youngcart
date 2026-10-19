@@ -243,6 +243,94 @@ function cookiepay_guard_keyin_request($member_id, $session_orderno, $pending_or
 }
 
 /**
+ * [취소 통지] 취소 통지를 반영해도 되는지 검증한다.
+ *
+ * 취소 통지는 결제 통지와 payload 모양이 전혀 다르다(소문자 키).
+ *   {"noti_type":"cancel","paymethod":"CARD","orderno":"...",
+ *    "cancel_amount":"1250","tid":"...","cancel_date":"20261019112952"}
+ *
+ * 통지 주소는 누구나 호출할 수 있으므로 통지만 믿고 반영하면 외부에서 아무 주문이나
+ * 환불 기록을 남길 수 있다. 그래서 쿠키페이에 거래를 다시 묻는다.
+ *
+ * 다만 취소 여부 자체는 /api/paycert 로 확인할 수 없다. 이 API 는 TID 로 조회하는데
+ * 결제건과 취소건의 TID 가 같고 조회가 오름차순이라 항상 첫 결제건이 돌아온다.
+ * 그래서 취소된 거래도 CANCELDATE 가 빈 값이다(2026-10-19 실측 확인).
+ * 따라서 paycert 는 "그 거래가 실재하고 이 주문의 것인가" 확인에만 쓰고,
+ * 취소 사실은 통지와 TID 일치로 받아들인다.
+ *
+ * 남는 위험: 원 결제의 TID 를 아는 사람은 자기 주문에 가짜 환불 기록을 남길 수 있다.
+ * TID 는 추측할 수 없고 본인 주문에서만 알 수 있으므로 남의 주문은 건드릴 수 없고,
+ * 자기 주문에 환불 기록이 남는 것은 공격자에게 이득이 없다.
+ * 근본 대책은 통지 주소의 발신 IP 제한이며 쿠키페이에 요청해야 한다.
+ *
+ * @param array $noti      취소 통지 본문(소문자 키 그대로)
+ * @param array $verify    쿠키페이 /api/paycert 응답
+ * @param array $pg_result cookiepay_pg_result 의 원 결제 기록
+ * @param array $order     g5_shop_order 행(od_receipt_price, od_refund_price)
+ */
+function cookiepay_guard_cancel_noti($noti, $verify, $pg_result, $order)
+{
+    if (empty($noti['orderno'])) {
+        return cookiepay_guard_result(false, 'NO_ORDERNO', '취소 통지에 주문번호가 없습니다.');
+    }
+
+    if (empty($noti['tid'])) {
+        return cookiepay_guard_result(false, 'NO_TID', '취소 통지에 거래번호가 없습니다.');
+    }
+
+    $amount = (int) (isset($noti['cancel_amount']) ? $noti['cancel_amount'] : 0);
+    if ($amount <= 0) {
+        return cookiepay_guard_result(false, 'BAD_AMOUNT', '취소 금액이 올바르지 않습니다.');
+    }
+
+    if (empty($pg_result)) {
+        return cookiepay_guard_result(false, 'NO_RECORD', '원 결제 기록이 없습니다.');
+    }
+
+    // 취소 통지가 가리키는 거래가 이 주문의 결제 거래와 같아야 한다.
+    if ((string) $pg_result['TID'] !== (string) $noti['tid']) {
+        return cookiepay_guard_result(false, 'TID_MISMATCH', '원 결제의 거래번호와 다릅니다.');
+    }
+
+    // 쿠키페이에 거래가 실재하는지 묻는다. CANCELDATE 는 보지 않는다(위 설명 참고).
+    if (empty($verify) || empty($verify['ORDERNO'])) {
+        return cookiepay_guard_result(false, 'VERIFY_FAILED', '쿠키페이에서 거래를 확인하지 못했습니다.');
+    }
+
+    // 그 거래가 이 주문의 것이어야 한다. 쿠키페이 쪽 기록으로 TID 와 주문번호를 묶는다.
+    if ((string) $verify['ORDERNO'] !== (string) $noti['orderno']) {
+        return cookiepay_guard_result(false, 'ORDERNO_MISMATCH', '검증 응답의 주문번호가 통지와 다릅니다.');
+    }
+
+    // 취소 금액은 실제 결제 금액을 넘을 수 없다. 우리 DB 가 아니라 쿠키페이 응답을 기준으로 본다.
+    $verify_amount = (int) (isset($verify['AMOUNT']) ? $verify['AMOUNT'] : 0);
+    if ($verify_amount > 0 && $amount > $verify_amount) {
+        return cookiepay_guard_result(false, 'AMOUNT_OVER', '취소 금액이 결제 금액을 넘습니다.');
+    }
+
+    if (empty($order)) {
+        return cookiepay_guard_result(false, 'NO_ORDER', '주문을 찾을 수 없습니다.');
+    }
+
+    $paid     = (int) $order['od_receipt_price'];
+    $refunded = (int) $order['od_refund_price'];
+
+    // 받은 돈보다 많이 환불될 수는 없다.
+    if ($paid > 0 && ($refunded + $amount) > $paid) {
+        return cookiepay_guard_result(false, 'AMOUNT_OVER', '취소 금액이 결제 금액을 넘습니다.');
+    }
+
+    // 결제 금액이 0 이면(미입금 가상계좌 등) 돌려줄 돈이 없으므로 전액 취소로 본다.
+    $full = ($paid <= 0) || (($refunded + $amount) >= $paid);
+
+    return cookiepay_guard_result(true, 'OK', '취소 통지 검증 통과', array(
+        'amount'       => $amount,
+        'refund_total' => $refunded + $amount,
+        'full'         => $full,
+    ));
+}
+
+/**
  * [항목 1] 외부 입력을 DB 컬럼 이름으로 쓰기 전에 걸러낸다.
  *
  * cookiepay.pay.php 의 try_order 모드는 전송된 필드의 이름을 그대로 컬럼 이름으로

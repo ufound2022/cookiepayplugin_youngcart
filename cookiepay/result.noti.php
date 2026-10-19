@@ -62,6 +62,95 @@ $cookiepay = json_decode(file_get_contents('php://input'), true);
 @cookiepay_payment_log("[통지]스타트", ' : OK', 3);
 @cookiepay_payment_log("[통지]수신", json_encode($cookiepay), 3);
 
+// s: cookiepay-plugin > 취소 통지 처리 > v1.5 > 261019
+// 취소 통지는 결제 통지와 payload 모양이 다르다(소문자 키, noti_type=cancel).
+// 아래 결제 처리 분기는 ORDERNO/TID/ACCEPT_NO 대문자 키를 보므로 취소 통지는
+// 모든 조건을 빠져나가 아무 처리도 되지 않았다. 여기서 먼저 받아 처리한다.
+if (isset($cookiepay['noti_type']) && $cookiepay['noti_type'] === 'cancel') {
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+    require_once G5_PATH."/cookiepay/cookiepay.verify.php";
+
+    $cnOrderno = isset($cookiepay['orderno']) ? sql_real_escape_string((string) $cookiepay['orderno']) : '';
+    $cnTid     = isset($cookiepay['tid']) ? sql_real_escape_string((string) $cookiepay['tid']) : '';
+    $cnDate    = isset($cookiepay['cancel_date']) ? sql_real_escape_string((string) $cookiepay['cancel_date']) : '';
+    $cnAmtRaw  = isset($cookiepay['cancel_amount']) ? (int) $cookiepay['cancel_amount'] : 0;
+
+    // 같은 취소가 두 번 들어와도 환불이 두 번 기록되지 않게 한다.
+    // 통지의 tid 는 원 결제 거래번호라 관리자 취소가 남긴 cancel_tid 와 다를 수 있으므로
+    // 주문번호 + 취소일시 + 취소금액으로 같은 건인지 본다.
+    $cnDup = sql_fetch("
+        SELECT id FROM ".COOKIEPAY_PG_CANCEL."
+        WHERE orderno = '{$cnOrderno}'
+          AND cancel_date = '{$cnDate}'
+          AND cancel_amt = '{$cnAmtRaw}'
+        LIMIT 1
+    ");
+
+    if (!empty($cnDup['id'])) {
+        @cookiepay_payment_log("[통지]취소 중복 수신 무시", "ORDERNO {$cnOrderno} / {$cnDate} / {$cnAmtRaw}", 3);
+        echo '<html><body><RESULT>SUCCESS</RESULT></body></html>';
+        exit;
+    }
+
+    $cnPgResult = sql_fetch("
+        SELECT * FROM ".COOKIEPAY_PG_RESULT."
+        WHERE ORDERNO = '{$cnOrderno}'
+        ORDER BY `id` DESC LIMIT 1
+    ");
+
+    $cnOrder = sql_fetch("
+        SELECT od_id, od_status, od_receipt_price, od_refund_price
+        FROM {$g5['g5_shop_order_table']}
+        WHERE od_id = '{$cnOrderno}' LIMIT 1
+    ");
+
+    // 통지를 믿지 않고 쿠키페이에 거래를 다시 묻는다.
+    $cnPayType = (isset($cnPgResult['pay_type']) && $cnPgResult['pay_type'] !== '') ? $cnPgResult['pay_type'] : 3;
+    $cnApi = cookiepay_get_api_account_info($default, $cnPayType);
+    $cnVerify = cookiepay_verify_tid($cnApi['api_id'], $cnApi['api_key'], isset($cookiepay['tid']) ? $cookiepay['tid'] : '');
+
+    @cookiepay_payment_log("[통지]취소 검증 응답", json_encode($cnVerify), 3);
+
+    $cnRet = cookiepay_guard_cancel_noti($cookiepay, $cnVerify, $cnPgResult, $cnOrder);
+
+    if (!$cnRet['ok']) {
+        @cookiepay_payment_log("[통지]취소 처리 차단 ({$cnRet['code']})", $cnRet['msg']." / ORDERNO {$cnOrderno}", 3);
+        echo '<html><body><RESULT>FAIL</RESULT></body></html>';
+        exit;
+    }
+
+    // 취소 이력 기록
+    $cnSql = " INSERT INTO ".COOKIEPAY_PG_CANCEL."
+        (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt)
+        VALUES ('{$cnOrderno}', '{$cnTid}', '0000', '취소통지', '{$cnDate}', '{$cnRet['amount']}') ";
+    sql_query($cnSql, false);
+    @cookiepay_payment_log("[통지]취소 이력 저장", $cnSql, 3);
+
+    // 전액 취소일 때만 결제 상태를 취소로 바꾼다. 부분 취소는 결제가 남아 있다.
+    if ($cnRet['full']) {
+        sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status = 2 WHERE ORDERNO = '{$cnOrderno}'", false);
+    }
+
+    // 환불 금액은 누적한다. 부분 취소가 여러 번 들어올 수 있다.
+    sql_query("
+        UPDATE {$g5['g5_shop_order_table']}
+        SET od_refund_price = '{$cnRet['refund_total']}'
+        WHERE od_id = '{$cnOrderno}' LIMIT 1
+    ", false);
+
+    @cookiepay_payment_log(
+        "[통지]취소 처리 완료",
+        "ORDERNO {$cnOrderno} / 이번 취소 {$cnRet['amount']} / 누적 환불 {$cnRet['refund_total']} / "
+        . ($cnRet['full'] ? '전액취소' : '부분취소')
+        . " / 주문상태는 변경하지 않음(관리자 확인 필요)",
+        3
+    );
+
+    echo '<html><body><RESULT>SUCCESS</RESULT></body></html>';
+    exit;
+}
+// e: cookiepay-plugin > 취소 통지 처리 > v1.5 > 261019
+
 $params_sb['ORDERNO'] = isset($cookiepay['ORDERNO']) && !empty($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : ''; 
 $params_sb['AMOUNT'] = isset($cookiepay['AMOUNT']) && !empty($cookiepay['AMOUNT']) ? $cookiepay['AMOUNT'] : '';
 $params_sb['USERID'] = isset($cookiepay['USERID']) && !empty($cookiepay['USERID']) ? $cookiepay['USERID'] : ''; 
@@ -817,6 +906,21 @@ if(!empty($cookiepay['ACCEPT_NO']) && !empty($cookiepay['TID']) && !empty($cooki
 
                     if (!$guardRet['ok']) {
                         @cookiepay_payment_log("[통지] 결제금액 검증 차단 ({$guardRet['code']})", $guardRet['msg']." / 주문금액 {$guardOrderPrice}", 3);
+
+                        // 위 574~640행은 검증보다 먼저 cookiepay_pg_result 를 pay_status=1 로
+                        // 갱신한다. 위조 통지를 여기서 막아도 결제 기록은 이미 오염된 뒤라,
+                        // 그 기록으로 주문서를 제출하면 항목 7 검증을 통과할 수 있다.
+                        // 위조가 분명한 경우에는 결제 기록을 실패로 내려 쓰지 못하게 한다.
+                        // VERIFY_FAILED 는 일시적 통신 장애일 수 있으므로 건드리지 않는다.
+                        if (in_array($guardRet['code'], array('NOTI_TAMPERED', 'ORDERNO_MISMATCH', 'AMOUNT_MISMATCH'), true)) {
+                            sql_query("
+                                UPDATE ".COOKIEPAY_PG_RESULT."
+                                SET pay_status = 3
+                                WHERE ORDERNO = '" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "'
+                            ", false);
+                            @cookiepay_payment_log("[통지] 위조 통지로 오염된 결제기록 무효화", "ORDERNO ".$cookiepay['ORDERNO']." / pay_status=3", 3);
+                        }
+
                         exit;
                     }
 

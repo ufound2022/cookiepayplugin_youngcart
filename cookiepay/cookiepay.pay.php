@@ -213,7 +213,11 @@ if ($mode == "keyin_pay") {
     }
 
     // 결제 금액은 요청값이 아니라 서버에 저장된 주문 금액을 쓴다.
-    $cookiepay['AMOUNT'] = $guardRet['amount'];
+    // 문자열로 넣는다. 정수로 두면 json_encode 가 따옴표 없이 보내고
+    // 쿠키페이가 E007(필수 항목 AMOUNT 누락)로 거부한다. 다른 필드도 모두 문자열이다.
+    $cookiepay['AMOUNT'] = (string) $guardRet['amount'];
+
+    @cookiepay_payment_log("수기결제 검증 통과", "ORDERNO ".$cookiepay['ORDERNO']." / 금액 ".$cookiepay['AMOUNT'], 3);
     // e: cookiepay-plugin > 보안검토 항목9 > v1.3 > 261014
 
     $cookiepayApiKeyin = cookiepay_get_api_account_info($default, 1);
