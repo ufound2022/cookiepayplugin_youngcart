@@ -530,3 +530,39 @@ function cookiepay_guard_session_restore($row, $ip)
 
     return cookiepay_guard_result(true, 'OK', '세션 복원 허용');
 }
+
+/**
+ * [시크릿 키 노출] 연동 아이디에 맞는 시크릿 키를 찾는다.
+ *
+ * 결제창 호출은 브라우저가 쿠키페이 /pay/ready 로 직접 요청하면서 ApiKey 헤더에
+ * 가맹점 시크릿 키를 실어 보냈다. 페이지 소스에 그대로 찍히므로 방문자 누구나
+ * 가져갈 수 있었고, 그 키로 결제 취소·결제내역 조회·수기결제·정기결제 청구·
+ * 결제링크 발송까지 가능했다(쿠키페이 매뉴얼 기준).
+ *
+ * 이제 요청을 쇼핑몰 서버가 중계하고 키는 서버에만 둔다. 어느 키를 쓸지는
+ * 브라우저가 보낸 API_ID(비밀이 아니다)로 고른다. 설정에 등록된 연동 아이디와
+ * 일치할 때만 돌려주므로, 임의의 아이디로 중계를 시킬 수 없다.
+ *
+ * @param array  $pairs  설정에 등록된 연동 정보 목록 [['api_id'=>..,'api_key'=>..], ...]
+ * @param string $api_id 브라우저가 보낸 연동 아이디
+ */
+function cookiepay_guard_match_api_key($pairs, $api_id)
+{
+    if (empty($api_id)) {
+        return cookiepay_guard_result(false, 'NO_API_ID', '연동 아이디가 없습니다.');
+    }
+
+    foreach ((array) $pairs as $pair) {
+        if (empty($pair['api_id']) || empty($pair['api_key'])) {
+            continue;
+        }
+
+        if ((string) $pair['api_id'] === (string) $api_id) {
+            return cookiepay_guard_result(true, 'OK', '연동 정보 확인', array(
+                'api_key' => (string) $pair['api_key'],
+            ));
+        }
+    }
+
+    return cookiepay_guard_result(false, 'UNKNOWN_API_ID', '등록되지 않은 연동 아이디입니다.');
+}

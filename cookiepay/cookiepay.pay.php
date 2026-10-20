@@ -159,6 +159,75 @@ if ($mode == "try_order")
 }
 // e: cookiepay-plugin v1.2
 
+// s: cookiepay-plugin > 시크릿키 노출 제거 > v1.7 > 261020
+// 결제창 호출(/pay/ready)을 서버에서 중계한다.
+// 예전에는 브라우저가 쿠키페이로 직접 요청하면서 ApiKey 헤더에 가맹점 시크릿 키를
+// 실어 보냈고, 그 값이 페이지 소스에 그대로 찍혀 누구나 가져갈 수 있었다.
+// 어느 키를 쓸지는 브라우저가 보낸 API_ID(비밀이 아니다)로 고른다.
+// 설정에 등록된 아이디와 일치할 때만 중계하므로 동작은 이전과 같다.
+if ($mode == "pay_ready") {
+    @cookiepay_payment_log("결제창 중계 진입", "ORDERNO ".(isset($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : '')." / API_ID ".(isset($cookiepay['API_ID']) ? $cookiepay['API_ID'] : ''), 3);
+
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+    // 가드 파일이 옛 버전이면 아래 호출에서 치명적 오류가 나고 빈 응답이 나간다.
+    // 그러면 호출부가 아무것도 표시하지 못해 원인을 알 수 없으므로 먼저 확인한다.
+    if (!function_exists('cookiepay_guard_match_api_key')) {
+        @cookiepay_payment_log("결제창 중계 불가", "cookiepay.guard.php 가 옛 버전입니다 (cookiepay_guard_match_api_key 없음)", 3);
+        echo json_encode(array('RTN_CD' => '9999', 'RTN_MSG' => '결제 모듈 파일이 최신이 아닙니다.'));
+        exit;
+    }
+
+    $readyParams = $cookiepay;
+    unset($readyParams['mode']);
+
+    $readyApiId = isset($readyParams['API_ID']) ? $readyParams['API_ID'] : '';
+
+    // 설정에 등록된 연동 정보 전체(수기/일반/해외달러/해외원화/정기)
+    $readyPairs = array();
+    foreach (array(1, 3, 5, 7, 9) as $readyType) {
+        $readyPairs[] = cookiepay_get_api_account_info($default, $readyType);
+    }
+
+    $readyRet = cookiepay_guard_match_api_key($readyPairs, $readyApiId);
+
+    if (!$readyRet['ok']) {
+        @cookiepay_payment_log("결제창 중계 차단 ({$readyRet['code']})", $readyRet['msg']." / API_ID ".$readyApiId, 3);
+        echo json_encode(array('RTN_CD' => '9999', 'RTN_MSG' => $readyRet['msg']));
+        exit;
+    }
+
+    $readyUrl = $default['de_card_test'] == '0' ? COOKIEPAY_PAY_URL : COOKIEPAY_TESTPAY_URL;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $readyUrl);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($readyParams));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        "Content-Type: application/x-www-form-urlencoded",
+        "ApiKey: ".$readyRet['api_key'],
+    ));
+    $readyRes = curl_exec($ch);
+    $readyErr = curl_error($ch);
+    curl_close($ch);
+
+    if ($readyRes === false) {
+        @cookiepay_payment_log("결제창 중계 실패", $readyErr." / ORDERNO ".(isset($readyParams['ORDERNO']) ? $readyParams['ORDERNO'] : ''), 3);
+        echo json_encode(array('RTN_CD' => '9999', 'RTN_MSG' => '결제창을 열 수 없습니다.'));
+        exit;
+    }
+
+    @cookiepay_payment_log("결제창 중계", "ORDERNO ".(isset($readyParams['ORDERNO']) ? $readyParams['ORDERNO'] : '')." / 응답 ".strlen($readyRes)."바이트", 3);
+
+    // 응답은 결제창 HTML 이다. 호출부가 그대로 화면에 넣으므로 가공하지 않는다.
+    echo $readyRes;
+    exit;
+}
+// e: cookiepay-plugin > 시크릿키 노출 제거 > v1.7 > 261020
+
 // 수기결제
 if ($mode == "keyin_pay") {
 

@@ -153,7 +153,7 @@ if ($result) {
     <input type="hidden" name="CANCELURL" id="CANCELURL" value="">
     <input type="hidden" name="PAY_TYPE" id="PAY_TYPE" value="">
     <input type="hidden" name="ENG_FLAG" id="ENG_FLAG" value="">
-    <input type="hidden" name="ETC1" id="ETC1" placeholder="사용자 추가필드 1" value="<?= $token ?> ?>">
+    <input type="hidden" name="ETC1" id="ETC1" placeholder="사용자 추가필드 1" value="<?= $token ?>">
     <input type="hidden" name="ETC2" id="ETC2" placeholder="사용자 추가필드 2" value="">
     <input type="hidden" name="ETC3" id="ETC3" placeholder="사용자 추가필드 3" value="">
     <input type="hidden" name="ETC4" id="ETC4" placeholder="사용자 추가필드 4" value="">

@@ -139,13 +139,10 @@ function pay_dist() {
             
             $.ajax({
                 type: "POST",
-                url: url,
-                data : params,
+                url: "<?php echo COOKIEPAY_URL ?>/cookiepay.pay.php",  // s: cookiepay-plugin > 시크릿키 노출 제거 > v1.7 > 261020
+                data : $.extend({}, params, { mode: "pay_ready" }),  // e: cookiepay-plugin > 시크릿키 노출 제거 > v1.7 > 261020
                 cache: false,
                 contentType : "application/x-www-form-urlencoded",
-                beforeSend : function(xhr) {
-                    xhr.setRequestHeader("ApiKey", "<?php echo $cookiepayApi['api_key']; ?>");
-                },
                 success: function(result) {
                     try {
                         const obj = JSON.parse(result);
