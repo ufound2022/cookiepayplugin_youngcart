@@ -496,3 +496,37 @@ function cookiepay_guard_verified_amount($verify, $noti, $order_id, $order_price
         'amount' => (int) $verify['AMOUNT'],
     ));
 }
+
+/**
+ * [항목 2] 저장된 세션을 복원해도 되는지 검증한다.
+ *
+ * PG 왕복 중 세션이 풀리는 경우를 대비해 세션을 DB(cookiepay_session)에 넣어 두고
+ * 돌아올 때 복원한다. 커밋 c20bcaa 가 순번 id 조회를 token_hash 조회로 바꿨지만,
+ * shop/orderformupdate.php 130행의 두 번째 경로는 토큰 없이 주문번호만으로 조회한다.
+ * 주문번호는 날짜+순번이라 추측할 수 있어, 10분 안에 남의 세션을 복원할 수 있었다
+ * (2026-10-20 스테이징에서 재현 확인).
+ *
+ * 왕복을 건너뛰고 살아남는 것은 방문자의 IP 뿐이므로 생성 시점 IP 로 묶는다.
+ * 일치하지 않으면 복원하지 않는다 — 복원이 안 되면 이 기능이 없던 때와 같은
+ * 상태가 될 뿐이라 안전한 방향으로 실패한다.
+ *
+ * @param array  $row 세션 행(created_ip 포함). 만료 조건은 조회 쿼리에서 거른다.
+ * @param string $ip  현재 요청의 IP
+ */
+function cookiepay_guard_session_restore($row, $ip)
+{
+    if (empty($row) || empty($row['json_sess'])) {
+        return cookiepay_guard_result(false, 'NO_SESSION', '복원할 세션이 없습니다.');
+    }
+
+    // 예전에 만들어져 created_ip 가 비어 있는 행은 묶을 근거가 없으므로 복원하지 않는다.
+    if (empty($row['created_ip'])) {
+        return cookiepay_guard_result(false, 'NO_IP', '세션에 생성 IP 가 없습니다.');
+    }
+
+    if (empty($ip) || (string) $row['created_ip'] !== (string) $ip) {
+        return cookiepay_guard_result(false, 'IP_MISMATCH', '세션을 만든 접속과 다릅니다.');
+    }
+
+    return cookiepay_guard_result(true, 'OK', '세션 복원 허용');
+}

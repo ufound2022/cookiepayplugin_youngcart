@@ -100,15 +100,36 @@ if (empty($column['Field'])) {
     sql_query($sql, true);
 }
 
+// s: cookiepay-plugin > 보안검토 항목2 > v1.6 > 261020
+// created_ip 컬럼이 없으면 추가. 세션 복원을 만든 접속에 묶기 위한 값이다.
+$column = sql_fetch("
+    SHOW COLUMNS
+    FROM `" . COOKIEPAY_SESSION . "`
+    WHERE Field = 'created_ip'
+");
+
+if (empty($column['Field'])) {
+    $sql = "
+        ALTER TABLE `" . COOKIEPAY_SESSION . "`
+        ADD COLUMN `created_ip` VARCHAR(45)
+            NULL DEFAULT NULL
+            COMMENT '세션을 만든 접속 IP'
+    ";
+
+    sql_query($sql, true);
+}
+// e: cookiepay-plugin > 보안검토 항목2 > v1.6 > 261020
+
 // PG에서 리턴 후 세션이 풀리는 경우를 대비해 세션을 json으로 DB에 넣고 pk를 etc1로 전달 받음
 $jsonSess = json_encode($_SESSION);
 $token = bin2hex(random_bytes(32));
 $tokenHash = hash('sha256', $token);
 $sql = "
     INSERT INTO " . COOKIEPAY_SESSION . "
-        (token_hash, orderno, json_sess, expires_at, created_at)
+        (token_hash, orderno, json_sess, expires_at, created_at, created_ip)
     VALUES
-        ('{$tokenHash}', '{$od_id}', '{$jsonSess}', DATE_ADD(NOW(), INTERVAL 10 MINUTE), NOW())
+        ('{$tokenHash}', '{$od_id}', '{$jsonSess}', DATE_ADD(NOW(), INTERVAL 10 MINUTE), NOW(),
+         '" . sql_real_escape_string((string) $_SERVER['REMOTE_ADDR']) . "')
 ";
 $result = sql_query($sql, false);
 $insertId = 0;
