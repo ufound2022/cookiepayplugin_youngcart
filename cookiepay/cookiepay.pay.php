@@ -78,6 +78,38 @@ if ($mode == "try_order")
     
     if (!empty($odId) && empty($odResultId))
     {
+        // s: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
+        // 아래 반복문은 전송된 필드의 이름을 그대로 컬럼 이름으로 쓴다. 값은
+        // 이스케이프할 수 있지만 컬럼 이름은 따옴표로 감쌀 수 없으므로, 실제
+        // 테이블에 있는 컬럼 이름만 통과시킨다. 허용 목록은 테이블에서 직접 읽는다.
+        require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+        $guardAllowed = array();
+        $guardDesc = sql_query(" DESCRIBE ".COOKIEPAY_SHOP_ORDER." ", false);
+        if ($guardDesc) {
+            while ($guardCol = sql_fetch_array($guardDesc)) {
+                $guardAllowed[] = $guardCol['Field'];
+            }
+        }
+        // od_zip / od_b_zip 은 컬럼이 아니라 od_zip1·od_zip2 로 쪼개 넣는 가공용 키다.
+        $guardAllowed[] = 'od_zip';
+        $guardAllowed[] = 'od_b_zip';
+
+        $guardRet = cookiepay_guard_filter_columns($cookiepay, $guardAllowed);
+
+        if (!empty($guardRet['rejected'])) {
+            @cookiepay_payment_log("주문정보 임시저장 허용되지 않은 항목 제외", implode(",", $guardRet['rejected']), 3);
+        }
+
+        if (!$guardRet['ok']) {
+            @cookiepay_payment_log("주문정보 임시저장 차단 ({$guardRet['code']})", $guardRet['msg'], 3);
+            echo json_encode($ret);
+            exit;
+        }
+
+        $cookiepay = $guardRet['data'];
+        // e: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
+
         foreach ($cookiepay as $key => $val)
         {
             if ($key == 'od_zip')
@@ -103,7 +135,9 @@ if ($mode == "try_order")
             else
             {
                 $keys[$key] = "{$key}";
-                $vals[$key] = "'{$val}'";
+                // s: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
+                $vals[$key] = "'" . sql_real_escape_string((string) $val) . "'";
+                // e: cookiepay-plugin > 보안검토 항목1 > v1.4 > 261014
             }
         }
         
@@ -125,8 +159,136 @@ if ($mode == "try_order")
 }
 // e: cookiepay-plugin v1.2
 
+// s: cookiepay-plugin > 시크릿키 노출 제거 > v1.7 > 261020
+// 결제창 호출(/pay/ready)을 서버에서 중계한다.
+// 예전에는 브라우저가 쿠키페이로 직접 요청하면서 ApiKey 헤더에 가맹점 시크릿 키를
+// 실어 보냈고, 그 값이 페이지 소스에 그대로 찍혀 누구나 가져갈 수 있었다.
+// 어느 키를 쓸지는 브라우저가 보낸 API_ID(비밀이 아니다)로 고른다.
+// 설정에 등록된 아이디와 일치할 때만 중계하므로 동작은 이전과 같다.
+if ($mode == "pay_ready") {
+    @cookiepay_payment_log("결제창 중계 진입", "ORDERNO ".(isset($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : '')." / API_ID ".(isset($cookiepay['API_ID']) ? $cookiepay['API_ID'] : ''), 3);
+
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+    // 가드 파일이 옛 버전이면 아래 호출에서 치명적 오류가 나고 빈 응답이 나간다.
+    // 그러면 호출부가 아무것도 표시하지 못해 원인을 알 수 없으므로 먼저 확인한다.
+    if (!function_exists('cookiepay_guard_match_api_key')) {
+        @cookiepay_payment_log("결제창 중계 불가", "cookiepay.guard.php 가 옛 버전입니다 (cookiepay_guard_match_api_key 없음)", 3);
+        echo json_encode(array('RTN_CD' => '9999', 'RTN_MSG' => '결제 모듈 파일이 최신이 아닙니다.'));
+        exit;
+    }
+
+    $readyParams = $cookiepay;
+    unset($readyParams['mode']);
+
+    $readyApiId = isset($readyParams['API_ID']) ? $readyParams['API_ID'] : '';
+
+    // 설정에 등록된 연동 정보 전체(수기/일반/해외달러/해외원화/정기)
+    $readyPairs = array();
+    foreach (array(1, 3, 5, 7, 9) as $readyType) {
+        $readyPairs[] = cookiepay_get_api_account_info($default, $readyType);
+    }
+
+    $readyRet = cookiepay_guard_match_api_key($readyPairs, $readyApiId);
+
+    if (!$readyRet['ok']) {
+        @cookiepay_payment_log("결제창 중계 차단 ({$readyRet['code']})", $readyRet['msg']." / API_ID ".$readyApiId, 3);
+        echo json_encode(array('RTN_CD' => '9999', 'RTN_MSG' => $readyRet['msg']));
+        exit;
+    }
+
+    $readyUrl = $default['de_card_test'] == '0' ? COOKIEPAY_PAY_URL : COOKIEPAY_TESTPAY_URL;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $readyUrl);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($readyParams));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        "Content-Type: application/x-www-form-urlencoded",
+        "ApiKey: ".$readyRet['api_key'],
+    ));
+    $readyRes = curl_exec($ch);
+    $readyErr = curl_error($ch);
+    curl_close($ch);
+
+    if ($readyRes === false) {
+        @cookiepay_payment_log("결제창 중계 실패", $readyErr." / ORDERNO ".(isset($readyParams['ORDERNO']) ? $readyParams['ORDERNO'] : ''), 3);
+        echo json_encode(array('RTN_CD' => '9999', 'RTN_MSG' => '결제창을 열 수 없습니다.'));
+        exit;
+    }
+
+    @cookiepay_payment_log("결제창 중계", "ORDERNO ".(isset($readyParams['ORDERNO']) ? $readyParams['ORDERNO'] : '')." / 응답 ".strlen($readyRes)."바이트", 3);
+
+    // 응답은 결제창 HTML 이다. 호출부가 그대로 화면에 넣으므로 가공하지 않는다.
+    echo $readyRes;
+    exit;
+}
+// e: cookiepay-plugin > 시크릿키 노출 제거 > v1.7 > 261020
+
 // 수기결제
 if ($mode == "keyin_pay") {
+
+    // s: cookiepay-plugin > 보안검토 항목9 > v1.3 > 261014
+    // 이 모드는 로그인 확인이 없어 누구나 호출할 수 있었다. 카드번호·금액·주문번호를
+    // 요청에서 그대로 받아 쇼핑몰 서버가 결제를 보내므로, 도난 카드번호의 유효성을
+    // 쇼핑몰을 통해 확인하는 통로(카드 테스팅)가 된다.
+    // 로그인한 본인의 결제 대기 주문에 대해서만, 횟수 제한 안에서만 허용한다.
+    //
+    // 주의: 이 시점에는 g5_shop_order 가 아직 없다. 결제가 성공해야 pgresult.php 가
+    // opener 의 주문서를 제출하고 그때 주문이 만들어진다. 대기 주문은
+    // cookiepay_shop_order(try_order 모드가 저장)에 있다.
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+    $guardMemberId = isset($member['mb_id']) ? $member['mb_id'] : '';
+    $guardSessionOrderno = isset($_SESSION['ss_order_id']) ? $_SESSION['ss_order_id'] : get_session('ss_order_id');
+
+    $guardPendingOrder = array();
+    if (!empty($guardSessionOrderno)) {
+        $guardPendingOrder = sql_fetch("
+            SELECT od_id, mb_id, od_price, od_send_cost, od_send_cost2, od_temp_point, od_send_coupon
+            FROM ".COOKIEPAY_SHOP_ORDER."
+            WHERE od_id = '" . sql_real_escape_string((string) $guardSessionOrderno) . "'
+            LIMIT 1
+        ");
+    }
+
+    // 시도 횟수는 세션에 센다. 실패한 수기결제는 BUYERID·ACCEPTDATE 가 빈 값으로만
+    // 저장되고(위 insert 는 토큰 응답만 채운다), 같은 주문의 재시도는 행을 추가하지도
+    // 않으므로 cookiepay_pg_result 로는 시도를 셀 수 없다.
+    $guardTryKey = 'cookiepay_keyin_try';
+    $guardTryLog = (isset($_SESSION[$guardTryKey]) && is_array($_SESSION[$guardTryKey])) ? $_SESSION[$guardTryKey] : array();
+
+    $guardNow = time();
+    $guardRecent = array();
+    foreach ($guardTryLog as $guardTryTime) {
+        if (($guardNow - (int) $guardTryTime) < 600) { // 10분 안의 시도만 센다
+            $guardRecent[] = (int) $guardTryTime;
+        }
+    }
+
+    $guardRet = cookiepay_guard_keyin_request($guardMemberId, $guardSessionOrderno, $guardPendingOrder, $cookiepay, count($guardRecent));
+
+    // 차단 여부와 무관하게 시도로 기록한다(차단된 시도도 횟수에 포함).
+    $guardRecent[] = $guardNow;
+    $_SESSION[$guardTryKey] = $guardRecent;
+
+    if (!$guardRet['ok']) {
+        @cookiepay_payment_log("수기결제 차단 ({$guardRet['code']})", $guardRet['msg']." / 요청자 ".$guardMemberId." / ORDERNO ".$cookiepay['ORDERNO'], 3);
+        echo '<script>alert("'.$guardRet['msg'].'"); self.close();</script>';
+        exit;
+    }
+
+    // 결제 금액은 요청값이 아니라 서버에 저장된 주문 금액을 쓴다.
+    // 문자열로 넣는다. 정수로 두면 json_encode 가 따옴표 없이 보내고
+    // 쿠키페이가 E007(필수 항목 AMOUNT 누락)로 거부한다. 다른 필드도 모두 문자열이다.
+    $cookiepay['AMOUNT'] = (string) $guardRet['amount'];
+
+    @cookiepay_payment_log("수기결제 검증 통과", "ORDERNO ".$cookiepay['ORDERNO']." / 금액 ".$cookiepay['AMOUNT'], 3);
+    // e: cookiepay-plugin > 보안검토 항목9 > v1.3 > 261014
+
     $cookiepayApiKeyin = cookiepay_get_api_account_info($default, 1);
 
     $req_json = json_encode([

@@ -8,14 +8,35 @@ require_once G5_PATH."/cookiepay/cookiepay.lib.php";
 // 세션 생성
 $postEtc1 = isset($_POST['ETC1']) ? clean_xss_tags($_POST['ETC1'], 1, 1) : '';
 if (!empty($postEtc1)) {
-    $sql = " select * from ".COOKIEPAY_SESSION." where id={$postEtc1} ";
+    $tokenHash = hash('sha256', $postEtc1);
+
+    $sql = "
+        SELECT id, json_sess, created_ip
+        FROM " . COOKIEPAY_SESSION . "
+        WHERE token_hash = '{$tokenHash}'
+        AND expires_at > NOW()
+        LIMIT 1
+    ";
+
     $res = sql_fetch($sql);
-    if ($res) {
+
+    // s: cookiepay-plugin > 보안검토 항목2 > v1.6 > 261020
+    // 복원은 세션을 만든 접속(IP)에서만 허용하고, 한 번 쓰면 행을 지운다.
+    // 주문번호만으로 남의 세션을 복원할 수 있던 경로를 막는다.
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+    $guardSess = cookiepay_guard_session_restore($res, isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '');
+
+    if ($guardSess['ok']) {
         $arrSess = json_decode($res['json_sess'], true);
         foreach ($arrSess as $key => $val) {
             $_SESSION[$key] = $val;
         }
+        sql_query("DELETE FROM ".COOKIEPAY_SESSION." WHERE id = '" . sql_real_escape_string((string) $res['id']) . "'", false);
+    } else if (!empty($res)) {
+        @cookiepay_payment_log("세션 복원 차단 ({$guardSess['code']})", $guardSess['msg']." / token 경로", 3);
     }
+    // e: cookiepay-plugin > 보안검토 항목2 > v1.6 > 261020
 }
 
 // 회원정보
@@ -32,7 +53,11 @@ $cookiepayApiKeyin = cookiepay_get_api_account_info($default, 1);
 
 // 결제 취소
 function cookiepay_cancel($tno) {
-    global $cookiepayApi;
+    // s: cookiepay-plugin > 보안검토 항목12 > v1.4 > 261014
+    // $default 가 전역 선언되어 있지 않아 아래 cookiepay_get_api_account_info($default, ...)
+    // 가 빈 값을 받았다. 연동 정보가 비면 취소가 실패하고 고객은 결제된 채로 남는다.
+    global $cookiepayApi, $default;
+    // e: cookiepay-plugin > 보안검토 항목12 > v1.4 > 261014
     
     $return = false;
 
@@ -118,21 +143,41 @@ $od_id = isset($_POST['od_id']) ? $_POST['od_id'] : '';
 if (!empty($od_id))
 {
     // 세션 생성
-    $sql = " select ETC1 from ".COOKIEPAY_PG_RESULT." where ORDERNO = {$od_id} ";
+    $od_id_sql = sql_real_escape_string((string) $od_id);
+    $sql = " select ETC1 from ".COOKIEPAY_PG_RESULT." where ORDERNO = '{$od_id_sql}' ";
     $res = sql_fetch($sql);
     if ($res)
     {
-        $sql = " select * from ".COOKIEPAY_SESSION." where id={$res['ETC1']} ";
+        $sql = "
+            SELECT *
+            FROM " . COOKIEPAY_SESSION . "
+            WHERE orderno = '{$od_id_sql}'
+            AND expires_at > NOW()
+            ORDER BY id DESC
+            LIMIT 1
+        ";
         $res = sql_fetch($sql);
-        if ($res) {
+
+        // s: cookiepay-plugin > 보안검토 항목2 > v1.6 > 261020
+        // 복원은 세션을 만든 접속(IP)에서만 허용하고, 한 번 쓰면 행을 지운다.
+        // 주문번호만으로 남의 세션을 복원할 수 있던 경로를 막는다.
+        require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+        $guardSess = cookiepay_guard_session_restore($res, isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '');
+
+        if ($guardSess['ok']) {
             $arrSess = json_decode($res['json_sess'], true);
             foreach ($arrSess as $key => $val) {
                 $_SESSION[$key] = $val;
             }
+            sql_query("DELETE FROM ".COOKIEPAY_SESSION." WHERE id = '" . sql_real_escape_string((string) $res['id']) . "'", false);
+        } else if (!empty($res)) {
+            @cookiepay_payment_log("세션 복원 차단 ({$guardSess['code']})", $guardSess['msg']." / orderno 경로", 3);
         }
+        // e: cookiepay-plugin > 보안검토 항목2 > v1.6 > 261020
     }
     // 주문정보 설정
-    $sql = " select * from ".COOKIEPAY_SHOP_ORDER." where od_id = {$od_id} ";
+    $sql = " select * from ".COOKIEPAY_SHOP_ORDER." where od_id = '{$od_id_sql}' ";
     $order_data = sql_fetch($sql);
     if ($order_data)
     {

@@ -18,6 +18,16 @@ if ($tab == 's') {
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 include_once(G5_PLUGIN_PATH.'/jquery-ui/datepicker.php');
 
+// s: cookiepay-plugin > 보안검토 항목11 > v1.5 > 261019
+// 재결제 AJAX 가 관리자 위조 방지 토큰을 보낼 수 있도록 토큰 입력칸을 둔다.
+// 값은 서버에서 직접 넣는다. 다른 관리자 폼처럼 빈 값으로 두면 admin.head.php 가
+// 채워 줄 것으로 보았으나 실제로는 채워지지 않아 재결제가 막혔다(2026-10-19 확인).
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+?>
+<input type="hidden" name="token" value="<?php echo cookiepay_guard_admin_token(); ?>">
+<?php
+// e: cookiepay-plugin > 보안검토 항목11 > v1.5 > 261019
+
 $fr_date = isset($_GET['fr_date']) ? clean_xss_tags($_GET['fr_date'], 1, 1) : '';
 $fr_date = (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $fr_date)) ? $fr_date : date("Y-m-01", strtotime("-1 month"));
 $to_date = isset($_GET['to_date']) ? clean_xss_tags($_GET['to_date'], 1, 1) : '';
@@ -207,19 +217,25 @@ $result = sql_query($sql);
                     <td><?=$val['RESERVE_NEXT_PAY_DATE']?></td>
                     <td><?=$val['ORDERNO']?></td>
                     <td><?=substr($val['RESERVE_ID'], 0, 10)."..."?></td>
-                    <td><?=$val['od_name']?></td>
-                    <td><?=$val['od_hp']?></td>
-                    <td><?=$val['PRODUCT_NAME']?></td>
-                    <td><?=number_format($val['AMOUNT'])?></td>
-                    <td><?=$val['ACCEPTNO']?></td>
-                    <td><span style="color:black;"><?=$val['RESERVE_PAY_DAY']?>일 / <?=$val['RESERVE_NOW_PAY_CNT']?> (<?=$val['RESERVE_LAST_PAY_CNT']?>)</span></td>
+                    <td><?= htmlspecialchars((string) $val['od_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string) $val['od_hp'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string) $val['PRODUCT_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= number_format($val['AMOUNT']) ?></td>
+                    <td><?= htmlspecialchars((string) $val['ACCEPTNO'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td>
+                        <span style="color:black;">
+                            <?= htmlspecialchars((string) $val['RESERVE_PAY_DAY'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>일 /
+                            <?= htmlspecialchars((string) $val['RESERVE_NOW_PAY_CNT'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                            (<?= htmlspecialchars((string) $val['RESERVE_LAST_PAY_CNT'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>)
+                        </span>
+                    </td>
                     <td></td>
                     <td></td>
-                    <td><?=$pay_status?></td>
+                    <td><?= htmlspecialchars((string) $pay_status, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <?php
-                    if(!empty($_GET['t']) && $_GET['t'] == "3") { 
+                    if (!empty($_GET['t']) && $_GET['t'] == "3") {
                     ?>
-                    <td><?=$val['RESULTMSG']?></td>
+                        <td><?= htmlspecialchars((string) $val['RESULTMSG'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <? } ?>
                     <td>
                         <?php
@@ -486,6 +502,9 @@ $(document).on("click", "#btn-modal-submit", function(event) {
 		data : {
 			reserveid: reserveid,
             billkey: billkey,
+            // s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+            token: $("input[name=token]").val(),
+            // e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
 		},
 		cache: false,
 		beforeSend : function(xhr) {
@@ -534,6 +553,9 @@ function subscribe_repay(id) {
 		data : {
 			reserveid: reserveid,
             billkey: billkey,
+            // s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+            token: $("input[name=token]").val(),
+            // e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
 		},
 		cache: false,
 		beforeSend : function(xhr) {

@@ -10,9 +10,33 @@ if (empty($is_member)) {
     exit;
 }
 
-$pss = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_RESULT." WHERE ORDERNO='{$_GET['order_no']}' ORDER BY `id` DESC LIMIT 1 ");
-$psu = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_USERLIST." WHERE RESERVE_ID='{$pss['RESERVE_ID']}' ORDER BY `id` DESC LIMIT 1 ");
-$od = sql_fetch(" SELECT * FROM {$g5['g5_shop_order_table']} WHERE od_id='{$_GET['order_no']}' ORDER BY `od_id` DESC LIMIT 1 ");
+// s: cookiepay-plugin > 보안검토 항목8 > v1.3 > 261014
+// 위쪽 로그인 체크는 "로그인했는가"만 본다. 주소의 order_no 를 바꾸면 다른 고객의
+// 정기결제를 조회할 수 있고, 화면에는 이름·상품·금액과 BILLKEY 까지 출력된다.
+// 조회 값을 쓰기 전에 그 정기결제가 로그인한 본인의 것인지 확인한다.
+// (외부 입력을 쿼리에 그대로 넣던 부분도 함께 이스케이프한다)
+$guardOrderNo = isset($_GET['order_no']) ? clean_xss_tags($_GET['order_no'], 1, 1) : '';
+$guardOrderNoSql = sql_real_escape_string((string) $guardOrderNo);
+// e: cookiepay-plugin > 보안검토 항목8 > v1.3 > 261014
+
+$pss = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_RESULT." WHERE ORDERNO='{$guardOrderNoSql}' ORDER BY `id` DESC LIMIT 1 ");
+$psu = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_SUBSCRIBE_USERLIST." WHERE RESERVE_ID='" . sql_real_escape_string((string) (isset($pss['RESERVE_ID']) ? $pss['RESERVE_ID'] : '')) . "' ORDER BY `id` DESC LIMIT 1 ");
+$od = sql_fetch(" SELECT * FROM {$g5['g5_shop_order_table']} WHERE od_id='{$guardOrderNoSql}' ORDER BY `od_id` DESC LIMIT 1 ");
+
+// s: cookiepay-plugin > 보안검토 항목8 > v1.3 > 261014
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+// 소유자는 정기결제의 USERID 를 쓰되, 비어 있으면 원 주문의 회원 아이디로 본다.
+$guardOwner = !empty($pss['USERID']) ? $pss['USERID'] : (isset($od['mb_id']) ? $od['mb_id'] : '');
+
+$guardRet = cookiepay_guard_subscribe_owner(array('mb_id' => $guardOwner), $member['mb_id']);
+
+if (!$guardRet['ok']) {
+    @cookiepay_payment_log("정기(구독) 조회 차단 ({$guardRet['code']})", "요청자 {$member['mb_id']} / ORDERNO {$guardOrderNo}", 3);
+    echo "<script language='javascript'> alert('잘못된 접근입니다.'); self.close(); </script> ";
+    exit;
+}
+// e: cookiepay-plugin > 보안검토 항목8 > v1.3 > 261014
 
 $pay_status_str = "정상";
 if($psu['pay_status'] == "2") { 

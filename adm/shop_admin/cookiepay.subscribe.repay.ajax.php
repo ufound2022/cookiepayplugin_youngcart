@@ -7,6 +7,60 @@ include_once(G5_PATH."/cookiepay/cookiepay.lib.php");
 //$cookiepay = json_decode(file_get_contents('php://input'), true);
 $reserveid = $_POST['reserveid'];
 $billkey = $_POST['billkey'];
+
+// s: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+// 이 파일은 권한 확인도 위조 방지 토큰 확인도 없이 요청에 담긴 BILLKEY 로
+// 고객의 저장된 카드를 결제한다. 관리자가 속아서 링크를 열거나, 관리자 화면에
+// 주입된 스크립트가 실행되면 그대로 결제가 일어난다.
+// 권한과 토큰을 확인하고, 빌링키는 요청이 아니라 서버에서 조회한다.
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+require_once G5_PATH."/cookiepay/cookiepay.migrate.php";
+
+$guardAuthError = auth_check_menu($auth, $sub_menu, 'w', true);
+
+// check_admin_token() 은 실패 시 자체적으로 alert 후 종료해 AJAX 응답이 깨지므로 쓰지 않는다.
+// 확인 전용 함수를 쓴다. 발급 함수를 부르면 새 토큰이 생겨 언제나 불일치한다.
+$guardToken = isset($_POST['token']) ? $_POST['token'] : '';
+$guardTokenOk = cookiepay_guard_admin_token_ok($guardToken);
+
+// 빌링키는 요청에서 받지 않고 서버에서 조회한다.
+// 조회 대상은 재결제할 회차 행(cookiepay_pg_subscribe_result)이다. 원래 버튼이
+// data-billkey 로 싣던 값과 같은 출처라 동작이 바뀌지 않는다.
+// 처음에는 등록 행(userlist)에서 읽었는데, 두 테이블의 값이 다르면 쿠키페이가
+// E001(등록된 정보가 없습니다)로 거부한다.
+$guardSubscribe = sql_fetch("
+    SELECT RESERVE_ID, BILLKEY
+    FROM ".COOKIEPAY_PG_SUBSCRIBE_RESULT."
+    WHERE RESERVE_ID = '" . sql_real_escape_string((string) $reserveid) . "'
+      AND BILLKEY != ''
+    ORDER BY `id` DESC
+    LIMIT 1
+");
+
+if (empty($guardSubscribe['BILLKEY'])) {
+    $guardSubscribe = sql_fetch("
+        SELECT RESERVE_ID, BILLKEY
+        FROM ".COOKIEPAY_PG_SUBSCRIBE_USERLIST."
+        WHERE RESERVE_ID = '" . sql_real_escape_string((string) $reserveid) . "'
+        ORDER BY `id` DESC
+        LIMIT 1
+    ");
+}
+
+@cookiepay_payment_log("관리자 재결제 빌링키 조회", "RESERVE_ID ".$reserveid." / BILLKEY ".(isset($guardSubscribe['BILLKEY']) ? $guardSubscribe['BILLKEY'] : '(없음)'), 3);
+
+$guardRet = cookiepay_guard_admin_repay($guardAuthError, $guardTokenOk, $guardSubscribe);
+
+if (!$guardRet['ok']) {
+    @cookiepay_payment_log("관리자 재결제 차단 ({$guardRet['code']})", $guardRet['msg']." / RESERVE_ID ".$reserveid, 3);
+    echo json_encode(array('RESULTCODE' => '9999', 'RESULTMSG' => $guardRet['msg']));
+    exit;
+}
+
+// 빌링키는 요청값을 버리고 서버 조회 값을 쓴다.
+$billkey = $guardRet['billkey'];
+// e: cookiepay-plugin > 보안검토 항목11 > v1.4 > 261014
+
 $cookiepayApi = cookiepay_get_api_account_info($default, 9);
 
 $tokenheaders = array(); 
@@ -76,13 +130,42 @@ if($RES_ARR['RTN_CD'] == '0000'){
     $result_decode_array = json_decode($response, true);
     //var_dump($response);
 
+    // s: cookiepay-plugin > 재결제 계측 > v1.5 > 261019
+    // 이 파일은 돈이 움직이는 호출인데 API 원문을 전혀 남기지 않아
+    // 실패 원인을 추적할 수 없었다. 요청과 응답을 기록한다.
+    @cookiepay_payment_log("관리자 재결제 요청", $cookiepayments_json, 3);
+    @cookiepay_payment_log("관리자 재결제 응답", $response, 3);
+    // e: cookiepay-plugin > 재결제 계측 > v1.5 > 261019
+
     # 암호화 전문 복호화하기(S)
 
     /*
         string(203) "{ "RESULTCODE": "0000", "RESULTMSG": "성공", "ENC_DATA": "4cH9f5+UybM2fog8K7DrGLBF9SC+6KUPARsdxnYwD/h/hF5FgM64Ah0uISQQibQI/GdPRZhOGpC30OMyf/eloVTeBgMqtH5Sl6bT2LoWvcn39KjfvPZrtaP/gjb8OS+W" }"
     */
 
-    if($result_decode_array['RESULTCODE'] == "E103") { 
+    // s: cookiepay-plugin > 재결제 오류 전달 > v1.5 > 261019
+    // 아래는 E103 만 따로 처리하고, 그 밖의 오류는 ENC_DATA 없이 복호화를 호출해
+    // "ENC_DATA 필수 항목의 값이 없습니다" 라는 엉뚱한 2차 오류만 남긴다.
+    // 쿠키페이가 실패를 알려 준 경우 그 사유를 그대로 관리자에게 보여 준다.
+    if (isset($result_decode_array['RESULTCODE'])
+        && $result_decode_array['RESULTCODE'] != '0000'
+        && $result_decode_array['RESULTCODE'] != 'E103') {
+
+        @cookiepay_payment_log(
+            "관리자 재결제 실패 ({$result_decode_array['RESULTCODE']})",
+            $result_decode_array['RESULTMSG']." / RESERVE_ID ".$reserveid." / BILLKEY ".$billkey,
+            3
+        );
+
+        echo json_encode(array(
+            'RESULTCODE' => $result_decode_array['RESULTCODE'],
+            'RESULTMSG'  => $result_decode_array['RESULTMSG'],
+        ));
+        exit;
+    }
+    // e: cookiepay-plugin > 재결제 오류 전달 > v1.5 > 261019
+
+    if($result_decode_array['RESULTCODE'] == "E103") {
 
         $result_array = array();
         $result_array['RESULTCODE'] = $result_decode_array['RESULTCODE'];
@@ -126,7 +209,11 @@ if($RES_ARR['RTN_CD'] == '0000'){
 
     $result_array = json_decode($response, true);
 
-    @cookiepay_payment_log("[통지] 정기(구독) 실패 재결제 결과 > 승인날짜 : ", $result_array['decryptData']['ACCEPT_DATE'], 3);
+    // s: cookiepay-plugin > 재결제 계측 > v1.5 > 261019
+    @cookiepay_payment_log("관리자 재결제 복호화 응답", $response, 3);
+    // e: cookiepay-plugin > 재결제 계측 > v1.5 > 261019
+
+    @cookiepay_payment_log("[통지] 정기(구독) 실패 재결제 결과 > 승인날짜 : ", isset($result_array['decryptData']['ACCEPT_DATE']) ? $result_array['decryptData']['ACCEPT_DATE'] : '(없음)', 3);
 
     /*
     Array
@@ -451,9 +538,28 @@ if($RES_ARR['RTN_CD'] == '0000'){
     }
 
     # 암호화 전문 복호화하기 (E)
-   
-    
+
+
 }
 
+// s: cookiepay-plugin > 재결제 응답 보강 > v1.5 > 261019
+// 위 블록은 토큰 발급이 실패하면(else 가 없다) 아무것도 출력하지 않고, 안에서도
+// 출력 없이 빠져나가는 경로가 여럿이다. 호출부는 JSON.parse 를 하므로 빈 응답이
+// "Unexpected end of JSON input" 으로만 보여 원인을 알 수 없다.
+// 여기까지 내려왔다면 재결제가 끝나지 않은 것이므로 실패를 돌려주고 로그를 남긴다.
+@cookiepay_payment_log(
+    "관리자 재결제 응답 없음",
+    "RESERVE_ID ".$reserveid
+    ." / 토큰발급 RTN_CD ".(isset($RES_ARR['RTN_CD']) ? $RES_ARR['RTN_CD'] : '(응답없음)')
+    ." / 토큰응답 ".(isset($RES_STR) ? $RES_STR : '(없음)'),
+    3
+);
+
+echo json_encode(array(
+    'RESULTCODE' => '9999',
+    'RESULTMSG'  => '재결제 처리가 완료되지 않았습니다. 결제 로그를 확인해 주세요.',
+));
+exit;
+// e: cookiepay-plugin > 재결제 응답 보강 > v1.5 > 261019
 ?>
 
