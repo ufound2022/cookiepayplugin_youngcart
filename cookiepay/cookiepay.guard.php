@@ -56,7 +56,19 @@ function cookiepay_guard_subscribe_noti($noti, $verify, $subscribe)
         return cookiepay_guard_result(false, 'RESERVE_ORDERNO_MISMATCH', '등록된 정기결제의 원 주문번호와 다릅니다.');
     }
 
-    // 핵심: 통지 본문의 RESULTCODE 가 아니라 쿠키페이 재확인 결과를 믿는다.
+    // 실패 통지는 주문을 만들지 않는다. 결제가 일어나지 않았으니 paycert 가 승인을
+    // 확인해 줄 수도 없다. 그런데 이 실패 이력(pay_status=3)이 있어야 관리자 화면에
+    // 재결제 버튼이 뜨므로, 기록까지 막으면 실패한 회차를 되살릴 방법이 없어진다.
+    // 등록된 정기결제의 것인지는 위에서 이미 확인했으므로 기록만 허용한다.
+    if (!isset($noti['RESULTCODE']) || (string) $noti['RESULTCODE'] !== '0000') {
+        return cookiepay_guard_result(true, 'RECORD_ONLY', '실패 통지이므로 이력만 기록합니다.', array(
+            'amount'      => 0,
+            'record_only' => true,
+        ));
+    }
+
+    // 여기부터는 성공을 주장하는 통지다. 주문이 만들어지므로 반드시 재확인한다.
+    // 통지 본문의 RESULTCODE 가 아니라 쿠키페이 응답을 믿는다.
     if (empty($verify) || !isset($verify['RESULTCODE']) || (string) $verify['RESULTCODE'] !== '0000') {
         return cookiepay_guard_result(false, 'VERIFY_FAILED', '쿠키페이 결제 검증에 실패했습니다.');
     }
@@ -72,7 +84,8 @@ function cookiepay_guard_subscribe_noti($noti, $verify, $subscribe)
     }
 
     return cookiepay_guard_result(true, 'OK', '정기결제 통지 검증 통과', array(
-        'amount' => (int) $verify['AMOUNT'],
+        'amount'      => (int) $verify['AMOUNT'],
+        'record_only' => false,
     ));
 }
 
@@ -376,6 +389,39 @@ function cookiepay_guard_filter_columns($data, $allowed)
         'data'     => $filtered,
         'rejected' => $rejected,
     ));
+}
+
+/**
+ * [항목 11] 관리자 위조 방지 토큰 — 발급.
+ *
+ * 세션에 토큰이 없으면 만들고, 있으면 그대로 돌려준다(멱등).
+ *
+ * 영카트/그누보드의 get_admin_token() 을 쓰지 않는다. 그 함수는 호출할 때마다
+ * 새 토큰을 발급해 세션에 덮어쓰므로, 확인하는 쪽에서 부르면 방금 만든 값과
+ * 비교하게 되어 언제나 불일치한다(2026-10-19 확인). 앞서 admin.head.php 가
+ * 입력칸을 채워 줄 것으로 본 가정도 틀렸다. 코어 동작에 기대지 않고 자체 키를 쓴다.
+ */
+function cookiepay_guard_admin_token()
+{
+    if (empty($_SESSION['cookiepay_admin_token'])) {
+        $_SESSION['cookiepay_admin_token'] = md5(uniqid(mt_rand(), true));
+    }
+
+    return (string) $_SESSION['cookiepay_admin_token'];
+}
+
+/**
+ * [항목 11] 관리자 위조 방지 토큰 — 확인.
+ *
+ * 발급 함수를 부르지 않는다. 확인하면서 토큰을 만들면 비교가 무의미해진다.
+ */
+function cookiepay_guard_admin_token_ok($token)
+{
+    if (empty($token) || empty($_SESSION['cookiepay_admin_token'])) {
+        return false;
+    }
+
+    return hash_equals((string) $_SESSION['cookiepay_admin_token'], (string) $token);
 }
 
 /**

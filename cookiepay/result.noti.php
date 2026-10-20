@@ -251,7 +251,11 @@ if(!empty($params_sb['RESERVE_ORDERNO']) && $params_sb['PAY_CNT'] >= 2) {
         exit;
     }
 
-    @cookiepay_payment_log("[통지] 정기(구독) 검증 통과", "금액 {$guardRet['amount']}", 3);
+    if (!empty($guardRet['record_only'])) {
+        @cookiepay_payment_log("[통지] 정기(구독) 실패 통지 — 이력만 기록", "RESERVE_ID {$params_sb['RESERVE_ID']} / {$params_sb['PAY_CNT']}회차", 3);
+    } else {
+        @cookiepay_payment_log("[통지] 정기(구독) 검증 통과", "금액 {$guardRet['amount']}", 3);
+    }
 }
 // e: cookiepay-plugin > 보안검토 항목6 > v1.3 > 261014
 
