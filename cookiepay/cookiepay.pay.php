@@ -208,7 +208,6 @@ if ($mode == "pay_ready") {
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         "Content-Type: application/x-www-form-urlencoded",
-        "ApiKey: ".$readyRet['api_key'],
     ));
     $readyRes = curl_exec($ch);
     $readyErr = curl_error($ch);
