@@ -111,8 +111,20 @@ function cookiepay_get_api_account_info_by_pg($default, $pg, $pay_type=3) {
     return $ret;
 }
 
+// s: cookiepay-plugin > 로그 민감정보 마스킹 > v1.8 > 261026
+// 로그에는 통지 전문·SQL 전문·PG 응답이 그대로 들어가, 빌링키·카드번호·
+// 카드 비밀번호·연동 시크릿 키·발급 토큰이 평문으로 섞여 있었다.
+// 호출 지점이 40곳이 넘으므로 각 호출부가 아니라 이 함수 한 곳에서 가린다.
+require_once G5_PATH."/cookiepay/cookiepay.mask.php";
+// e: cookiepay-plugin > 로그 민감정보 마스킹 > v1.8 > 261026
+
 // 결제 로그 기록 ($start_end = 0:시작과 끝 기록 안 함. 1: 시작 기록, 2: 끝 기록, 3: 시작과 끝 모두 기록)
 function cookiepay_payment_log($title="", $msg="", $start_end=0) {
+
+	// s: cookiepay-plugin > 로그 민감정보 마스킹 > v1.8 > 261026
+	$title = cookiepay_mask_log($title);
+	$msg   = cookiepay_mask_log($msg);
+	// e: cookiepay-plugin > 로그 민감정보 마스킹 > v1.8 > 261026
 
 	$path = $_SERVER['DOCUMENT_ROOT']."/../logs/".date("Ym");
 

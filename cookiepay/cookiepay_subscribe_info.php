@@ -212,7 +212,6 @@ table {
             },
             cache: false,
             beforeSend : function(xhr) {
-                xhr.setRequestHeader("ApiKey", '');
                 xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
             },
             success: function(result){

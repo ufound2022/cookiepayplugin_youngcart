@@ -55,8 +55,32 @@ if ($mode == "get") {
 if ($mode == "cancel") {
     
     $orderno = clean_xss_tags($_POST['orderno'], 1, 1);
-    $api_id = clean_xss_tags($_POST['api_id'], 1, 1);
-    $api_key = clean_xss_tags($_POST['api_key'], 1, 1);
+
+    // s: cookiepay-plugin > 관리자 시크릿키 제거 > v1.8 > 261026
+    // 예전에는 브라우저가 보낸 api_id / api_key 를 그대로 썼다. 관리자 목록이
+    // 결제 행마다 data-apikey 로 시크릿 키를 심어 두고 취소할 때 되돌려 보내는
+    // 구조여서, 그 화면을 볼 수 있는 사람은 누구나 키를 가져갈 수 있었다.
+    // 키는 서버에만 둔다. 어느 연동 정보를 쓸지는 그 주문의 결제 기록으로 정한다.
+    // (cookiepay.cancel.php 45행이 이미 같은 방식이다)
+    $cpPayRow = sql_fetch("
+        SELECT pay_type FROM ".COOKIEPAY_PG_RESULT."
+        WHERE ORDERNO = '" . sql_real_escape_string((string) $orderno) . "'
+        ORDER BY `id` DESC LIMIT 1
+    ");
+
+    $cpPayType = (isset($cpPayRow['pay_type']) && $cpPayRow['pay_type'] !== '') ? $cpPayRow['pay_type'] : 3;
+    $cpApi     = cookiepay_get_api_account_info($default, $cpPayType);
+
+    $api_id  = $cpApi['api_id'];
+    $api_key = $cpApi['api_key'];
+
+    if (empty($api_id) || empty($api_key)) {
+        @cookiepay_payment_log("관리자 취소 차단", "연동 정보 없음 / ORDERNO ".$orderno." / pay_type ".$cpPayType, 3);
+        $data['error'] = '연동 정보가 설정되지 않았습니다. 쇼핑몰 설정을 확인해 주세요.';
+        echo json_encode($data);
+        exit;
+    }
+    // e: cookiepay-plugin > 관리자 시크릿키 제거 > v1.8 > 261026
     $tid = clean_xss_tags($_POST['tid'], 1, 1);
     $bank = clean_xss_tags($_POST['bank'], 1, 1);
     $accountno = clean_xss_tags($_POST['accountno'], 1, 1);

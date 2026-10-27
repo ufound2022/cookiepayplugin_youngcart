@@ -422,7 +422,6 @@ $(document).on("click", "#btn-modal-submit", function(event) {
 		},
 		cache: false,
 		beforeSend : function(xhr) {
-			xhr.setRequestHeader("ApiKey", '');
 			xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 		},
 		success: function(result){
@@ -443,39 +442,6 @@ $(document).on("click", "#btn-modal-submit", function(event) {
 
 	});
 
-    /*
-    $.ajax({
-        type: "POST",
-        url: "https://sandbox.cookiepayments.com/payAuth/token ",
-        cache: false,
-        async: false,
-        data: {
-            mode: "cancel",
-            orderno: orderno,
-            api_id: api_id,
-            api_key: api_key,
-            tid: tid,
-            bank: bank,
-            accountno: accountno,
-            accountname: accountname,
-            amount: amount
-        },
-        dataType: "json",
-        success: function(data) {
-            // console.log(data);
-
-            if(data.error) {
-                alert(data.error);
-                return false;
-            }
-
-            cancelModalClose();
-            location.reload();
-        }
-    });
-    */
-
-
 });
 
 $(document).on("click", "#btn-modal-close", function(event) {
@@ -485,8 +451,6 @@ $(document).on("click", "#btn-modal-close", function(event) {
 
 function cancelModalClose() {
     $("#orderno").val();
-    $("#api_id").val();
-    $("#api_key").val();
     $("#tid").val();
     $("#bank").val();
     $("#accountno").val();

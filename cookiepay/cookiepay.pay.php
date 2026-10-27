@@ -70,11 +70,15 @@ if ($mode == "try_order")
     
     $odId = isset($cookiepay['od_id']) && !empty($cookiepay['od_id']) ? $cookiepay['od_id'] : '';
     $odResultId = '';
-    if (!empty($od_id))
+    // s: cookiepay-plugin > PG 지적사항 > v1.9 > 261026
+    // $odId 에 담아 놓고 미정의 $od_id 를 보고 있어 중복 주문 검사가 한 번도
+    // 동작하지 않았다(cookiepay_subscribe.pay.php 도 같은 오타였다).
+    if (!empty($odId))
     {
-        $odResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_SHOP_ORDER." WHERE od_id='{$od_id}' LIMIT 1");
+        $odResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_SHOP_ORDER." WHERE od_id='" . sql_real_escape_string((string) $odId) . "' LIMIT 1");
         $odResultId = isset($odResult['od_id']) && !empty($odResult['od_id']) ? $odResult['od_id'] : '';
     }
+    // e: cookiepay-plugin > PG 지적사항 > v1.9 > 261026
     
     if (!empty($odId) && empty($odResultId))
     {

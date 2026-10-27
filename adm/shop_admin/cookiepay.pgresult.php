@@ -37,8 +37,6 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $cancelOrderno[$row['ORDERNO']] = $row['CANCEL_SUM_AMOUNT'];
 
     $cancel[$i]['cookiepayPg'] = '';
-    $cancel[$i]['apiId'] = '';
-    $cancel[$i]['apiKey'] = '';
     $cancel[$i]['status'] = '';
     $cancel[$i]['btnPgCancel'] = '';
     $cancel[$i]['payMethod'] = '';
@@ -59,8 +57,6 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $cancel[$i]['cookiepayPg'] = mb_substr(COOKIEPAY_PG[$pgUpper], 0, 2);
     $cancel[$i]['cookiepayPg'] = $cancel[$i]['cookiepayPg'] == '페이' ? '페누' : $cancel[$i]['cookiepayPg'];
 
-    $cancel[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
-    $cancel[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
     
     switch ($row['PAYMETHOD']) {
         case 'CARD':
@@ -77,8 +73,6 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
             break;
         case 'CARD_SUGI':
             $cancel[$i]['payMethod'] = '수기결제';
-            $cancel[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id_keyin"];
-            $cancel[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key_keyin"];
             break;
         default:
             $cancel[$i]['payMethod'] = $row['PAYMETHOD'];
@@ -91,8 +85,6 @@ $sql = "SELECT R.*, V.PAYMETHOD, V.TID AS verify_tid, V.BUYERNAME, V.BUYEREMAIL,
 $res = sql_query($sql);
 for($i=0; $row=sql_fetch_array($res); $i++) {
     $success[$i]['cookiepayPg'] = '';
-    $success[$i]['apiId'] = '';
-    $success[$i]['apiKey'] = '';
     $success[$i]['status'] = '';
     $success[$i]['btnPgCancel'] = '';
     $success[$i]['payMethod'] = '';
@@ -114,8 +106,6 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     $success[$i]['cookiepayPg'] = $success[$i]['cookiepayPg'] == '페이' ? '페누' : $success[$i]['cookiepayPg'];
 
     $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, 3); // 신용카드
-    // $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id"];
-    // $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key"];
     
     switch ($row['PAYMETHOD']) {
         case 'CARD':
@@ -133,8 +123,6 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
         case 'CARD_SUGI':
             $success[$i]['payMethod'] = '수기결제';
             $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, 1); // 수기결제
-            // $success[$i]['apiId'] = $default["de_{$pgLower}_cookiepay_id_keyin"];
-            // $success[$i]['apiKey'] = $default["de_{$pgLower}_cookiepay_key_keyin"];
             break;
         default:
             $success[$i]['payMethod'] = $row['PAYMETHOD'];
@@ -145,8 +133,10 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
         $cookiepayApi = cookiepay_get_api_account_info_by_pg($default, $pgLower, $success[$i]['pay_type']); // 해외원화/달러인 경우
     }
 
-    $success[$i]['apiId'] = $cookiepayApi['api_id'];
-    $success[$i]['apiKey'] = $cookiepayApi['api_key'];
+    // s: cookiepay-plugin > 관리자 시크릿키 제거 > v1.8 > 261026
+    // 결제 행마다 시크릿 키를 화면에 심던 자리. 취소에 필요한 연동 정보는
+    // cookiepay.ajax.php 가 주문의 결제 기록을 보고 서버에서 직접 고른다.
+    // e: cookiepay-plugin > 관리자 시크릿키 제거 > v1.8 > 261026
 
     $success[$i]['status'] = '<span style="color:blue;">승인</span>';
 
@@ -154,7 +144,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     // $ableDate = strtotime("+1 day", strtotime($row['ACCEPTDATE']));
     // if ($now <= $ableDate && (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
     if (!isset($cancelOrderno[$row['ORDERNO']]) || (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
-        $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-apiid="'.$success[$i]['apiId'].'" data-apikey="'.$success[$i]['apiKey'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">결제취소</button>';
+        $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">결제취소</button>';
     }
 }
 
@@ -271,8 +261,6 @@ if (count($data) == 0) {
 
 <div id="pg-cancel-modal" class="tbl_head01 tbl_wrap" style="display:none;">
     <input type="hidden" name="orderno" id="orderno">
-    <input type="hidden" name="api_id" id="api_id">
-    <input type="hidden" name="api_key" id="api_key">
     <input type="hidden" name="tid" id="tid">
     <input type="hidden" name="bank" id="bank">
     <input type="hidden" name="accountno" id="accountno">
@@ -364,16 +352,12 @@ $(function(){
 
 $(document).on("click", ".btn-pg-cancel", function(event) {
     var orderno = $(this).data("orderno");
-    var api_id = $(this).data("apiid");
-    var api_key = $(this).data("apikey");
     var tid = $(this).data("tid");
     var bank = $(this).data("bank");
     var accountno = $(this).data("accountno");
     var accountname = $(this).data("accountname");
 
     $("#orderno").val(orderno);
-    $("#api_id").val(api_id);
-    $("#api_key").val(api_key);
     $("#tid").val(tid);
     $("#bank").val(bank);
     $("#accountno").val(accountno);
@@ -415,8 +399,6 @@ $(document).on("click", ".btn-pg-cancel", function(event) {
 $(document).on("click", "#btn-modal-submit", function(event) {
     var amount = $("#cancel_amount").val();
     var orderno = $("#orderno").val();
-    var api_id = $("#api_id").val();
-    var api_key = $("#api_key").val();
     var tid = $("#tid").val();
     var bank = $("#bank").val();
     var accountno = $("#accountno").val();
@@ -449,8 +431,6 @@ $(document).on("click", "#btn-modal-submit", function(event) {
         data: {
             mode: "cancel",
             orderno: orderno,
-            api_id: api_id,
-            api_key: api_key,
             tid: tid,
             bank: bank,
             accountno: accountno,
@@ -479,8 +459,6 @@ $(document).on("click", "#btn-modal-close", function(event) {
 
 function cancelModalClose() {
     $("#orderno").val();
-    $("#api_id").val();
-    $("#api_key").val();
     $("#tid").val();
     $("#bank").val();
     $("#accountno").val();
