@@ -14,7 +14,13 @@ if ($payType == "수기결제" || $payType == "정기(구독)") {
 
 $cookiepayApi = cookiepay_get_api_account_info($default, $payTypeCode);
 
-$sql = "select * from g5_shop_item where it_id='".$_GET['it_id']."' limit 1 ";
+// s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+// $_GET['it_id'] 를 그대로 보간하고 있었다. 로그인 없이 열리는 결제창이라
+// 비인증 SQL 인젝션이 그대로 성립했다. 상품코드 형식까지 함께 거른다.
+$cpItId = isset($_GET['it_id']) ? (string) $_GET['it_id'] : '';
+if (!preg_match('/^[A-Za-z0-9_-]{1,20}$/', $cpItId)) { $cpItId = ''; }
+$sql = "select * from {$g5['g5_shop_item_table']} where it_id='" . sql_real_escape_string($cpItId) . "' limit 1 ";
+// e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
 $row = sql_fetch($sql);
 
 ?>
@@ -51,7 +57,7 @@ $(function(){
         }
     }
 
-    var payType = "<?php echo $payType; ?>";
+    var payType = <?php echo cookiepay_js($payType); ?>;
 
     if (payType == "수기결제" || payType == "정기(구독)") {
         onlyNumber();
@@ -64,7 +70,7 @@ $(function(){
 });
 
 function pay_dist() {
-    var payType = "<?php echo $payType; ?>";
+    var payType = <?php echo cookiepay_js($payType); ?>;
     var payMethod = '';
     switch (payType) {
         case '간편결제':
@@ -434,7 +440,7 @@ table {
 </style>
 <div>
     <div class="text-center title-bg">
-        <span><?=$_GET['pm']?></span>
+        <span><?php echo cookiepay_h(isset($_GET['pm']) ? $_GET['pm'] : ''); ?></span>
     </div>
     <form name="payform" id="payform" method="post" action="<?php echo COOKIEPAY_URL; ?>/cookiepay_subscribe.pay.php">
     <input type="hidden" name="mode" value="keyin_pay">

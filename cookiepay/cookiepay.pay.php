@@ -27,7 +27,9 @@ if ($mode == "try_pay") {
     
     $pgResultId = '';
     if (!empty($orderno)) {
-        $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderno}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
+        // s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+        // try_pay 는 로그인 검사가 없는 경로다. clean_xss_tags 는 SQL 방어가 아니다.
+        $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='" . sql_real_escape_string((string) $orderno) . "' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
         $pgResultId = isset($pgResult['id']) && !empty($pgResult['id']) ? $pgResult['id'] : '';
     }
     
@@ -39,13 +41,14 @@ if ($mode == "try_pay") {
         }
         foreach ($cookiepay as $key => $val) {
             if (array_key_exists($key, $values)) {
-                $values[$key] = "'{$val}'";
+                $values[$key] = "'" . sql_real_escape_string((string) $val) . "'";
             }
         }
-        $values['PGNAME'] = "'{$default['de_pg_service']}'"; // pg사 추가
-        $values['ORDERNO'] = "'{$orderno}'";
+        $values['PGNAME'] = "'" . sql_real_escape_string((string) $default['de_pg_service']) . "'"; // pg사 추가
+        $values['ORDERNO'] = "'" . sql_real_escape_string((string) $orderno) . "'";
         $payType = isset($cookiepay['PAY_TYPE']) && !empty($cookiepay['PAY_TYPE']) ? $cookiepay['PAY_TYPE'] : 3;
-        $values['pay_type'] = "'{$payType}'";
+        $values['pay_type'] = "'" . sql_real_escape_string((string) $payType) . "'";
+        // e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
         $values['pay_status'] = "0";
         $valueStr = implode(",", $values);
 
@@ -315,7 +318,7 @@ if ($mode == "keyin_pay") {
         
         $pgResultId = '';
         if (!empty($cookiepay['ORDERNO'])) {
-            $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$cookiepay['ORDERNO']}' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
+            $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "' AND pay_status=0 ORDER BY `id` DESC LIMIT 1");
             $pgResultId = isset($pgResult['id']) && !empty($pgResult['id']) ? $pgResult['id'] : '';
         }
 
@@ -328,11 +331,11 @@ if ($mode == "keyin_pay") {
             }
             foreach ($tokenRes as $key => $val) {
                 if (array_key_exists($key, $values)) {
-                    $values[$key] = "'{$val}'";
+                    $values[$key] = "'" . sql_real_escape_string((string) $val) . "'";
                 }
             }
-            $values['PGNAME'] = "'{$default['de_pg_service']}'";
-            $values['ORDERNO'] = "'{$cookiepay['ORDERNO']}'";
+            $values['PGNAME'] = "'" . sql_real_escape_string((string) $default['de_pg_service']) . "'";
+            $values['ORDERNO'] = "'" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "'";
             $values['pay_type'] = "'1'";
             $values['pay_status'] = "0";
             $valueStr = implode(",", $values);
@@ -400,7 +403,7 @@ if ($mode == "keyin_pay") {
 
             $payStatus = '';
             if (!empty($keyinRes['ORDERNO'])) {
-                $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$keyinRes['ORDERNO']}' ORDER BY `id` DESC LIMIT 1");
+                $pgResult = sql_fetch(" SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='" . sql_real_escape_string((string) $keyinRes['ORDERNO']) . "' ORDER BY `id` DESC LIMIT 1");
                 $payStatus = isset($pgResult['pay_status']) && $pgResult['pay_status']>=0 ? $pgResult['pay_status'] : '';
             }
 
@@ -413,10 +416,10 @@ if ($mode == "keyin_pay") {
                 }
                 foreach ($keyinRes as $key => $val) {
                     if (array_key_exists($key, $values)) {
-                        $values[$key] = "'{$val}'";
+                        $values[$key] = "'" . sql_real_escape_string((string) $val) . "'";
                     }
                 }
-                $values['PGNAME'] = "'{$default['de_pg_service']}'";
+                $values['PGNAME'] = "'" . sql_real_escape_string((string) $default['de_pg_service']) . "'";
                 $values['pay_type'] = "'1'";
                 $values['pay_status'] = "1";
                 $valueStr = implode(",", $values);
@@ -434,15 +437,15 @@ if ($mode == "keyin_pay") {
                 $set = [];
                 foreach ($keyinRes as $key => $val) {
                     if (in_array($key, $pgResultColumns)) {
-                        $set[$key] = "{$key}='{$val}'";
+                        $set[$key] = "{$key}='" . sql_real_escape_string((string) $val) . "'";
                     }
                 }
-                $set['PGNAME'] = "PGNAME='{$default['de_pg_service']}'";
+                $set['PGNAME'] = "PGNAME='" . sql_real_escape_string((string) $default['de_pg_service']) . "'";
                 $set['pay_type'] = "pay_type='1'";
                 $set['pay_status'] = "pay_status=1";
                 $setStr = implode(",", $set);
 
-                $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='{$keyinRes['ORDERNO']}'";
+                $sql = "UPDATE ".COOKIEPAY_PG_RESULT." SET {$setStr} WHERE ORDERNO='" . sql_real_escape_string((string) $keyinRes['ORDERNO']) . "'";
 
                 $res = sql_query($sql, false);
                 if ($res) {
@@ -527,20 +530,39 @@ if ($mode == "keyin_pay") {
         
                     if ($ret['status'] === true) {
                         @cookiepay_payment_log("수기결제 취소 성공5", $ret['data'], 3);
-                        $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
+                        $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "'", false);
                     } else {
                         @cookiepay_payment_log("수기결제 취소 실패5", $ret['data'], 3);
                     }
         
                     $cancelArr = json_decode($ret['data'], true);
         
-                    $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
+                    // s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+                    // 취소가 성립하지 않았는데도 값이 전부 빈 행을 넣고 있었다.
+                    $cpCancelOk = ($ret['status'] === true) && is_array($cancelArr) && (
+                        !empty($cancelArr['cancel_tid'])
+                        || !empty($cancelArr['cancel_code'])
+                        || !empty($cancelArr['cancel_amt'])
+                    );
+
+                    if (!$cpCancelOk) {
+                        @cookiepay_payment_log("수기결제 취소 미성립 — 취소기록 생략6", "ORDERNO ".$cookiepay['ORDERNO'], 3);
+                    } else {
+                    $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('"
+                        . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "', '"
+                        . sql_real_escape_string((string) $cancelArr['cancel_tid']) . "', '"
+                        . sql_real_escape_string((string) $cancelArr['cancel_code']) . "', '"
+                        . sql_real_escape_string((string) $cancelArr['cancel_msg']) . "', '"
+                        . sql_real_escape_string((string) $cancelArr['cancel_date']) . "', '"
+                        . sql_real_escape_string((string) $cancelArr['cancel_amt']) . "') ";
                     $res = sql_query($sql, false);
                     if ($res) {
                         @cookiepay_payment_log("수기결제 취소결과 저장 성공6", $sql, 3);
                     } else {
                         @cookiepay_payment_log("수기결제 취소결과 저장 실패6", $sql, 3);
                     }
+                    }
+                    // e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
                 }
             } else {
                 @cookiepay_payment_log("수기결제 검증 토큰 발행 실패7", $resultJson, 3);
@@ -549,20 +571,39 @@ if ($mode == "keyin_pay") {
         
                 if ($ret['status'] === true) {
                     @cookiepay_payment_log("수기결제 취소 성공8", $ret['data'], 3);
-                    $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='{$cookiepay['ORDERNO']}'", false);
+                    $payStatusRes = sql_query("UPDATE ".COOKIEPAY_PG_RESULT." SET pay_status=2 WHERE ORDERNO='" . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "'", false);
                 } else {
                     @cookiepay_payment_log("수기결제 취소 실패8", $ret['data'], 3);
                 }
         
                 $cancelArr = json_decode($ret['data'], true);
         
-                $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$cookiepay['ORDERNO']}', '{$cancelArr['cancel_tid']}', '{$cancelArr['cancel_code']}', '{$cancelArr['cancel_msg']}', '{$cancelArr['cancel_date']}', '{$cancelArr['cancel_amt']}') ";
+                // s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+                // 취소가 성립하지 않았는데도 값이 전부 빈 행을 넣고 있었다.
+                $cpCancelOk = ($ret['status'] === true) && is_array($cancelArr) && (
+                    !empty($cancelArr['cancel_tid'])
+                    || !empty($cancelArr['cancel_code'])
+                    || !empty($cancelArr['cancel_amt'])
+                );
+
+                if (!$cpCancelOk) {
+                    @cookiepay_payment_log("수기결제 취소 미성립 — 취소기록 생략9", "ORDERNO ".$cookiepay['ORDERNO'], 3);
+                } else {
+                $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('"
+                    . sql_real_escape_string((string) $cookiepay['ORDERNO']) . "', '"
+                    . sql_real_escape_string((string) $cancelArr['cancel_tid']) . "', '"
+                    . sql_real_escape_string((string) $cancelArr['cancel_code']) . "', '"
+                    . sql_real_escape_string((string) $cancelArr['cancel_msg']) . "', '"
+                    . sql_real_escape_string((string) $cancelArr['cancel_date']) . "', '"
+                    . sql_real_escape_string((string) $cancelArr['cancel_amt']) . "') ";
                 $res = sql_query($sql, false);
                 if ($res) {
                     @cookiepay_payment_log("수기결제 취소결과 저장 성공9", $sql, 3);
                 } else {
                     @cookiepay_payment_log("수기결제 취소결과 저장 실패9", $sql, 3);
                 }
+                }
+                // e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
             }
         } else {
             @cookiepay_payment_log("수기결제 실패", json_encode($keyinResJson), 3);

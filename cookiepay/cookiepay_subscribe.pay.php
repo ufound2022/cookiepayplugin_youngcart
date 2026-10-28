@@ -243,6 +243,65 @@ if ($mode == "try_order")
 
 // 정기(구독)
 if ($mode == "keyin_pay") {
+    // s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+    // 이 모드는 로그인 확인이 없어 누구나 호출할 수 있었다. 카드번호·유효기간·
+    // 생년월일·비밀번호·금액을 요청에서 그대로 받아 쇼핑몰 서버가 빌링키 발급을
+    // 보내므로, 도난 카드 유효성을 확인하는 통로(카드 테스팅)가 된다. 게다가
+    // 성공하면 매월 청구되는 반복결제 예약까지 실제로 만들어진다.
+    //
+    // 단발 수기결제(cookiepay.pay.php 항목9)에는 같은 방어가 이미 있는데
+    // 정기(구독) 경로만 빠져 있었다. 같은 가드를 그대로 쓴다.
+    require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+
+    $guardMemberId = isset($member['mb_id']) ? $member['mb_id'] : '';
+    $guardSessionOrderno = isset($_SESSION['ss_order_id']) ? $_SESSION['ss_order_id'] : get_session('ss_order_id');
+
+    $guardPendingOrder = array();
+    if (!empty($guardSessionOrderno)) {
+        $guardPendingOrder = sql_fetch("
+            SELECT od_id, mb_id, od_price, od_send_cost, od_send_cost2, od_temp_point, od_send_coupon
+            FROM ".COOKIEPAY_SHOP_ORDER."
+            WHERE od_id = '" . sql_real_escape_string((string) $guardSessionOrderno) . "'
+            LIMIT 1
+        ");
+    }
+
+    // 시도 횟수는 단발 수기결제와 같은 세션 키를 쓴다. 키를 나누면 두 엔드포인트를
+    // 번갈아 호출해 허용 횟수를 두 배로 쓸 수 있다.
+    $guardTryKey = 'cookiepay_keyin_try';
+    $guardTryLog = (isset($_SESSION[$guardTryKey]) && is_array($_SESSION[$guardTryKey])) ? $_SESSION[$guardTryKey] : array();
+
+    $guardNow = time();
+    $guardRecent = array();
+    foreach ($guardTryLog as $guardTryTime) {
+        if (($guardNow - (int) $guardTryTime) < 600) { // 10분 안의 시도만 센다
+            $guardRecent[] = (int) $guardTryTime;
+        }
+    }
+
+    $guardRet = cookiepay_guard_keyin_request($guardMemberId, $guardSessionOrderno, $guardPendingOrder, $cookiepay, count($guardRecent));
+
+    // 차단 여부와 무관하게 시도로 기록한다(차단된 시도도 횟수에 포함).
+    $guardRecent[] = $guardNow;
+    $_SESSION[$guardTryKey] = $guardRecent;
+
+    if (!$guardRet['ok']) {
+        @cookiepay_payment_log(
+            "정기(구독) 수기결제 차단 ({$guardRet['code']})",
+            $guardRet['msg']." / 요청자 ".$guardMemberId." / ORDERNO ".(isset($cookiepay['ORDERNO']) ? $cookiepay['ORDERNO'] : ''),
+            3
+        );
+        echo '<script>alert(' . cookiepay_js($guardRet['msg']) . '); self.close();</script>';
+        exit;
+    }
+
+    // 결제 금액은 요청값이 아니라 서버에 저장된 주문 금액을 쓴다. 문자열이어야 한다
+    // (정수로 두면 json_encode 가 따옴표 없이 보내고 쿠키페이가 E007 로 거부한다).
+    $cookiepay['AMOUNT'] = (string) $guardRet['amount'];
+
+    @cookiepay_payment_log("정기(구독) 수기결제 검증 통과", "ORDERNO ".$cookiepay['ORDERNO']." / 금액 ".$cookiepay['AMOUNT'], 3);
+    // e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+
     $cookiepayApiKeyin = cookiepay_get_api_account_info($default, 9);
 
     $req_json = json_encode([

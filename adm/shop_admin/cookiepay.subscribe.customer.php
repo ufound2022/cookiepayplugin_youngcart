@@ -18,6 +18,15 @@ if ($tab == 's') {
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 include_once(G5_PLUGIN_PATH.'/jquery-ui/datepicker.php');
 
+// s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+// 결제취소 AJAX 가 관리자 위조 방지 토큰을 보낼 수 있도록 입력칸을 둔다.
+// 값은 서버에서 직접 넣는다(admin.head.php 는 채워 주지 않는다).
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+?>
+<input type="hidden" name="token" value="<?php echo cookiepay_guard_admin_token(); ?>">
+<?php
+// e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+
 $fr_date = isset($_GET['fr_date']) ? clean_xss_tags($_GET['fr_date'], 1, 1) : '';
 $fr_date = (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $fr_date)) ? $fr_date : date("Y-m-01", strtotime("-1 month"));
 $to_date = isset($_GET['to_date']) ? clean_xss_tags($_GET['to_date'], 1, 1) : '';
@@ -136,7 +145,7 @@ $result = sql_query($sql);
             $success[$i]['RESERVE_LAST_PAY_DATE'] = $row['RESERVE_LAST_PAY_DATE'];
             $success[$i]['RESERVE_LAST_PAY_RESULTCODE'] = $row['RESERVE_LAST_PAY_RESULTCODE'];
             $success[$i]['RESERVE_LAST_PAY_RESULTMSG'] = $row['RESERVE_LAST_PAY_RESULTMSG'];
-            $success[$i]['btnPayInfo'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-paystatus="'.$row['pay_status'].'" data-reservenowpaycnt="'.$row['RESERVE_NOW_PAY_CNT'].'" data-reservelastpaycnt="'.$row['RESERVE_LAST_PAY_CNT'].'" data-ordername="'.$row['od_name'].'" data-amountinfo="'.number_format($row['AMOUNT']).'" data-acceptdate="'.date('Y-m-d H:i:s', strtotime($row['ACCEPTDATE'])).'" data-productname="'.$row['PRODUCT_NAME'].'" data-reserveid="'.$row['RESERVE_ID'].'" data-schedulecanceldate="'.$row['RESERVE_SCHEDULE_CANCEL_DATE'].'">&nbsp;보기&nbsp;</button>';
+            $success[$i]['btnPayInfo'] = '<button type="button" id="btn_'.cookiepay_h($row['ORDERNO']).'" class="btn-pg-cancel" data-orderno="'.cookiepay_h($row['ORDERNO']).'" data-paystatus="'.cookiepay_h($row['pay_status']).'" data-reservenowpaycnt="'.cookiepay_h($row['RESERVE_NOW_PAY_CNT']).'" data-reservelastpaycnt="'.cookiepay_h($row['RESERVE_LAST_PAY_CNT']).'" data-ordername="'.cookiepay_h($row['od_name']).'" data-amountinfo="'.number_format($row['AMOUNT']).'" data-acceptdate="'.date('Y-m-d H:i:s', strtotime($row['ACCEPTDATE'])).'" data-productname="'.cookiepay_h($row['PRODUCT_NAME']).'" data-reserveid="'.cookiepay_h($row['RESERVE_ID']).'" data-schedulecanceldate="'.cookiepay_h($row['RESERVE_SCHEDULE_CANCEL_DATE']).'">&nbsp;보기&nbsp;</button>';
 
         }
 
@@ -177,7 +186,7 @@ $result = sql_query($sql);
                 <tr>
                     <td><?=$pg_name_str?></td>
                     <td>
-                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?=$val['ORDERNO']?>&sel_field=od_id&search=<?=$val['ORDERNO']?>" target="_blank" style="color:blue;"><?=substr(date('Y-m-d H:i', strtotime($val['ACCEPTDATE'])),0, 10)?><br><?=substr(date('Y-m-d H:i', strtotime($val['ACCEPTDATE'])),11, 9)?></a>
+                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo cookiepay_h($val['ORDERNO']); ?>&sel_field=od_id&search=<?php echo cookiepay_h($val['ORDERNO']); ?>" target="_blank" style="color:blue;"><?=substr(date('Y-m-d H:i', strtotime($val['ACCEPTDATE'])),0, 10)?><br><?=substr(date('Y-m-d H:i', strtotime($val['ACCEPTDATE'])),11, 9)?></a>
                     </td>
                     <td>
                         <?=substr($val['RESERVE_LAST_PAY_DATE'],0, 10)?><br>
@@ -188,24 +197,24 @@ $result = sql_query($sql);
                         <?=substr($val['RESERVE_SCHEDULE_CANCEL_DATE'],11, 9)?>
                     </td>
                     <td><?=substr($val['RESERVE_ID'], 0, 10)."..."?></td>
-                    <td><?=$val['od_name']?></td>
-                    <td><?=$val['od_hp']?></td>
-                    <td><?=$val['PRODUCT_NAME']?></td>
+                    <td><?php echo cookiepay_h($val['od_name']); ?></td>
+                    <td><?php echo cookiepay_h($val['od_hp']); ?></td>
+                    <td><?php echo cookiepay_h($val['PRODUCT_NAME']); ?></td>
                     <td><?=number_format($val['AMOUNT'])?></td>
-                    <td><?=$val['ACCEPTNO']?></td>
-                    <td><span style="color:black;"><?=$val['RESERVE_PAY_DAY']?>일 / <?=$val['RESERVE_NOW_PAY_CNT']?> (<?=$val['RESERVE_LAST_PAY_CNT']?>)</span></td>
+                    <td><?php echo cookiepay_h($val['ACCEPTNO']); ?></td>
+                    <td><span style="color:black;"><?php echo cookiepay_h($val['RESERVE_PAY_DAY']); ?>일 / <?php echo cookiepay_h($val['RESERVE_NOW_PAY_CNT']); ?> (<?php echo cookiepay_h($val['RESERVE_LAST_PAY_CNT']); ?>)</span></td>
                     <td><?=$pay_status_str?></td>
                     <td></td>
                     <td></td>
                     <td><?=$pay_status?></td>
                     <td><?php echo $val['btnPayInfo']; ?></td>
                     <td>
-                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?=$val['ORDERNO']?>&sel_field=od_id&search=<?=$val['ORDERNO']?>" target="_blank" style="color:blue;">
+                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo cookiepay_h($val['ORDERNO']); ?>&sel_field=od_id&search=<?php echo cookiepay_h($val['ORDERNO']); ?>" target="_blank" style="color:blue;">
                             <button type="button">&nbsp;보기&nbsp;</button>
                         </a>
                     </td>
                     <td>
-                        <button type="button" onclick="receipt('<?=$val['TID']?>')">전표출력</button>
+                        <button type="button" onclick="receipt(<?php echo cookiepay_h(cookiepay_js($val['TID'])); ?>)">전표출력</button>
                     </td>
                 </tr>
 
@@ -381,7 +390,8 @@ $(document).on("click", ".btn-pg-cancel", function(event) {
         async: false,
         data: {
             mode: "get",
-            orderno: orderno
+            orderno: orderno,
+            token: $("input[name=token]").val()
         },
         dataType: "json",
         success: function(data) {

@@ -83,7 +83,7 @@ $result = sql_query($sql);
     <a href="/adm/shop_admin/cookiepay.subscribe.pgresult.php?t=3" class="btn btn_01">결제실패</a>
 </div>
 <form class="local_sch03 local_sch">
-    <input type="hidden" name="t" value="<?=$_GET['t']?>">
+    <input type="hidden" name="t" value="<?php echo cookiepay_h($tab); ?>">
 <div class="sch_last">
     <strong>결제일</strong>
     <input type="text" id="fr_date"  name="fr_date" value="<?php echo $fr_date; ?>" class="frm_input" size="10" maxlength="10"> ~
@@ -171,7 +171,7 @@ $result = sql_query($sql);
             $success[$i]['repay_check'] = $row['repay_check'];
 
             // 결제 행에 시크릿 키를 심던 data-apikey 제거 — 취소는 서버가 연동정보를 고른다
-            $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">&nbsp;보기&nbsp;</button>';
+            $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.cookiepay_h($row['ORDERNO']).'" class="btn-pg-cancel" data-orderno="'.cookiepay_h($row['ORDERNO']).'" data-tid="'.cookiepay_h($success[$i]['TID']).'" data-bank="'.cookiepay_h($row['CARDNAME']).'" data-accountno="'.cookiepay_h($row['ACCOUNTNO']).'" data-accountname="'.cookiepay_h($row['RECEIVERNAME']).'">&nbsp;보기&nbsp;</button>';
 
         }
 
@@ -212,10 +212,10 @@ $result = sql_query($sql);
                 <tr>
                     <td><?=$pg_name_str?></td>
                     <td>
-                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?=$val['ORDERNO']?>&sel_field=od_id&search=<?=$val['ORDERNO']?>" target="_blank" style="color:blue;"><?=$val['PAY_DATE']?></a>
+                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo cookiepay_h($val['ORDERNO']); ?>&sel_field=od_id&search=<?php echo cookiepay_h($val['ORDERNO']); ?>" target="_blank" style="color:blue;"><?php echo cookiepay_h($val['PAY_DATE']); ?></a>
                     </td>
-                    <td><?=$val['RESERVE_NEXT_PAY_DATE']?></td>
-                    <td><?=$val['ORDERNO']?></td>
+                    <td><?php echo cookiepay_h($val['RESERVE_NEXT_PAY_DATE']); ?></td>
+                    <td><?php echo cookiepay_h($val['ORDERNO']); ?></td>
                     <td><?=substr($val['RESERVE_ID'], 0, 10)."..."?></td>
                     <td><?= htmlspecialchars((string) $val['od_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars((string) $val['od_hp'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
@@ -241,7 +241,7 @@ $result = sql_query($sql);
                         <?php
                         if($pay_status == "결제실패" && $val['pay_status'] == "3" && $val['repay_check'] == "Y") { 
                         ?>
-                        <button id="btn-modal-submit_<?=$i?>" class="btn_submit" onClick="subscribe_repay('<?=$i?>');" type="button" data-reserveid="<?=$val['RESERVE_ID']?>" style="padding:4px;border:none;margin-right:15px;width:60px;">재결제</button>
+                        <button id="btn-modal-submit_<?=$i?>" class="btn_submit" onClick="subscribe_repay('<?=$i?>');" type="button" data-reserveid="<?php echo cookiepay_h($val['RESERVE_ID']); ?>" style="padding:4px;border:none;margin-right:15px;width:60px;">재결제</button>
                         <? } ?>
                     </td>
 
@@ -253,7 +253,7 @@ $result = sql_query($sql);
                         <?php
                         if($pay_status != "결제실패" && $val['pay_status'] != "3") { 
                         ?>
-                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?=$val['ORDERNO']?>&sel_field=od_id&search=<?=$val['ORDERNO']?>" target="_blank" style="color:blue;">
+                        <a href="/adm/shop_admin/orderlist.php?token=&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo cookiepay_h($val['ORDERNO']); ?>&sel_field=od_id&search=<?php echo cookiepay_h($val['ORDERNO']); ?>" target="_blank" style="color:blue;">
                             <button type="button">&nbsp;보기&nbsp;</button>
                         </a>
                         <? } ?>
@@ -262,7 +262,7 @@ $result = sql_query($sql);
                         <?php
                         if($pay_status != "결제실패" && $val['pay_status'] != "3") { 
                         ?>
-                        <button type="button" onclick="receipt('<?=$val['TID']?>')">전표출력</button>
+                        <button type="button" onclick="receipt(<?php echo cookiepay_h(cookiepay_js($val['TID'])); ?>)">전표출력</button>
                         <? } ?>
                     </td>
 
@@ -393,7 +393,8 @@ $(document).on("click", ".btn-pg-cancel", function(event) {
         async: false,
         data: {
             mode: "get",
-            orderno: orderno
+            orderno: orderno,
+            token: $("input[name=token]").val()
         },
         dataType: "json",
         success: function(data) {
@@ -454,6 +455,7 @@ $(document).on("click", "#btn-modal-submit", function(event) {
         async: false,
         data: {
             mode: "cancel",
+            token: $("input[name=token]").val(),
             orderno: orderno,
             tid: tid,
             bank: bank,

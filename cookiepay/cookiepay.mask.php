@@ -60,11 +60,31 @@ if (!function_exists('cookiepay_mask_log')) {
         // 전부 가릴 값 — 이 값이 유출되면 그 자체로 결제를 일으킬 수 있다
         $secret = array('pay2_key', 'api_key', 'apikey', 'CARDPWD', 'CARDAUTH', 'TOKEN');
 
+        // s: cookiepay-plugin > 보안점검 후속 > v2.3 > 261028
+        // 결제창은 카드번호를 CARDNO1~4 네 칸으로 쪼개 받는다
+        // (cookiepay.pgwin.php:454, cookiepay_subscribe.pgwin.php:539).
+        // CARDNO 하나만 가려서는 네 칸을 이어 붙여 번호 전체가 복원된다.
+        // 조각은 네 자리뿐이라 뒤 4자를 남기는 것이 무의미하므로 전부 가린다.
+        // 유효기간도 같은 카드 정보라 함께 가린다(EXPIREDT, EXPIREDT1~2).
+        // 아래는 preg_quote 를 거치지 않는 정규식 조각이다.
+        $secretRegex = array('CARDNO[0-9]', 'EXPIREDT[0-9]?');
+        // e: cookiepay-plugin > 보안점검 후속 > v2.3 > 261028
+
         // 뒤 4자만 남길 값 — 어느 건인지 분간은 되어야 추적이 가능하다
         $partial = array('BILLKEY', 'CARDNO');
 
+        // s: cookiepay-plugin > 보안점검 후속 > v2.3 > 261028
+        // 고정 문자열과 정규식 조각을 한 줄기로 합쳐 같은 규칙을 적용한다.
+        $secretKeys = array();
         foreach ($secret as $key) {
-            $k = preg_quote($key, '/');
+            $secretKeys[] = preg_quote($key, '/');
+        }
+        foreach ($secretRegex as $re) {
+            $secretKeys[] = $re;
+        }
+
+        foreach ($secretKeys as $k) {
+        // e: cookiepay-plugin > 보안점검 후속 > v2.3 > 261028
             $text = preg_replace('/(["\']' . $k . '["\']\s*:\s*")[^"]*(")/i', '${1}***${2}', $text);
             $text = preg_replace('/\b(' . $k . '\s*=\s*\')[^\']*(\')/i',      '${1}***${2}', $text);
             $text = preg_replace('/\b(' . $k . '\s*:\s*)[^\s,"\'}\]]+/i',     '${1}***',     $text);

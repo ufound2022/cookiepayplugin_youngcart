@@ -48,7 +48,7 @@ $(function(){
         }
     }
 
-    var payType = "<?php echo $payType; ?>";
+    var payType = <?php echo cookiepay_js($payType); ?>;
 
     if (payType == "수기결제") {
         onlyNumber();
@@ -61,7 +61,7 @@ $(function(){
 });
 
 function pay_dist() {
-    var payType = "<?php echo $payType; ?>";
+    var payType = <?php echo cookiepay_js($payType); ?>;
     var payMethod = '';
     switch (payType) {
         case '간편결제':
@@ -412,7 +412,7 @@ table {
 </style>
 <div>
     <div class="text-center title-bg">
-        <span><?=$_GET['pm']?></span>
+        <span><?php echo cookiepay_h(isset($_GET['pm']) ? $_GET['pm'] : ''); ?></span>
     </div>
     <form name="payform" id="payform" method="post" action="<?php echo COOKIEPAY_URL; ?>/cookiepay.pay.php">
     <input type="hidden" name="mode" value="keyin_pay">

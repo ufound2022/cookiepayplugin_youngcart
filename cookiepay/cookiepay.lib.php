@@ -118,6 +118,39 @@ function cookiepay_get_api_account_info_by_pg($default, $pg, $pay_type=3) {
 require_once G5_PATH."/cookiepay/cookiepay.mask.php";
 // e: cookiepay-plugin > 로그 민감정보 마스킹 > v1.8 > 261026
 
+// s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+// 출력 이스케이프 헬퍼.
+//
+// 플러그인 여러 곳이 외부 입력과 DB 값을 HTML 속성·JS 문자열에 그대로 넣고
+// 있었다. 호출부마다 긴 htmlspecialchars 를 적는 대신 한 쌍을 둔다.
+if (!function_exists('cookiepay_h')) {
+    /**
+     * HTML 문맥(텍스트·속성값)에 값을 넣을 때 쓴다.
+     * 속성은 반드시 따옴표로 감싸야 한다.
+     */
+    function cookiepay_h($v)
+    {
+        return htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+
+if (!function_exists('cookiepay_js')) {
+    /**
+     * JS 문자열 리터럴로 값을 넣을 때 쓴다. 바깥 따옴표까지 포함해 돌려주므로
+     * 호출부에서 따옴표를 덧붙이지 않는다.
+     *
+     *   echo 'alert(' . cookiepay_js($msg) . ');';
+     */
+    function cookiepay_js($v)
+    {
+        return json_encode(
+            (string) $v,
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
+        );
+    }
+}
+// e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+
 // 결제 로그 기록 ($start_end = 0:시작과 끝 기록 안 함. 1: 시작 기록, 2: 끝 기록, 3: 시작과 끝 모두 기록)
 function cookiepay_payment_log($title="", $msg="", $start_end=0) {
 

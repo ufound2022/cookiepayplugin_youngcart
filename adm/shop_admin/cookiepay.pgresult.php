@@ -18,6 +18,15 @@ if ($tab == 's') {
 include_once(G5_ADMIN_PATH.'/admin.head.php');
 include_once(G5_PLUGIN_PATH.'/jquery-ui/datepicker.php');
 
+// s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+// 결제취소 AJAX 가 관리자 위조 방지 토큰을 보낼 수 있도록 입력칸을 둔다.
+// 값은 서버에서 직접 넣는다(admin.head.php 는 채워 주지 않는다).
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+?>
+<input type="hidden" name="token" value="<?php echo cookiepay_guard_admin_token(); ?>">
+<?php
+// e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+
 $data = [];
 $success = [];
 $cancel = [];
@@ -144,7 +153,7 @@ for($i=0; $row=sql_fetch_array($res); $i++) {
     // $ableDate = strtotime("+1 day", strtotime($row['ACCEPTDATE']));
     // if ($now <= $ableDate && (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
     if (!isset($cancelOrderno[$row['ORDERNO']]) || (isset($cancelOrderno[$row['ORDERNO']]) && $cancelOrderno[$row['ORDERNO']] < $success[$i]['amount'])) {
-        $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.$row['ORDERNO'].'" class="btn-pg-cancel" data-orderno="'.$row['ORDERNO'].'" data-tid="'.$success[$i]['TID'].'" data-bank="'.$row['CARDNAME'].'" data-accountno="'.$row['ACCOUNTNO'].'" data-accountname="'.$row['RECEIVERNAME'].'">결제취소</button>';
+        $success[$i]['btnPgCancel'] = '<button type="button" id="btn_'.cookiepay_h($row['ORDERNO']).'" class="btn-pg-cancel" data-orderno="'.cookiepay_h($row['ORDERNO']).'" data-tid="'.cookiepay_h($success[$i]['TID']).'" data-bank="'.cookiepay_h($row['CARDNAME']).'" data-accountno="'.cookiepay_h($row['ACCOUNTNO']).'" data-accountname="'.cookiepay_h($row['RECEIVERNAME']).'">결제취소</button>';
     }
 }
 
@@ -222,27 +231,27 @@ if (count($data) == 0) {
     foreach ($data as $val) {
 ?>
         <tr>
-            <td><?php echo $val['cookiepayPg']; ?></td>
+            <td><?php echo cookiepay_h($val['cookiepayPg']); ?></td>
             <td>
-                <a href="/adm/shop_admin/orderlist.php?token=<?php echo $token; ?>&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo $val['orderno']; ?>&sel_field=od_id&search=<?php echo $val['orderno']; ?>" target="_blank" style="color:blue;">
-                <?php echo $val['orderno']; ?>
+                <a href="/adm/shop_admin/orderlist.php?token=<?php echo $token; ?>&doc=&sort1=od_id&sort2=desc&page=1&save_search=<?php echo cookiepay_h($val['orderno']); ?>&sel_field=od_id&search=<?php echo cookiepay_h($val['orderno']); ?>" target="_blank" style="color:blue;">
+                <?php echo cookiepay_h($val['orderno']); ?>
                 </a>
             </td>
             <td><?php echo !empty($val['ACCEPTDATE']) ? date("Y-m-d H:i:s", strtotime($val['ACCEPTDATE'])) : ''; ?></td>
             <td><?php echo !empty($val['CANCELDATE']) ? date("Y-m-d H:i:s", strtotime($val['CANCELDATE'])) : ''; ?></td>
-            <td><?php echo $val['ACCEPTNO']; ?></td>
+            <td><?php echo cookiepay_h($val['ACCEPTNO']); ?></td>
             <td><?php echo !empty($val['amount']) ? number_format($val['amount']) : ''; ?></td>
             <td><?php echo !empty($val['cancelAmount']) ? number_format($val['cancelAmount']) : ''; ?></td>
             <td><?php echo $val['status']; ?></td>
-            <td><?php echo $val['BUYERNAME']; ?></td>
-            <td><?php echo $val['BUYERID']; ?></td>
+            <td><?php echo cookiepay_h($val['BUYERNAME']); ?></td>
+            <td><?php echo cookiepay_h($val['BUYERID']); ?></td>
             <td><?php echo mb_strlen($val['PRODUCTNAME']) > 20 ? mb_substr($val['PRODUCTNAME'], 0, 20)."…" : $val['PRODUCTNAME']; ?></td>
-            <td><?php echo $val['payMethod']; ?></td>
+            <td><?php echo cookiepay_h($val['payMethod']); ?></td>
             <td>
             <?php if ($val['cookiepayPg'] == '페누') { ?>
-                <button type="button" onclick="receiptPaynuri('<?php echo $default['de_cookiepay_pn_cookiepay_pgid_keyin']; ?>', '<?php echo $val['TID']; ?>')">전표출력</button>
+                <button type="button" onclick="receiptPaynuri(<?php echo cookiepay_h(cookiepay_js($default['de_cookiepay_pn_cookiepay_pgid_keyin'])); ?>, <?php echo cookiepay_h(cookiepay_js($val['TID'])); ?>)">전표출력</button>
             <?php } else { ?>
-                <button type="button" onclick="receipt('<?php echo $val['TID']; ?>')">전표출력</button>
+                <button type="button" onclick="receipt(<?php echo cookiepay_h(cookiepay_js($val['TID'])); ?>)">전표출력</button>
             <?php } ?>
             </td>
             <?php
@@ -370,7 +379,8 @@ $(document).on("click", ".btn-pg-cancel", function(event) {
         async: false,
         data: {
             mode: "get",
-            orderno: orderno
+            orderno: orderno,
+            token: $("input[name=token]").val()
         },
         dataType: "json",
         success: function(data) {
@@ -430,6 +440,7 @@ $(document).on("click", "#btn-modal-submit", function(event) {
         async: false,
         data: {
             mode: "cancel",
+            token: $("input[name=token]").val(),
             orderno: orderno,
             tid: tid,
             bank: bank,
