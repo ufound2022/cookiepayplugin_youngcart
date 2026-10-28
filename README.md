@@ -1,15 +1,4 @@
-# 쿠키페이 플러그인 (쿠키페이 영카트 결제 연동 플러그인)
-- 2026.10.28 추가 보안패치 지원
-- 통지 서명 검증 설정 안내(off: 미사용, log: 로그만 기록, enforce: 서명 검증 사용)
-    - /cookiepay/cookiepay.constants.php
-    - 위 파일에서 아래 코드를 찾아 변경
-    ```
-    if (!defined('COOKIEPAY_NOTI_SIGN_MODE')) {
-        define('COOKIEPAY_NOTI_SIGN_MODE', 'log');
-    }
-    ```
-    
-- 2026.10.20 기준 최신 보안패치 지원
+# 쿠키페이 플러그인 v1.2 (쿠키페이 영카트 결제 연동 플러그인)
 
 - 결제 로그 기록  
     - DOCUMENT ROOT의 상위 디렉토리에 logs 디렉토리 생성  
@@ -35,6 +24,15 @@
       ```  
       https://[플러그인설치도메인]/cookiepay/result.noti.php  
       ```  
+
+- 통지 서명 검증 설정 안내
+    - /cookiepay/cookiepay.constants.php
+    - 위 파일에서 아래 코드를 찾아 변경 (off: 미사용, log: 로그만 기록, enforce: 서명 검증 사용)
+    ```
+    if (!defined('COOKIEPAY_NOTI_SIGN_MODE')) {
+        define('COOKIEPAY_NOTI_SIGN_MODE', 'log');
+    }
+    ```
 
 - 영카트를 커스터마이징 하지 않은 경우  
     - 아래 디렉토리와 파일을 영카트 설치 디렉토리에 Copy & Paste(덮어쓰기) 
@@ -127,9 +125,18 @@
 <br><br>
 ## 업데이트 히스토리
 
-■ 2026.10.20<br>
-- 영카트 쿠키페이 플러그인 보안 업데이트 적용<br>
-Git 에서 #81 > 업데이트 필요<br><br>
+■ 2026.10.28<br>
+- 플러그인 v1.2 변경 사항
+    - 2026.10.28 추가 보안패치 지원
+    - 통지 서명 검증 설정 안내(off: 미사용, log: 로그만 기록, enforce: 서명 검증 사용)
+        - /cookiepay/cookiepay.constants.php
+        - 위 파일에서 아래 코드를 찾아 변경
+        ```
+        if (!defined('COOKIEPAY_NOTI_SIGN_MODE')) {
+            define('COOKIEPAY_NOTI_SIGN_MODE', 'log');
+        }
+        ```
+    - 영카트 쿠키페이 플러그인 보안 업데이트 적용<br>
 
 ■ 2025.05.26<br>
 - 영카트 신용카드(비인증) 수기결제 사용자 이용가능 설정 기능 추가<br>
