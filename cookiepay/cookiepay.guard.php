@@ -469,10 +469,15 @@ function cookiepay_guard_admin_repay($auth_error, $token_ok, $subscribe)
  *
  * @param array  $verify      쿠키페이 /api/paycert 응답(RESULTCODE, ORDERNO, AMOUNT)
  * @param array  $noti        수신한 통지 본문(ORDERNO, AMOUNT)
- * @param string $order_id    주문번호
- * @param int    $order_price 서버가 계산한 주문 총액
+ * @param string $order_id     주문번호
+ * @param int    $order_price  서버가 계산한 주문 총액
+ * @param bool   $require_full 주문 총액과의 일치를 요구할지.
+ *   가상계좌 발급 직후처럼 부분 입금이 정상인 경로에서는 false 로 둔다.
+ *   true 로 두면 아직 다 내지 않은 주문이 막혀 버린다(2026-10-14 가상계좌 사례).
+ *   false 여도 ORDERNO 일치와 통지-검증 금액 대조는 그대로 수행하므로,
+ *   남의 거래번호를 쓰거나 통지 금액을 부풀리는 공격은 똑같이 막힌다.
  */
-function cookiepay_guard_verified_amount($verify, $noti, $order_id, $order_price)
+function cookiepay_guard_verified_amount($verify, $noti, $order_id, $order_price, $require_full = true)
 {
     if (empty($verify) || !isset($verify['RESULTCODE']) || (string) $verify['RESULTCODE'] !== '0000') {
         return cookiepay_guard_result(false, 'VERIFY_FAILED', '쿠키페이 결제 검증에 실패했습니다.');
@@ -487,8 +492,8 @@ function cookiepay_guard_verified_amount($verify, $noti, $order_id, $order_price
         return cookiepay_guard_result(false, 'NOTI_TAMPERED', '통지 금액이 검증 금액과 다릅니다.');
     }
 
-    // 결제완료로 처리할 금액은 검증 응답 값이며, 주문 총액과 같아야 한다.
-    if ((int) $verify['AMOUNT'] !== (int) $order_price) {
+    // 결제완료로 처리할 금액은 검증 응답 값이며, 전액 결제 경로에서는 주문 총액과 같아야 한다.
+    if ($require_full && (int) $verify['AMOUNT'] !== (int) $order_price) {
         return cookiepay_guard_result(false, 'AMOUNT_MISMATCH', '검증 금액이 주문 금액과 다릅니다.');
     }
 
@@ -566,3 +571,94 @@ function cookiepay_guard_match_api_key($pairs, $api_id)
 
     return cookiepay_guard_result(false, 'UNKNOWN_API_ID', '등록되지 않은 연동 아이디입니다.');
 }
+
+// s: cookiepay-plugin > 통지 서명 검증 > v2.0 > 261026
+/**
+ * 통지 요청의 HMAC 서명을 확인한다.
+ *
+ * result.noti.php 에는 "이 요청을 쿠키페이가 보냈는가" 를 확인하는 수단이
+ * 없었다. 거래번호로 쿠키페이에 되묻는 paycert 확인은 거래가 실재하는지를
+ * 보는 것이지 발신자를 식별하지 않는다. 통지 URL 을 아는 사람은 누구나
+ * 임의의 JSON 을 던질 수 있었다.
+ *
+ * 쿠키페이가 통지 요청에 아래 두 헤더를 실어 보내는 것을 전제로 한다.
+ *   X-Cookiepay-Api-Id    : 서명에 쓴 연동 아이디
+ *   X-Cookiepay-Signature : t=<unix초>,v1=<hmac sha256 hex>
+ *
+ * 서명 대상은 "{t}.{본문 원문}" 이다. 파싱된 배열을 다시 직렬화하면
+ * 공백·키 순서·한글 이스케이프가 달라져 재현되지 않으므로, 호출부는 반드시
+ * file_get_contents('php://input') 으로 읽은 원문을 그대로 넘겨야 한다.
+ *
+ * @param string $raw_body  본문 원문(바이트 그대로)
+ * @param string $api_id    X-Cookiepay-Api-Id 헤더 값
+ * @param string $sig_hdr   X-Cookiepay-Signature 헤더 값
+ * @param array  $pairs     array(array('api_id'=>…, 'api_key'=>…), …)
+ * @param int    $now       현재 시각(Unix 초). 테스트에서 고정하기 위해 인자로 받는다
+ * @param int    $tolerance 허용 시간창(초)
+ */
+function cookiepay_guard_noti_signature($raw_body, $api_id, $sig_hdr, $pairs, $now = null, $tolerance = 300)
+{
+    if ($now === null) {
+        $now = time();
+    }
+
+    if (!is_string($raw_body) || $raw_body === '') {
+        return cookiepay_guard_result(false, 'NO_BODY', '본문이 비어 있습니다.');
+    }
+
+    if (!is_string($sig_hdr) || trim($sig_hdr) === '') {
+        return cookiepay_guard_result(false, 'NO_SIGNATURE', '서명 헤더가 없습니다.');
+    }
+
+    // t=…,v1=… 파싱. 순서가 바뀌거나 공백이 섞여도 받아들인다.
+    $t  = '';
+    $v1 = '';
+    foreach (explode(',', $sig_hdr) as $part) {
+        $kv = explode('=', trim($part), 2);
+        if (count($kv) !== 2) {
+            continue;
+        }
+        if ($kv[0] === 't')  { $t  = trim($kv[1]); }
+        if ($kv[0] === 'v1') { $v1 = trim($kv[1]); }
+    }
+
+    if ($t === '' || $v1 === '') {
+        return cookiepay_guard_result(false, 'BAD_SIGNATURE_FORMAT', '서명 헤더 형식이 올바르지 않습니다.');
+    }
+
+    if (!preg_match('/^[0-9]{1,12}$/', $t)) {
+        return cookiepay_guard_result(false, 'BAD_TIMESTAMP', '전송 시각 형식이 올바르지 않습니다.');
+    }
+
+    if (!preg_match('/^[0-9a-f]{64}$/', $v1)) {
+        return cookiepay_guard_result(false, 'BAD_SIGNATURE_FORMAT', '서명 형식이 올바르지 않습니다.');
+    }
+
+    // 오래된 통지를 그대로 다시 던지는 재전송 공격의 창을 좁힌다.
+    if (abs((int) $now - (int) $t) > (int) $tolerance) {
+        return cookiepay_guard_result(false, 'TIMESTAMP_SKEW', '전송 시각이 허용 범위를 벗어났습니다.');
+    }
+
+    $keyRet = cookiepay_guard_match_api_key($pairs, $api_id);
+    if (!$keyRet['ok']) {
+        return $keyRet;
+    }
+
+    $expected = hash_hmac('sha256', $t . '.' . $raw_body, $keyRet['api_key']);
+
+    // 길이가 같아야 hash_equals 가 의미를 갖는다. 위 정규식이 이미 보장한다.
+    if (!hash_equals($expected, $v1)) {
+        // 어느 키로 계산했는지 알 수 있게 지문만 돌려준다. 발신 측도 같은 식으로
+        // 지문을 내 비교하면, 키를 주고받지 않고 동일 여부를 확인할 수 있다.
+        // 고엔트로피 비밀의 sha256 앞 16자라 역산되지 않는다.
+        return cookiepay_guard_result(false, 'SIGNATURE_MISMATCH', '서명이 일치하지 않습니다.', array(
+            'keyfp' => substr(hash('sha256', $keyRet['api_key']), 0, 16),
+        ));
+    }
+
+    return cookiepay_guard_result(true, 'OK', '서명 확인', array(
+        'api_id' => (string) $api_id,
+        't'      => (int) $t,
+    ));
+}
+// e: cookiepay-plugin > 통지 서명 검증 > v2.0 > 261026

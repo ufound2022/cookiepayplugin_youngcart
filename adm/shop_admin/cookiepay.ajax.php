@@ -13,6 +13,19 @@ if($data['error']) {
     exit;
 }
 
+// s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+// 권한은 확인하지만 CSRF 토큰이 없었다. 관리자가 로그인한 채 공격자 페이지를
+// 열면 그 페이지의 자동 POST 로 임의 거래가 취소된다 — 아래에서 보듯 환불
+// 입금 계좌까지 요청값이라 피해가 금전으로 직결된다.
+// 같은 프로젝트의 cookiepay.subscribe.repay.ajax.php 가 쓰는 가드를 그대로 쓴다.
+require_once G5_PATH."/cookiepay/cookiepay.guard.php";
+if (!cookiepay_guard_admin_token_ok(isset($_POST['token']) ? $_POST['token'] : '')) {
+    $data['error'] = '요청이 유효하지 않습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.';
+    echo json_encode($data);
+    exit;
+}
+// e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+
 $mode = clean_xss_tags($_POST['mode'], 1, 1);
 
 // 결제, 취소내역 조회
@@ -23,13 +36,13 @@ if ($mode == "get") {
     $cancelAmount = 0; // 취소금액
     $cancelAbleAmount = 0; // 취소가능금액
 
-    $sql = " SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='{$orderNo}' AND RESULTCODE='0000' ORDER BY ACCEPTDATE DESC LIMIT 1 ";
+    $sql = " SELECT * FROM ".COOKIEPAY_PG_RESULT." WHERE ORDERNO='" . sql_real_escape_string((string) $orderNo) . "' AND RESULTCODE='0000' ORDER BY ACCEPTDATE DESC LIMIT 1 ";
     $res = sql_fetch($sql);
     if ($res) {
         $payAmount = $res['AMOUNT'];
 
         // 취소 내역 조회
-        $sql2 = " SELECT COALESCE(SUM(cancel_amt), 0) AS cancel_amount FROM ".COOKIEPAY_PG_CANCEL." WHERE orderno='{$orderNo}' ";
+        $sql2 = " SELECT COALESCE(SUM(cancel_amt), 0) AS cancel_amount FROM ".COOKIEPAY_PG_CANCEL." WHERE orderno='" . sql_real_escape_string((string) $orderNo) . "' ";
         $res2 = sql_fetch($sql2);
 
         if (isset($res2['cancel_amount'])) {
@@ -55,12 +68,47 @@ if ($mode == "get") {
 if ($mode == "cancel") {
     
     $orderno = clean_xss_tags($_POST['orderno'], 1, 1);
-    $api_id = clean_xss_tags($_POST['api_id'], 1, 1);
-    $api_key = clean_xss_tags($_POST['api_key'], 1, 1);
+
+    // s: cookiepay-plugin > 관리자 시크릿키 제거 > v1.8 > 261026
+    // 예전에는 브라우저가 보낸 api_id / api_key 를 그대로 썼다. 관리자 목록이
+    // 결제 행마다 data-apikey 로 시크릿 키를 심어 두고 취소할 때 되돌려 보내는
+    // 구조여서, 그 화면을 볼 수 있는 사람은 누구나 키를 가져갈 수 있었다.
+    // 키는 서버에만 둔다. 어느 연동 정보를 쓸지는 그 주문의 결제 기록으로 정한다.
+    // (cookiepay.cancel.php 45행이 이미 같은 방식이다)
+    $cpPayRow = sql_fetch("
+        SELECT pay_type FROM ".COOKIEPAY_PG_RESULT."
+        WHERE ORDERNO = '" . sql_real_escape_string((string) $orderno) . "'
+        ORDER BY `id` DESC LIMIT 1
+    ");
+
+    $cpPayType = (isset($cpPayRow['pay_type']) && $cpPayRow['pay_type'] !== '') ? $cpPayRow['pay_type'] : 3;
+    $cpApi     = cookiepay_get_api_account_info($default, $cpPayType);
+
+    $api_id  = $cpApi['api_id'];
+    $api_key = $cpApi['api_key'];
+
+    if (empty($api_id) || empty($api_key)) {
+        @cookiepay_payment_log("관리자 취소 차단", "연동 정보 없음 / ORDERNO ".$orderno." / pay_type ".$cpPayType, 3);
+        $data['error'] = '연동 정보가 설정되지 않았습니다. 쇼핑몰 설정을 확인해 주세요.';
+        echo json_encode($data);
+        exit;
+    }
+    // e: cookiepay-plugin > 관리자 시크릿키 제거 > v1.8 > 261026
     $tid = clean_xss_tags($_POST['tid'], 1, 1);
-    $bank = clean_xss_tags($_POST['bank'], 1, 1);
-    $accountno = clean_xss_tags($_POST['accountno'], 1, 1);
-    $accountname = clean_xss_tags($_POST['accountname'], 1, 1);
+
+    // s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+    // 환불 입금 계좌를 요청값으로 받고 있었다. 가상계좌·계좌이체 취소에서
+    // 공격자가 자기 계좌를 적어 보내면 그리로 환불된다. 원 결제 기록에서 읽는다.
+    $cpCancelRow = sql_fetch("
+        SELECT CARDNAME, ACCOUNTNO, RECEIVERNAME
+        FROM ".COOKIEPAY_PG_RESULT."
+        WHERE ORDERNO = '" . sql_real_escape_string((string) $orderno) . "'
+        ORDER BY `id` DESC LIMIT 1
+    ");
+    $bank        = isset($cpCancelRow['CARDNAME'])     ? $cpCancelRow['CARDNAME']     : '';
+    $accountno   = isset($cpCancelRow['ACCOUNTNO'])    ? $cpCancelRow['ACCOUNTNO']    : '';
+    $accountname = isset($cpCancelRow['RECEIVERNAME']) ? $cpCancelRow['RECEIVERNAME'] : '';
+    // e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
     $amount = clean_xss_tags($_POST['amount'], 1, 1);
 
     $tokenheaders = array(); 
@@ -128,15 +176,23 @@ if ($mode == "cancel") {
 			$data['result'] = $result_array['cancel_code'];
             @cookiepay_payment_log("결제 취소 성공", $response, 3);
 
-            $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('{$orderno}', '{$result_array['cancel_tid']}', '{$result_array['cancel_code']}', '{$result_array['cancel_msg']}', '{$result_array['cancel_date']}', '{$result_array['cancel_amt']}') ";
+            // s: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
+            $sql = " INSERT INTO ".COOKIEPAY_PG_CANCEL." (orderno, cancel_tid, cancel_code, cancel_msg, cancel_date, cancel_amt) VALUES ('"
+                . sql_real_escape_string((string) $orderno) . "', '"
+                . sql_real_escape_string((string) $result_array['cancel_tid']) . "', '"
+                . sql_real_escape_string((string) $result_array['cancel_code']) . "', '"
+                . sql_real_escape_string((string) $result_array['cancel_msg']) . "', '"
+                . sql_real_escape_string((string) $result_array['cancel_date']) . "', '"
+                . sql_real_escape_string((string) $result_array['cancel_amt']) . "') ";
+            // e: cookiepay-plugin > 보안점검 후속 > v2.2 > 261027
             
             $res = sql_query($sql, false);
 
             // s: 영카트 주문 정보 업데이트
             $updateSql = "
                 UPDATE {$g5['g5_shop_order_table']}
-                SET od_refund_price = '{$result_array['cancel_amt']}'
-                WHERE od_id = '{$orderno}'
+                SET od_refund_price = '" . sql_real_escape_string((string) $result_array['cancel_amt']) . "'
+                WHERE od_id = '" . sql_real_escape_string((string) $orderno) . "'
             ";
             sql_query($updateSql);
             // e: 영카트 주문 정보 업데이트
